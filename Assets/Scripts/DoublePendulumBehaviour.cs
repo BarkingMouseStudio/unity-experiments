@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,37 +8,59 @@ public class DoublePendulumBehaviour : MonoBehaviour {
   const float TWO_PI = 2.0f * Mathf.PI;
   const float maxDistance = 12.0f;
 
+  public float speed, Va, Vb, currentFitness;
+
   protected internal bool isComplete = false;
 
+  Transform parent;
   Rigidbody2D upper;
   Rigidbody2D lower;
-  Transform wheel;
+  Rigidbody2D wheel;
+  WheelJoint2D wheelJoint;
 
   Neural.Network network;
 
-  ulong[] inNeuronIds = new ulong[]{0, 1, 2, 3, 4, 5};
-  ulong outNeuronId = 6;
+  ulong[] inNeuronIds = new ulong[]{
+    0, 1, 2, 3, 4,
+    5, 6, 7, 8, 9,
+    10, 11
+  };
+  ulong[] outNeuronIds = new ulong[]{12, 13};
   ulong neuronCount;
 
   double[] inputs;
   double[] outputs;
 
-  float duration = 5.0f;
+  float duration = 8.0f;
   float now = 0.0f;
 
-  float[] fitnessHistory = new float[100];
-  int fitnessIndex = 0;
-  int fitnessCount = 0;
+  float[] fitnessHistory;
+  int fitnessIndex;
+  int fitnessCount;
 
-  void Start() {
-    upper = transform.Find("DoublePendulum/Upper").GetComponent<Rigidbody2D>();
-    lower = transform.Find("DoublePendulum/Lower").GetComponent<Rigidbody2D>();
-    wheel = transform.Find("DoublePendulum/Wheel");
+  void Awake() {
+    parent = transform.Find("DoublePendulum");
+    upper = parent.Find("Upper").GetComponent<Rigidbody2D>();
+    lower = parent.Find("Lower").GetComponent<Rigidbody2D>();
+    wheel = parent.Find("Wheel").GetComponent<Rigidbody2D>();
+    wheelJoint = wheel.transform.GetComponentInChildren<WheelJoint2D>();
 
     SetGenotype(new List<List<double>>(){
-      new List<double>(){-0.5385752688162029,-0.9255957440473139,-44.19480683282018,6.2535954266786575,-0.7033140370622277,-0.5770359211601317,-57.52903721295297,-0.9288753848522902,0.43941365787759423,-0.698256925214082,-4.373402474448085,-17.294252393767238,-0.6450817119330168,0.3411713968962431,-60.59825918637216,12.814581776037812,0.44216878712177277,-0.7366140903905034,-59.46672565769404,13.447362845763564,0.12321440689265728,0.13246938399970531,-9.637254918925464,-7.566007636487484,0.14826317923143506,-0.6105808513239026,-11.725192097947001,-6.643243590369821,-0.09416186343878508,0.22772831795737147,-49.92104994598776,7.766789244487882,-0.8842157702893019,-0.8492906247265637,-15.168529679067433,-0.6752384547144175,-0.4582015499472618,-0.00789797818288207,-44.74742063321173,-5.517514767125249,0.39408281026408076,0.9914421499706805,-11.424846365116537,-17.30797686614096,-0.6737327626906335,-0.6843529255129397,-56.73197731375694,-5.74247183278203,-0.6994412890635431,-0.4807081618346274,-36.874011415056884,4.359477683901787,0.07198500819504261,0.8788539757952094,-36.77029078826308,18.708208026364446,-0.22103716665878892,0.627336404286325,-5.649316986091435,-16.560928877443075,0.47689821338281035,-0.12481874926015735,-97.92044907808304,18.957414804026484,-0.06595144420862198,-0.7064349269494414,-76.928795943968,-19.155415194109082,-0.2021382600069046,-0.01954039977863431,-64.36554789543152,-0.2649354748427868,0.2854766845703125,-0.6276519354432821,-16.978184692561626,7.581885755062103,0.05340124620124698,-0.2655360265634954,-99.79897213634104,-14.384626420214772,-0.9188301474787295,0.14246641797944903,-41.47835043258965,-3.41466311365366,0.11453544069081545,0.6889300644397736,-99.46856256574392,-17.718174941837788,-0.5098010879009962,0.2963727037422359,-83.08381715323776,-15.732864663004875},
-      new List<double>(){7.730015651322901,3.818238670937717,2.7302639838308096,-3.164940709248185,1.2070935824885964,5.96092252060771,-0.490156183950603,-7.524066520854831,-3.513714144937694,8.134261243976653,5.4993196576833725,-2.7390370005741715,-0.7121254922822118,3.4042331855744123,1.4618676342070103,-4.6959857596084476,-5.179611528292298,2.1754597639665008,-7.891964404843748,1.7573540564626455,-5.633244090713561,-9.640511027537286,6.367279156111181,-6.7992431204766035,-4.439303143881261,-9.30153681896627,6.348322848789394,-6.87021893914789,7.389279003255069,4.929600055329502,-3.652837867848575,3.1561221787706017,-4.668783349916339,-8.40126620605588,2.4672056920826435,-6.5254090912640095,-1.1207828484475613,-6.431038100272417,-1.7778645968064666,3.257493181154132,-8.573598237708211,9.786450094543397,-4.865685543045402,3.590783542022109,-8.286153189837933,0.1314229005947709,-8.848130567930639,4.509033034555614,6.040384201332927,-6.896976516582072,2.150791995227337,-7.03567108605057,2.3748209746554494,8.84808249771595,9.12580634932965,-0.5336895631626248,-4.0775845013558865,6.629859427921474,4.4621166586875916,4.125510584563017,-8.726750053465366,5.060583045706153,-2.2316971933469176,7.270108601078391,-2.5443999469280243,-8.002863484434783,-8.002542280592024,8.599427076987922,-6.048243008553982,2.6822379929944873,4.63582688011229,2.0989973517134786,-0.6679600570350885,7.765580401755869,-3.1215607281774282,4.228555262088776,-4.59803806617856,4.2474322859197855,2.6081088231876493,0.7866918575018644,-2.8727707313373685,0.14160974882543087,1.348760207183659,-4.719876232556999,-1.570470379665494,8.768559987656772,6.506765130907297,-2.063959646038711,-9.446970401331782,-8.786419155076146,6.891898293979466,-5.262256050482392,8.604455031454563,9.515022770501673,8.012359971180558,-6.123797809705138,7.916254177689552,-4.28650189191103,-2.5359570933505893,4.916329933330417,-6.208636648952961,2.3691791156306863,-9.90437010768801,-6.68970497790724,4.13208591286093,-6.365142627619207,-9.735054839402437,0.2429922390729189,-2.2033374197781086,-9.884018655866385,-8.282288857735693,-6.948266034014523,-2.873623678460717},
+      new List<double>(){0.030240713618695736,0.2858109828084707,-17.099039908498526,-3.98639352992177,-0.09252404049038887,-0.5645759226754308,-89.35704107861966,3.129984624683857,-0.32323266938328743,-0.2820330043323338,-29.5691262697801,10.90599580667913,0.44192608119919896,-0.2727102395147085,-14.774306351318955,-9.999111574143171,0.5329056000337005,-0.21635572193190455,-14.741435530595481,-4.319693185389042,-0.5550133753567934,0.27981191873550415,-18.088895338587463,8.86582643724978,0.2896900540217757,-0.405563450884074,-88.92051875591278,4.914799332618713,0.24111286411061883,-0.23580606142058969,-79.88836073782295,-19.803263507783413,0.6747261811979115,-0.9641528790816665,-42.73162190802395,1.7203876469284296,-0.22941533755511045,-0.09263844788074493,-90.17830961383879,5.472796633839607,-0.07592560909688473,0.9276403109543025,-24.135076510719955,13.321006624028087,-0.9157845829613507,0.01457053842023015,-48.9282809663564,-4.9688019417226315,0.47485026391223073,0.6502056680619717,-95.22150612901896,-10.898202257230878,0.6692204065620899,0.783392854500562,-85.90032735373825,3.2410515192896128},
+      new List<double>(){10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0},
     });
+
+    OnSpawned();
+  }
+
+  static float GetAngle(float angle) {
+  	while (angle > 180.0f) {
+      angle -= 360.0f;
+    }
+  	while (angle < -180.0f) {
+      angle += 360.0f;
+    }
+  	return angle;
   }
 
   public float Fitness {
@@ -49,10 +70,12 @@ public class DoublePendulumBehaviour : MonoBehaviour {
         fitness = fitnessHistory.Aggregate(0.0f,
           (total, next) => total + next,
           (total) => total / fitnessHistory.Length);
+        var worstFitness = 1080.0f;
+        var maxFitnessCount = 500.0f;
+        return 0.1f * (fitnessCount / maxFitnessCount) + 0.9f * (fitness / worstFitness); // Normalize
       } else {
-        fitness = 100.0f; // Worst case, didn't live long enough
+        return 1.0f; // Worst case, didn't live long enough
       }
-      return fitness * fitness; // Square it!
     }
   }
 
@@ -60,52 +83,57 @@ public class DoublePendulumBehaviour : MonoBehaviour {
     network = new Neural.Network(20);
 
     var chromosomeN = genotype[0];
+    double a, b, c, d;
     for (int i = 0; i < Mathf.FloorToInt(chromosomeN.Count / 4); i++) {
-	    network.AddNeuron(
-        chromosomeN[(i * 4) + 0],
-        chromosomeN[(i * 4) + 1],
-        chromosomeN[(i * 4) + 2],
-        chromosomeN[(i * 4) + 3]
-      );
+      a = chromosomeN[(i * 4) + 0];
+      b = chromosomeN[(i * 4) + 1];
+      c = chromosomeN[(i * 4) + 2];
+      d = chromosomeN[(i * 4) + 3];
+	    network.AddNeuron(a, b, c, d);
     }
 
     var chromosomeS = genotype[1];
     var synapseConfigs = chromosomeS.GetEnumerator();
 
-    int hiddenNeuronCount = 16;
-
-    // Connect each input neuron to each hidden neuron.
+    // Connect each input neuron to the outputs neuron.
     for (var i = 0; i < inNeuronIds.Length; i++) {
-      for (var j = 0; j < hiddenNeuronCount; j++) {
+      for (var j = 0; j < outNeuronIds.Length; j++) {
+        // Debug.LogFormat("Hidden out connections: {0} => {1}", inNeuronIds[i], outNeuronIds[j]);
         if (synapseConfigs.MoveNext()) {
-          network.AddSynapse(inNeuronIds[i], outNeuronId + (ulong)j + 1, synapseConfigs.Current, -100.0f, 100.0f);
+          network.AddSynapse(inNeuronIds[i], outNeuronIds[j], synapseConfigs.Current, -10.0f, 10.0f);
         } else {
-          UnityEngine.Debug.LogWarning("Ran out of synapses for hidden neurons.");
+          UnityEngine.Debug.LogWarning("Ran out of synapses for the outputs neuron.");
         }
       }
     }
 
-    // Connect each hidden neuron to the outputs neuron.
-    for (var j = 0; j < hiddenNeuronCount; j++) {
+    // Connect the output neurons to the last input neuron (recurrent).
+    for (int i = 0; i < outNeuronIds.Length; i++) {
+      // Debug.LogFormat("Back connections: {0} => {1}", outNeuronIds[i], inNeuronIds[inNeuronIds.Length - i - 1]);
       if (synapseConfigs.MoveNext()) {
-        network.AddSynapse(outNeuronId + (ulong)j + 1, outNeuronId, synapseConfigs.Current, -10.0f, 10.0f);
+        network.AddSynapse(outNeuronIds[i], inNeuronIds[inNeuronIds.Length - i - 1], synapseConfigs.Current, -10.0f, 10.0f);
       } else {
-        UnityEngine.Debug.LogWarning("Ran out of synapses for the outputs neuron.");
+        UnityEngine.Debug.LogWarning("Ran out of synapses for the recurrent input neuron.");
       }
     }
 
-    // Connect the outputs neuron to the last input neuron (recurrent).
-    if (synapseConfigs.MoveNext()) {
-      network.AddSynapse(outNeuronId, inNeuronIds[inNeuronIds.Length - 1], synapseConfigs.Current, -10.0f, 10.0f);
-    } else {
-      UnityEngine.Debug.LogWarning("Ran out of synapses for the recurrent input neuron.");
-    }
-
-    if (synapseConfigs.MoveNext()) {
+    while (synapseConfigs.MoveNext()) {
       UnityEngine.Debug.LogWarning("Unused synapse configs.");
     }
 
     neuronCount = network.NeuronCount;
+    // Debug.LogFormat("Neurons: {0}, Synapses: {1}",
+    //   network.NeuronCount, network.SynapseCount);
+  }
+
+  void OnSpawned() {
+    // Choose random angle
+    parent.localRotation = Quaternion.Euler(0, 0, Random.value > 0.5 ? 185 : 175);
+
+    // Clear fitness history
+    fitnessHistory = new float[300];
+    fitnessIndex = 0;
+    fitnessCount = 0;
   }
 
   void OnDespawned() {
@@ -113,8 +141,18 @@ public class DoublePendulumBehaviour : MonoBehaviour {
   }
 
   void Complete() {
+    // Reset motor speed
+    SetMotorSpeed(0);
+
     now = 0.0f;
     isComplete = true;
+  }
+
+  void SetMotorSpeed(float speed) {
+    var motor = wheelJoint.motor;
+  	motor.motorSpeed = speed;
+    motor.maxMotorTorque = 3000;
+  	wheelJoint.motor = motor;
   }
 
 	void FixedUpdate() {
@@ -127,41 +165,68 @@ public class DoublePendulumBehaviour : MonoBehaviour {
       return;
     }
 
-    var upperAngle = Quaternion.Angle(Quaternion.identity, upper.transform.rotation) * Mathf.Deg2Rad;
-    var lowerAngle = Quaternion.Angle(Quaternion.identity, lower.transform.rotation) * Mathf.Deg2Rad;
-    var upperAngularVelocity = upper.angularVelocity * Mathf.Deg2Rad;
-    var lowerAngularVelocity = lower.angularVelocity * Mathf.Deg2Rad;
-    var relativeWheelDistance = Vector2.Distance(Vector2.zero, wheel.localPosition) / maxDistance;
+    if (wheel.transform.position.y < -2.0) {
+      Complete();
+      return;
+    }
 
     // Send inputs
+    var upperAngle = GetAngle(upper.rotation);
+    var lowerAngle = GetAngle(lower.rotation);
+    var upperAngularVelocity = GetAngle(upper.angularVelocity);
+    var lowerAngularVelocity = GetAngle(lower.angularVelocity);
+    var wheelPosition = wheel.transform.localPosition.x;
+    // Debug.LogFormat("{0} {1} {2} {3} {4}", upperAngle, lowerAngle, upperAngularVelocity, lowerAngularVelocity, wheelPosition);
+
     inputs = new double[neuronCount];
-    inputs[0] = upperAngle;
-    inputs[1] = lowerAngle;
-    inputs[2] = upperAngularVelocity;
-    inputs[3] = lowerAngularVelocity;
-    inputs[4] = relativeWheelDistance;
-    // UnityEngine.Debug.LogFormat("{0}", string.Join(",", inputs.Select(i => i.ToString()).ToArray()));
+    if (upperAngle >= 0.0f) {
+      inputs[0] = +20.0f * (upperAngle / 180.0f);
+    } else {
+      inputs[1] = -20.0f * (upperAngle / 180.0f);
+    }
+    if (lowerAngle >= 0.0f) {
+      inputs[2] = +20.0f * (lowerAngle / 180.0f);
+    } else {
+      inputs[3] = -20.0f * (lowerAngle / 180.0f);
+    }
+    if (upperAngularVelocity >= 0.0f) {
+      inputs[4] = +20.0f * (upperAngularVelocity / 180.0f);
+    } else {
+      inputs[5] = -20.0f * (upperAngularVelocity / 180.0f);
+    }
+    if (lowerAngularVelocity >= 0.0f) {
+      inputs[6] = +20.0f * (lowerAngularVelocity / 180.0f);
+    } else {
+      inputs[7] = -20.0f * (lowerAngularVelocity / 180.0f);
+    }
+    if (wheelPosition >= 0.0f) {
+      inputs[8] = +20.0f * (wheelPosition / 6.0f);
+    } else {
+      inputs[9] = -20.0f * (wheelPosition / 6.0f);
+    }
+    // UnityEngine.Debug.Log(string.Join(", ", inputs.Select(i => i.ToString()).ToArray()));
 
     // Receive outputs
     var ticks = Time.fixedDeltaTime * 1000.0f;
     outputs = new double[neuronCount];
     network.Tick((ulong)ticks, inputs, ref outputs);
-    // UnityEngine.Debug.LogFormat("{0}", string.Join(",", outputs.Select(o => o.ToString()).ToArray()));
+    // UnityEngine.Debug.Log(string.Join(",", outputs.Select(o => o.ToString()).ToArray()));
 
-    // Read out neuron V for torque
-    var V = outputs[outNeuronId]; // Default spike voltage
-    var T = (float)(V / 10.0);
-    if (T.IsFinite()) {
-      lower.AddTorque(T);
-    }
+    // Read out neuron V for speed
+    var V_acc = (float)outputs[outNeuronIds[0]];
+    var V_dec = (float)outputs[outNeuronIds[1]];
 
-    // Add noise to upper pendulum
-    upper.AddTorque(UnityEngine.Random.Range(-1, 1));
+    // Update motor speed
+    var speed = 0.0f;
+    speed += (V_acc / 30.0f) / 2.0f;
+    speed -= (V_dec / 30.0f) / 2.0f;
+    speed *= 100.0f;
+    SetMotorSpeed(speed);
 
     // Record history
-    float currentFitness = Mathf.Abs(lowerAngle) * 1 + Mathf.Abs(upperAngle) * 1 +
-                Mathf.Abs(lowerAngularVelocity) * 1 + Mathf.Abs(upperAngularVelocity) * 1 +
-                Mathf.Abs(T) * 1 + Mathf.Abs(relativeWheelDistance) * 1;
+    currentFitness = Mathf.Abs(lowerAngle) * 1.0f + Mathf.Abs(upperAngle) * 1.0f +
+                Mathf.Abs(lowerAngularVelocity) * 1.0f + Mathf.Abs(upperAngularVelocity) * 1.0f +
+                Mathf.Abs(speed) * 0.18f + Mathf.Abs(wheelPosition) * 30.0f;
     fitnessHistory[fitnessIndex] = currentFitness;
     fitnessIndex++;
     fitnessIndex %= fitnessHistory.Length;

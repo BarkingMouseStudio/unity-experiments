@@ -10,7 +10,6 @@ using PathologicalGames;
 public class EvolveBehaviour : MonoBehaviour {
 
   public Transform prefab;
-  protected internal float bestFitness = 0.0f;
 
   readonly string address = "tcp://127.0.0.1:5556";
 
@@ -27,7 +26,6 @@ public class EvolveBehaviour : MonoBehaviour {
 
     while (true) {
       // Wait for next message
-      Debug.LogFormat("[{0}] Waiting for fitness evaluation to begin...", generation);
       IDictionary<string, object> message = new Dictionary<string, object>();
       yield return StartCoroutine(socket.WaitForResponse((response) => {
         message = (IDictionary<string, object>)JSON.Deserialize(response);
@@ -45,7 +43,7 @@ public class EvolveBehaviour : MonoBehaviour {
         }).ToList();
 
       // Create batches
-      var batchSize = 100;
+      var batchSize = 250;
       var batches = genotypes.Select((gt, i) => {
         return new {
           Batch = Mathf.FloorToInt(i / batchSize),
@@ -88,17 +86,16 @@ public class EvolveBehaviour : MonoBehaviour {
         }
 
         // Wait for evaluations to complete
-        Debug.LogFormat("[{0}:{1}] Waiting for evaluations to complete...", generation, batchIndex);
         while (!evaluations.All(ev => ev.isComplete)) {
           yield return new WaitForFixedUpdate();
         }
-        Debug.LogFormat("[{0}:{1}] Evaluations complete.", generation, batchIndex);
 
         // Accumulate fitnesses into array
         fitness.AddRange(evaluations.Select(ev => ev.Fitness));
 
         // Keep track of lowest fitness
-        bestFitness = Mathf.Min(bestFitness, evaluations.Min(ev => ev.Fitness));
+        var bestFitness = evaluations.Min(ev => ev.Fitness);
+        Debug.LogFormat("[{0}:{1}] Evaluations complete. ({2})", generation, batchIndex, bestFitness);
 
         // Cleanup
         List<Transform> children = new List<Transform>(transform.childCount);
