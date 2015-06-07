@@ -43,7 +43,7 @@ public class EvolveBehaviour : MonoBehaviour {
         }).ToList();
 
       // Create batches
-      var batchSize = 250;
+      var batchSize = 200;
       var batches = genotypes.Select((gt, i) => {
         return new {
           Batch = Mathf.FloorToInt(i / batchSize),
@@ -57,7 +57,7 @@ public class EvolveBehaviour : MonoBehaviour {
 
       List<float> fitness = new List<float>(genotypes.Count);
 
-      float spacing = 24.0f;
+      float spacing = 28.0f;
       int count = batchSize;
       int stride = batchSize;
 
