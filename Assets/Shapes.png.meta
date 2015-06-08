@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 3ee6ab9975e414308afe02377e75fd72
-timeCreated: 1433289138
+timeCreated: 1433729194
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -8,6 +8,9 @@ TextureImporter:
     21300002: Shapes_1
     21300004: Shapes_2
     21300006: Shapes_3
+    21300008: Shapes_4
+    21300010: Shapes_5
+    21300012: Shapes_6
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -56,39 +59,49 @@ TextureImporter:
     - name: Shapes_0
       rect:
         serializedVersion: 2
-        x: 147
-        y: 345
-        width: 135
-        height: 382
+        x: 41
+        y: 550
+        width: 136
+        height: 422
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
     - name: Shapes_1
       rect:
         serializedVersion: 2
-        x: 458
-        y: 345
-        width: 103
-        height: 341
+        x: 254
+        y: 838
+        width: 136
+        height: 136
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
     - name: Shapes_2
       rect:
         serializedVersion: 2
-        x: 738
-        y: 345
-        width: 135
-        height: 136
+        x: 57
+        y: 137
+        width: 103
+        height: 351
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
     - name: Shapes_3
       rect:
         serializedVersion: 2
+        x: 254
+        y: 138
+        width: 136
+        height: 634
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Shapes_4
+      rect:
+        serializedVersion: 2
         x: 39
         y: 32
-        width: 1284
+        width: 1629
         height: 68
       alignment: 0
       pivot: {x: 0, y: 0}

@@ -43,7 +43,7 @@ public class EvolveBehaviour : MonoBehaviour {
         }).ToList();
 
       // Create batches
-      var batchSize = 200;
+      var batchSize = 100;
       var batches = genotypes.Select((gt, i) => {
         return new {
           Batch = Mathf.FloorToInt(i / batchSize),
@@ -67,7 +67,7 @@ public class EvolveBehaviour : MonoBehaviour {
       // Setup fitness tests
       int batchIndex = 0;
       foreach (var batch in batches) {
-        IList<DoublePendulumBehaviour> evaluations = new List<DoublePendulumBehaviour>();
+        IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
 
         int i = 0;
         foreach (var genotype in batch) {
@@ -76,10 +76,12 @@ public class EvolveBehaviour : MonoBehaviour {
           Vector3 position = offset + new Vector3(x * spacing, 0, 0);
           Quaternion rotation = Quaternion.identity;
 
-          var t = PoolManager.Pools["DoublePendulum"].Spawn(prefab, position, rotation, transform);
+          var t = PoolManager.Pools["Evaluations"].Spawn(prefab, position, rotation, transform);
 
-          var evaluationBehaviour = t.GetComponent<DoublePendulumBehaviour>();
-          evaluationBehaviour.SetGenotype(genotype);
+          var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
+          controllerBehaviour.SetGenotype(genotype);
+
+          var evaluationBehaviour = t.GetComponent<EvaluationBehaviour>();
           evaluations.Add(evaluationBehaviour);
 
           i++;
@@ -105,7 +107,7 @@ public class EvolveBehaviour : MonoBehaviour {
           }
         }
         foreach (Transform child in children) {
-          PoolManager.Pools["DoublePendulum"].Despawn(child, null);
+          PoolManager.Pools["Evaluations"].Despawn(child, null);
         }
         children = null;
 
