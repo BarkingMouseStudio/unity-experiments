@@ -43,7 +43,7 @@ public class EvolveBehaviour : MonoBehaviour {
         }).ToList();
 
       // Create batches
-      var batchSize = 100;
+      var batchSize = 50;
       var batches = genotypes.Select((gt, i) => {
         return new {
           Batch = Mathf.FloorToInt(i / batchSize),

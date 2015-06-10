@@ -78,7 +78,7 @@ public class EvaluationBehaviour : MonoBehaviour {
     var thetaLower = AngleHelper.GetAngle(lower.rotation);
     var thetaDotLower = AngleHelper.GetAngle(lower.angularVelocity);
     var x = wheel.transform.localPosition.x;
-    var xDot = wheel.velocity.magnitude;
+    var xDot = wheel.velocity.magnitude - 1.0f; // Velocity penalty to encourage movement
 
     float fitness = Mathf.Abs(thetaLower) * 1.0f + Mathf.Abs(thetaDotLower) * 1.0f +
 								// Mathf.Abs(thetaUpper) * 1.0f + Mathf.Abs(thetaDotUpper) * 1.0f +
