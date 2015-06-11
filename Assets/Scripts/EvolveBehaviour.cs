@@ -17,6 +17,63 @@ public class EvolveBehaviour : MonoBehaviour {
   NetMQSocket socket;
 
   int generation = 0;
+  int batchSize = 50;
+
+  IEnumerator EvaluateBatch(int batchIndex, List<List<List<double>>> batch, ControllerBehaviour.Orientations orientation, List<float> fitness) {
+    IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
+
+    float spacing = 28.0f;
+    int count = batchSize;
+    int stride = batchSize;
+
+    float width = (count - 1) * spacing;
+    Vector3 offset = new Vector3(-width / 2, 0, 0);
+
+    int i = 0;
+    foreach (var genotype in batch) {
+      float x = i % stride;
+
+      Vector3 position = offset + new Vector3(x * spacing, 0, 0);
+      Quaternion rotation = Quaternion.identity;
+
+      var t = PoolManager.Pools["Evaluations"].Spawn(prefab, position, rotation, transform);
+
+      var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
+      controllerBehaviour.orientation = orientation;
+      controllerBehaviour.UpdateOrientation();
+      controllerBehaviour.SetGenotype(genotype);
+
+      var evaluationBehaviour = t.GetComponent<EvaluationBehaviour>();
+      evaluations.Add(evaluationBehaviour);
+
+      i++;
+    }
+
+    // Wait for evaluations to complete
+    while (!evaluations.All(ev => ev.isComplete)) {
+      yield return new WaitForFixedUpdate();
+    }
+
+    // Accumulate fitnesses into array
+    fitness.AddRange(evaluations.Select(ev => ev.Fitness));
+
+    // Keep track of lowest fitness
+    Debug.LogFormat("[{0}:{1}:{2}] Evaluations complete. ({3})", generation, batchIndex,
+      orientation,
+      evaluations.Min(ev => ev.Fitness));
+
+    // Cleanup
+    List<Transform> children = new List<Transform>(transform.childCount);
+    foreach (Transform child in transform) {
+      if (child.gameObject.activeInHierarchy) {
+        children.Add(child);
+      }
+    }
+    foreach (Transform child in children) {
+      PoolManager.Pools["Evaluations"].Despawn(child, null);
+    }
+    children = null;
+  }
 
   IEnumerator Start() {
     context = NetMQContext.Create();
@@ -43,7 +100,6 @@ public class EvolveBehaviour : MonoBehaviour {
         }).ToList();
 
       // Create batches
-      var batchSize = 50;
       var batches = genotypes.Select((gt, i) => {
         return new {
           Batch = Mathf.FloorToInt(i / batchSize),
@@ -55,64 +111,30 @@ public class EvolveBehaviour : MonoBehaviour {
         return grp.Select(g => g.Genotype).ToList();
       }).ToList();
 
-      List<float> fitness = new List<float>(genotypes.Count);
+      var fitnessA = new List<float>(genotypes.Count);
+      var fitnessB = new List<float>(genotypes.Count);
 
-      float spacing = 28.0f;
-      int count = batchSize;
-      int stride = batchSize;
-
-      float width = (count - 1) * spacing;
-      Vector3 offset = new Vector3(-width / 2, 0, 0);
+      List<float> fitness;
 
       // Setup fitness tests
       int batchIndex = 0;
       foreach (var batch in batches) {
-        IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
-
-        int i = 0;
-        foreach (var genotype in batch) {
-          float x = i % stride;
-
-          Vector3 position = offset + new Vector3(x * spacing, 0, 0);
-          Quaternion rotation = Quaternion.identity;
-
-          var t = PoolManager.Pools["Evaluations"].Spawn(prefab, position, rotation, transform);
-
-          var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
-          controllerBehaviour.SetGenotype(genotype);
-
-          var evaluationBehaviour = t.GetComponent<EvaluationBehaviour>();
-          evaluations.Add(evaluationBehaviour);
-
-          i++;
-        }
-
-        // Wait for evaluations to complete
-        while (!evaluations.All(ev => ev.isComplete)) {
-          yield return new WaitForFixedUpdate();
-        }
-
-        // Accumulate fitnesses into array
-        fitness.AddRange(evaluations.Select(ev => ev.Fitness));
-
-        // Keep track of lowest fitness
-        var bestFitness = evaluations.Min(ev => ev.Fitness);
-        Debug.LogFormat("[{0}:{1}] Evaluations complete. ({2})", generation, batchIndex, bestFitness);
-
-        // Cleanup
-        List<Transform> children = new List<Transform>(transform.childCount);
-        foreach (Transform child in transform) {
-          if (child.gameObject.activeInHierarchy) {
-            children.Add(child);
-          }
-        }
-        foreach (Transform child in children) {
-          PoolManager.Pools["Evaluations"].Despawn(child, null);
-        }
-        children = null;
-
+        yield return StartCoroutine(EvaluateBatch(batchIndex, batch, ControllerBehaviour.Orientations.Left, fitnessA));
+        yield return StartCoroutine(EvaluateBatch(batchIndex, batch, ControllerBehaviour.Orientations.Right, fitnessB));
         batchIndex++;
+
+        fitness = fitnessA.Skip(Math.Max(0, fitnessA.Count - batch.Count))
+          .Zip(fitnessB.Skip(Math.Max(0, fitnessB.Count - batch.Count)),
+            (a, b) => (a + b + Mathf.Abs(a - b)) / 3f)
+          .ToList();
+
+        Debug.LogFormat("[{0}:{1}] Batch complete. ({1})", generation, batchIndex, fitness.Min(f => f));
       }
+
+      fitness = fitnessA.Zip(fitnessB, (a, b) =>
+        (a + b + Mathf.Abs(a - b)) / 3f).ToList();
+
+      Debug.LogFormat("[{0}] Generation complete. ({1})", generation, fitness.Min(f => f));
 
       // Send back results
       socket.Send(JSON.Serialize(new Dictionary<string, object> {
