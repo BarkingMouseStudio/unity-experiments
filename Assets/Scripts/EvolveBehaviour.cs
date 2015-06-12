@@ -119,8 +119,8 @@ public class EvolveBehaviour : MonoBehaviour {
       // Setup fitness tests
       int batchIndex = 0;
       foreach (var batch in batches) {
-        yield return StartCoroutine(EvaluateBatch(batchIndex, batch, ControllerBehaviour.Orientations.Left, fitnessA));
-        yield return StartCoroutine(EvaluateBatch(batchIndex, batch, ControllerBehaviour.Orientations.Right, fitnessB));
+        yield return StartCoroutine(EvaluateBatch(batchIndex, batch, ControllerBehaviour.Orientations.HardLeft, fitnessA));
+        yield return StartCoroutine(EvaluateBatch(batchIndex, batch, ControllerBehaviour.Orientations.HardRight, fitnessB));
         batchIndex++;
 
         fitness = fitnessA.Skip(Math.Max(0, fitnessA.Count - batch.Count))
