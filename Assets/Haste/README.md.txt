@@ -13,6 +13,10 @@ Action | Keyboard | Mouse
 Open Haste | ⌘ + K (Ctrl + K on Windows) | Click "Window/Haste"
 Navigate Search Results | ↑ or ↓ | Click search result
 Select Highlighted Result | Enter | Double-click search result
+Go to beginning | Fn + ← (Home on Windows) |
+Go to end | Fn + → (End on Windows) |
+Go up a page | Fn + ↑ (Page Up on Windows) |
+Go down a page | Fn + ↓ (Page Down on Windows) |
 Multi-Select Highlighted Result | ⌘ + Enter (Ctrl + Enter on Windows) | ⌘ + Click (Ctrl + Click on Windows)
 Dismiss Haste | ESC | Click anywhere outside of Haste
 
@@ -87,6 +91,11 @@ This brings up the `TutorialPrefab.prefab` in the project's assets.
 ##### Step 11. Now search for `Instantiate Prefab` (or `ip`) in Haste and press Enter (↵).
 
 Haste Pro provides access to as many built-in MenuItems as possible with Unity's exposed APIs. Haste Pro also indexes custom MenuItems from other editor extensions making it easy to extend Haste's capabilities.
+
+Ignoring Assets
+---
+
+You can ignore assets in your project like third-party tools, etc. by right-clicking on the asset and selecting `Haste > Ignore`. The asset can be unignored by right-clicking and selecting `Haste > Unignored`. You can further manage ignored assets in Haste's Preferences inside of the main Unity Preferences.
 
 Missing Menu Items
 ---
