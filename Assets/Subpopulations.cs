@@ -137,6 +137,7 @@ public class Subpopulations {
     }
 
     this.subpopulations = new_subpopulations.ToArray();
+    this.generation++;
 
     return Tuple.Of(offspring_count, mutation_count);
   }

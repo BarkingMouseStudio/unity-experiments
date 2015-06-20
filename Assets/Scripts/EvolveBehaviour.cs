@@ -41,7 +41,7 @@ public class EvolveBehaviour : MonoBehaviour {
       var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
       controllerBehaviour.orientation = orientation;
       controllerBehaviour.UpdateOrientation();
-      controllerBehaviour.SetGenotype(genotype);
+      // controllerBehaviour.SetGenotype(genotype);
 
       var evaluationBehaviour = t.GetComponent<EvaluationBehaviour>();
       evaluations.Add(evaluationBehaviour);
