@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public class Subpopulations {
+public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
 
   public struct Phenotype {
     public float cumulative;
@@ -15,7 +15,7 @@ public class Subpopulations {
   Phenotype[][] subpopulations;
   int generation;
 
-  public Subpopulations(float[][] genotype, int size) {
+  public EnforcedSubpopulations(float[][] genotype, int size) {
     this.subpopulations = genotype.Select((chromosome) => {
       return Enumerable.Range(0, size).Select((_0) => {
         return new Phenotype{

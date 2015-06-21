@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 using System.Collections;
 
-// Pick a random name
+// Picks a random name.
 public class NameBehaviour : MonoBehaviour {
 
   static readonly string[] names = new string[]{"Ben", "Jim", "Bob", "Sue", "Amy", "Ann", "Sam", "Dan", "George", "Ed", "Joe"};

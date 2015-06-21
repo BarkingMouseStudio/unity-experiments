@@ -14,12 +14,13 @@ public class ResetBehaviour : MonoBehaviour {
   }
 
   Rigidbody2D[] rigidbodies;
-  List<State> states;
+  List<State> states = new List<State>(1);
+
+  void Awake() {
+    rigidbodies = GetComponentsInChildren<Rigidbody2D>();
+  }
 
   void Start() {
-    rigidbodies = GetComponentsInChildren<Rigidbody2D>();
-    states = new List<State>(1);
-
     SaveState(transform, states);
   }
 
