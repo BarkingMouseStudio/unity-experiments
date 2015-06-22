@@ -1,9 +1,11 @@
-// Strategy pattern to vary algorithm
+// Strategy pattern to vary algorithm with an ask/tell inteface
 interface IEvolutionaryAlgorithm {
 
-  // Draws a population to be evaluated from the EA.
-  IGenotype[] Sample(int count);
+  int Generation { get; }
 
-  // Records the evaluated population's fitness.
-  void Record(float[] fitness);
+  // Draws a population to be evaluated from the EA.
+  CommonGenotype[] Sample(int count);
+
+  // Update with the evaluated population's fitness.
+  void Update(float[] fitness);
 }

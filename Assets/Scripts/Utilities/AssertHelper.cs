@@ -4,9 +4,9 @@ using System.Diagnostics;
 public static class AssertHelper {
 
   public class AssertionException : Exception {
+
     public AssertionException(string message = "Condition failed.")
-      : base(message) {
-    }
+      : base(message) {}
   }
 
   [Conditional("DEBUG")]

@@ -15,6 +15,7 @@ public class EvaluationBehaviour : MonoBehaviour {
     HardRight = 150,
     VeryHardLeft = 225,
     VeryHardRight = 135,
+    Downward = 0,
     Random = -1,
   }
 
@@ -24,15 +25,12 @@ public class EvaluationBehaviour : MonoBehaviour {
   const float duration = 10.0f;
   float now = 0.0f;
 
-  // Evaluation fitness
-  const int fitnessLength = 100;
-  int fitnessIndex = 0;
-  int fitnessCount = 0;
-  float[] fitnessHistory = new float[fitnessLength];
-
+  Transform cart;
   Transform handle;
   Rigidbody2D lower;
   Rigidbody2D wheel;
+
+  Evaluator evaluator;
 
   public bool IsComplete {
     get {
@@ -45,19 +43,29 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   public float Fitness {
     get {
-      if (fitnessCount > fitnessHistory.Length) {
-        var normalizedFitness = fitnessHistory.Aggregate(0.0f,
-          (total, next) => total + next,
-          (total) => total / fitnessHistory.Length);
-				var normalizedFitnessCount = 1.0f - (fitnessCount / (duration * 20.0f));
-        return 0.1f * normalizedFitnessCount + 0.9f * normalizedFitness;
-      } else {
-        return 1.0f; // Worst case, didn't live long enough
-      }
+      return evaluator.Fitness;
     }
   }
 
-  public void SetOrientation() {
+	void Awake() {
+    cart = transform.Find("Cart");
+    handle = transform.Find("Cart/Lower/Handle");
+    lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
+    wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
+
+    evaluator = new Evaluator(duration);
+
+    SetOrientation(Orientations.Random);
+	}
+
+	void OnDespawned() {
+    evaluator = new Evaluator(duration);
+
+    // Reset timer
+    now = 0.0f;
+	}
+
+  public void SetOrientation(Orientations orientation) {
     Quaternion rotation;
 
     switch (orientation) {
@@ -69,27 +77,10 @@ public class EvaluationBehaviour : MonoBehaviour {
         break;
     }
 
-    cart.transform.localRotation = rotation;
+    cart.localRotation = rotation;
   }
 
-	void Awake() {
-    handle = transform.Find("Cart/Lower/Handle");
-    lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
-    wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
-
-    SetOrientation();
-	}
-
-	void OnDespawned() {
-    // Clear fitness history
-    fitnessHistory = new float[fitnessLength];
-    fitnessIndex = 0;
-    fitnessCount = 0;
-
-    // Reset timer
-    now = 0.0f;
-	}
-
+  // TODO: Handle different orientations
 	void FixedUpdate() {
     if (IsComplete) {
       return;
@@ -100,14 +91,7 @@ public class EvaluationBehaviour : MonoBehaviour {
     var x = wheel.transform.localPosition.x;
     var xDot = wheel.velocity.magnitude - 1.0f; // Velocity penalty to encourage movement
 
-    fitnessHistory[fitnessIndex] =
-      Mathf.Abs(thetaLower / 180.0f) * 1.0f +
-      Mathf.Abs(thetaDotLower / 180.0f) * 1.0f +
-      Mathf.Abs(x / 30.0f) * 30.0f + Mathf.Abs(xDot / 30.0f) * 30.0f;
-
-    fitnessCount++;
-    fitnessIndex++;
-    fitnessIndex %= fitnessHistory.Length;
+    evaluator.Update(thetaLower, thetaDotLower, x, xDot);
 
     now += Time.fixedDeltaTime;
 	}

@@ -15,9 +15,12 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
   Phenotype[][] subpopulations;
   int generation;
 
-  public EnforcedSubpopulations(float[][] genotype, int size) {
+  // Keep track of current sample to match up with fitnesses
+  Tuple<int, float[]>[][] currentSample;
+
+  public EnforcedSubpopulations(CommonGenotype genotype, int subpopulationSize) {
     this.subpopulations = genotype.Select((chromosome) => {
-      return Enumerable.Range(0, size).Select((_0) => {
+      return Enumerable.Range(0, subpopulationSize).Select((_0) => {
         return new Phenotype{
           chromosome = chromosome.Select((_1) => Random.Range(0.0f, 1.0f)).ToArray(),
           cumulative = 0.0f,
@@ -28,56 +31,69 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
     }).ToArray();
   }
 
-  public Tuple<int, float[]>[][] Sample(int count) {
-    return Enumerable.Range(0, count).Select((_) => {
+  public int Generation {
+    get {
+      return generation;
+    }
+  }
+
+  public CommonGenotype[] Sample(int count) {
+    currentSample = Enumerable.Range(0, count).Select((_) => {
       return this.subpopulations.Select((subpopulation) => {
         var index = Random.Range(0, subpopulation.Length);
         var pt = subpopulation[index];
         return Tuple.Of(index, pt.chromosome);
       }).ToArray();
     }).ToArray();
+
+    // Flatten sample to common representation
+    return currentSample.Select((genotype) => {
+      return new CommonGenotype(genotype.Select((chromosome) => {
+        return chromosome.Second;
+      }).ToArray());
+    }).ToArray();
   }
 
-  public float Evaluate(Tuple<int, float>[][] population) {
+  public void Update(float[] fitness) {
     var total_trials = 0.0f;
-    foreach (var genotype in population) {
+    var i = 0;
+
+    // Map population fitness to appropriate phenotype
+    foreach (var genotype in currentSample) {
       var trials = 0.0f;
-      int i = 0;
+      int j = 0;
 
       foreach (var ch in genotype) {
-        var subpopulation = this.subpopulations[i];
+        var subpopulation = this.subpopulations[j];
 
         var pt = subpopulation[ch.First];
-        pt.cumulative += ch.Second;
+        pt.cumulative += fitness[i];
         pt.trials += 1;
         pt.average = pt.cumulative / ((float)pt.trials);
 
         trials += ((float)pt.trials);
-        i++;
+        j++;
       }
 
       total_trials += trials / ((float)genotype.Length);
+      i++;
     }
 
+    // Sort subpopulations by updated fitness
     foreach (var subpopulation in this.subpopulations) {
       subpopulation.OrderBy((a) => a.average);
     }
 
-    var average_trials = total_trials / ((float)population.Length);
-    return average_trials;
+    // Divide the total number of trials by the # evaluated
+    var averageTrials = total_trials / ((float)currentSample.Length);
+    if (averageTrials > 10.0f) {
+      var results = Recombine();
+      Debug.LogFormat("[{0}] Generation complete. (Best: {1}, Offspring: {2}, Mutations: {3})", generation, fitness.Min(f => f), results.First, results.Second);
+    } else {
+      Debug.LogFormat("[{0}] Generation complete. (Best: {1})", generation, fitness.Min(f => f));
+    }
   }
 
-  public float NextGaussian() {
-    return Mathf.Sqrt(-2.0f * Mathf.Log(Random.value)) * Mathf.Sin(2.0f * Mathf.PI * Random.value);
-  }
-
-  public float NextCauchy(float m, float gamma) {
-    var a = NextGaussian();
-    var b = NextGaussian();
-    return m + gamma * 0.01f * (a / b);
-  }
-
-  // 3. Recombination.
   public Tuple<int, int> Recombine() {
     var new_subpopulations = new List<Phenotype[]>(this.subpopulations.Length);
 
@@ -116,7 +132,7 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
         var mutated_ch = ch1.Select((v) => {
           if (Random.value < p) {
             mutation_count += 1;
-            return NextCauchy(v, 0.1f);
+            return RandomHelper.NextCauchy(v, 0.1f);
           } else {
             return v;
           }

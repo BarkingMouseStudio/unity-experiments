@@ -1,40 +1,23 @@
 using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using PathologicalGames;
 
+// Responsible for spawning evaluation prefabs, waiting for their completion and
+// passing the results back to the EA.
 public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
 
-  int subpopulationSize = 100;
   int populationSize = 1000;
+  int subpopulationSize = 100;
   int batchSize = 50;
 
-  public float[][] NewGenotype() {
-    var inNeurons = (12 * 2) + (6 * 2);
-    var outNeurons = 8;
-    var totalNeurons = inNeurons + outNeurons;
-    var totalSynapses = inNeurons * outNeurons;
+  IEvolutionaryAlgorithm algorithm;
 
-    var genotype = new List<float[]>(totalNeurons + totalSynapses);
-
-    // subpopulation(s) for input neurons (a, b, c, d)
-    // subpopulation(s) for output neurons (a, b, c, d)
-    foreach (var _ in Enumerable.Range(0, totalNeurons)) {
-      genotype.Add(
-        new float[]{0.0f, 1.0f, 2.0f, 3.0f}
-      );
-    }
-
-    // subpopulation(s) for synapses (w)
-    foreach (var _ in Enumerable.Range(0, totalSynapses)) {
-      genotype.Add(
-        new float[]{0.0f}
-      );
-    }
-
-    return genotype.ToArray();
-  }
-
-  Tuple<int, float[]>[][][] CreateBatches(Tuple<int, float[]>[][] genotypes, int batchSize) {
+  CommonGenotype[][] CreateBatches(CommonGenotype[] genotypes, int batchSize) {
     return genotypes.Select((gt, i) => {
       return new {
         Batch = Mathf.FloorToInt(i / batchSize),
@@ -47,7 +30,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     }).ToArray();
   }
 
-  IEnumerator EvaluateBatch(int batchIndex, Tuple<int, float[]>[][] batch, ControllerBehaviour.Orientations orientation, Tuple<int, float>[][] fitness) {
+  IEnumerator EvaluateBatch(int batchIndex, CommonGenotype[] batch, List<float> fitness) {
     IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
 
     float spacing = 28.0f;
@@ -67,9 +50,7 @@ public class EvolutionBehaviour : MonoBehaviour {
       var t = PoolManager.Pools["Evaluations"].Spawn(prefab, position, rotation, transform);
 
       var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
-      controllerBehaviour.orientation = orientation;
-      controllerBehaviour.UpdateOrientation();
-      controllerBehaviour.SetGenotype(genotype);
+      controllerBehaviour.networkIO = new NetworkIO(genotype.GetPhenotype());
 
       var evaluationBehaviour = t.GetComponent<EvaluationBehaviour>();
       evaluations.Add(evaluationBehaviour);
@@ -78,7 +59,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     }
 
     // Wait for evaluations to complete
-    while (!evaluations.All(ev => ev.isComplete)) {
+    while (!evaluations.All(ev => ev.IsComplete)) {
       yield return new WaitForFixedUpdate();
     }
 
@@ -86,8 +67,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     fitness.AddRange(evaluations.Select(ev => ev.Fitness));
 
     // Keep track of lowest fitness
-    Debug.LogFormat("[{0}:{1}:{2}] Evaluations complete. ({3})", generation, batchIndex,
-      orientation,
+    Debug.LogFormat("[{0}:{1}] Evaluations complete. ({3})", algorithm.Generation, batchIndex,
       evaluations.Min(ev => ev.Fitness));
 
     // Cleanup
@@ -102,51 +82,46 @@ public class EvolutionBehaviour : MonoBehaviour {
     }
   }
 
-  IEnumerator EvaluateBatches(Tuple<int, float[]>[][][] batches, List<Tuple<int, float>[]> fitness) {
-    var fitnessA = new List<float>(genotypes.Count);
-    var fitnessB = new List<float>(genotypes.Count);
-
+  IEnumerator EvaluateBatches(CommonGenotype[][] batches, List<float> fitness) {
     // Setup fitness tests
     int batchIndex = 0;
     foreach (var batch in batches) {
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, ControllerBehaviour.Orientations.HardLeft, fitnessA));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, ControllerBehaviour.Orientations.HardRight, fitnessB));
+      var batchFitnessA = new List<float>(batch.Length);
+      var batchFitnessB = new List<float>(batch.Length);
+
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, batchFitnessA));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, batchFitnessB));
       batchIndex++;
 
-      fitness = fitnessA.Skip(Math.Max(0, fitnessA.Count - batch.Count))
-        .Zip(fitnessB.Skip(Math.Max(0, fitnessB.Count - batch.Count)),
-          (a, b) => (a + b + Mathf.Abs(a - b)) / 3f)
-        .ToList();
+      var batchFitness = batchFitnessA.Zip(batchFitnessB, (a, b) => {
+        return (a + b + Mathf.Abs(a - b)) / 3f;
+      });
 
-      Debug.LogFormat("[{0}:{1}] Batch complete. ({1})", subpopulations.generation, batchIndex, fitness.Min(f => f));
+      Debug.LogFormat("[{0}:{1}] Batch complete. ({1})", algorithm.Generation, batchIndex, batchFitness.Min(f => f));
+
+      fitness.AddRange(batchFitness);
     }
+  }
 
-    var zipped = fitnessA.Zip(fitnessB, (a, b) => {
-      return (a + b + Mathf.Abs(a - b)) / 3f;
-    });
-
-    fitness.AddRange(zipped);
+  IEnumerator EvaluatePopulation(CommonGenotype[] genotypes, List<float> fitness) {
+    // Create batches from the population
+    var batches = CreateBatches(genotypes, batchSize);
+    yield return StartCoroutine(EvaluateBatches(batches, fitness));
   }
 
   IEnumerator Start() {
-    var genotype = NewGenotype();
-    var subpopulations = new Subpopulations(genotype, subpopulationSize);
+    // Setup the algorithm with the proto-genotype
+    algorithm = new EnforcedSubpopulations(new CommonGenotype(), subpopulationSize);
 
-    var averageTrials = 0.0f;
     while (true) {
-      var population = subpopulations.Sample(populationSize);
-      var batches = CreateBatches(population, batchSize);
+      // Sample from the EA
+      var population = algorithm.Sample(populationSize);
 
-      List<Tuple<int, float>[]> fitness;
-      yield return StartCoroutine(EvaluateBatches(batches, fitness));
-      averageTrials = subpopulations.Evaluate(fitness);
+      List<float> fitness = new List<float>(population.Length);
+      yield return StartCoroutine(EvaluatePopulation(population, fitness));
 
-      if (averageTrials > 10.0f) {
-        var results = subpopulations.Recombine();
-        Debug.LogFormat("[{0}] Generation complete. (Best: {1}, Offspring: {2}, Mutations: {3})", subpopulations.generation, fitness.Min(f => f), results.First, results.Second);
-      } else {
-        Debug.LogFormat("[{0}] Generation complete. (Best: {1})", subpopulations.generation, fitness.Min(f => f));
-      }
+      // Update the EA's internals
+      algorithm.Update(fitness.ToArray());
     }
   }
 }

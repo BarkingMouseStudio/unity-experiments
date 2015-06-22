@@ -7,16 +7,19 @@ using System.Linq;
 // controlled by the neural network.
 public class ControllerBehaviour : MonoBehaviour {
 
+  public NetworkIO networkIO;
+
   WheelJoint2D wheelJoint;
   Rigidbody2D lower;
   Rigidbody2D wheel;
-  Transform cart;
 
   void Awake() {
-    cart = transform.Find("Cart");
     lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
     wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
     wheelJoint = wheel.transform.GetComponentInChildren<WheelJoint2D>();
+
+    var genotype = new CommonGenotype();
+    networkIO = new NetworkIO(genotype.GetPhenotype());
   }
 
   void OnDespawned() {

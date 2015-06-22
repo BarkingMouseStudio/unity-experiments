@@ -1,3 +1,7 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
 public struct Range {
   double start;
   double end;
@@ -11,8 +15,8 @@ public struct Range {
     return val >= start && val < end;
   }
 
-  public double Scale(double val) {
-    return (val - start) / (end - start);
+  public double Normalize(double val) {
+    return NumberHelper.Normalize(val, start, end);
   }
 
   public static Range Of(double start, double end) {

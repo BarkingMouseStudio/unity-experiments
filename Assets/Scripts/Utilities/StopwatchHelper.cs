@@ -1,12 +1,12 @@
 using System;
 using System.Diagnostics;
 
-public class ProfilerHelper : IDisposable {
+public class StopwatchHelper : IDisposable {
 
   string name;
   Stopwatch stopwatch;
 
-  public ProfilerHelper(string name) {
+  public StopwatchHelper(string name) {
     this.name = name;
     this.stopwatch = Stopwatch.StartNew();
   }
