@@ -32,12 +32,10 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   Evaluator evaluator;
 
+  private bool isComplete = false;
   public bool IsComplete {
     get {
-      bool elapsed = duration - now <= 0;
-      bool fallen = wheel.transform.position.y < -2.0;
-      bool destabilized = handle.position.y < 0.0;
-      return elapsed || fallen || destabilized;
+      return isComplete;
     }
   }
 
@@ -53,13 +51,16 @@ public class EvaluationBehaviour : MonoBehaviour {
     lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
     wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
 
-    evaluator = new Evaluator(duration);
+    evaluator = new Evaluator();
 
     SetOrientation(Orientations.Random);
 	}
 
 	void OnDespawned() {
-    evaluator = new Evaluator(duration);
+    evaluator = new Evaluator();
+
+    // Reset status
+    isComplete = false;
 
     // Reset timer
     now = 0.0f;
@@ -80,9 +81,18 @@ public class EvaluationBehaviour : MonoBehaviour {
     cart.localRotation = rotation;
   }
 
-  // TODO: Handle different orientations
 	void FixedUpdate() {
-    if (IsComplete) {
+    if (isComplete) {
+      return;
+    }
+
+    if (wheel.transform.position.y < -2.0) {
+      isComplete = true;
+      return;
+    }
+
+    if (handle.position.y < 0.0) {
+      isComplete = true;
       return;
     }
 

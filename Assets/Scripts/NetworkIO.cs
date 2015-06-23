@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 // Responsible for marshalling input/output data to/from the neural network.
+// TODO: Consider moving this to layers of special neurons
 public class NetworkIO {
 
   public static readonly Range[] angularRanges = Range.From(new double[]{
@@ -38,35 +39,49 @@ public class NetworkIO {
   }
 
   public float Send(float thetaLower, float thetaDotLower, float x, float xDot) {
-    // Project world data
-    var worldData = new List<float>(
-      angularRanges.Length * 2 + linearRanges.Length * 2
-    );
-    worldData.AddRange(Enumerable.Repeat(thetaLower, angularRanges.Length));
-    worldData.AddRange(Enumerable.Repeat(thetaDotLower, angularRanges.Length));
-    worldData.AddRange(Enumerable.Repeat(x, linearRanges.Length));
-    worldData.AddRange(Enumerable.Repeat(xDot, linearRanges.Length));
+    var aR = angularRanges.Length;
+    var aR2 = aR * 2;
+    var lR = linearRanges.Length;
+    var lR2 = lR * 2;
 
-    // Apply to input ranges
-    var input = worldData.Zip(inputRanges, (data, range) => {
-      if (range.Contains(data)) {
-        return 40.0f * range.Normalize(data);
-      } else {
-        return 0.0f;
+    // Project world data
+    var worldData = new float[aR2 + lR2];
+    for (int i = 0; i < worldData.Length; i++) {
+      if (i < aR) {
+        worldData[i] = thetaLower;
+      } else if (i >= aR && i < aR2) {
+        worldData[i] = thetaDotLower;
+      } else if (i >= aR2 && i < aR2 + lR) {
+        worldData[i] = x;
+      } else if (i >= aR2 + lR && i < aR2 + lR2) {
+        worldData[i] = xDot;
       }
-    }).ToArray();
+    }
+    // Debug.Log(string.Join(",", worldData.Select(v => v.ToString()).ToArray()));
+
+    // Filter world data by ranges
+    double[] input = new double[CommonGenotype.neuronCount];
+    Range range;
+    float data;
+    for (int i = 0; i < inputRanges.Length; i++) {
+      range = inputRanges[i];
+      data = worldData[i];
+      if (range.Contains(data)) {
+        input[CommonGenotype.inNeuronIds[i]] = 40.0 * range.Normalize(data);
+      }
+    }
+    // Debug.Log(string.Join(",", input.Select(v => v.ToString()).ToArray()));
 
     // Receive output
     var ticks = (ulong)(Time.fixedDeltaTime * 1000.0f);
     var output = new double[CommonGenotype.neuronCount];
     network.Tick(ticks, input, ref output);
+    // Debug.Log(string.Join(",", output.Select(v => v.ToString()).ToArray()));
 
     // Read out neuron V for speed
     float speed = 0.0f;
-    int i = 0;
-    foreach (var id in CommonGenotype.outNeuronIds) {
-      speed += (float)((output[id] / 30.0) * speeds[i]);
-      i++;
+    for (int i = 0; i < speeds.Length; i++) {
+      speed += (float)((output[CommonGenotype.outNeuronIds[i]] / 30.0) * speeds[i]);
     }
     return speed;
   }

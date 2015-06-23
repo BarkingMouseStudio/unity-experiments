@@ -26,37 +26,39 @@ public class CommonGenotype : IEnumerable<float[]> {
     synapseCount = inNeuronCount * outNeuronCount;
 
     // Set up input neuron ids by order
-    inNeuronIds = new ulong[inNeuronCount];
-    for (int i = 0; i < inNeuronCount; i++) {
-      inNeuronIds[i] = (ulong)i;
-    }
-    AssertHelper.Assert(inNeuronIds.Length == inNeuronCount,
-      "Unexpected input neuron id count");
+    inNeuronIds = Enumerable.Range(0, inNeuronCount).Select((i) => {
+      return (ulong)i;
+    }).ToArray();
+    // Debug.Log(string.Join(",", inNeuronIds.Select(v => v.ToString()).ToArray()));
 
     // Set up output neuron ids by order _after_ input neuron ids
-    outNeuronIds = new ulong[outNeuronCount];
-    for (int i = 0; i < outNeuronCount; i++) {
-      outNeuronIds[i] = (ulong)(inNeuronCount + i);
-    }
-    AssertHelper.Assert(outNeuronIds.Length == outNeuronCount,
-      "Unexpected output neuron id count");
+    outNeuronIds = Enumerable.Range(0, outNeuronCount).Select((i) => {
+      return (ulong)(inNeuronCount + i);
+    }).ToArray();
+    // Debug.Log(string.Join(",", outNeuronIds.Select(v => v.ToString()).ToArray()));
   }
 
   public CommonGenotype() {
     var genotype = new List<float[]>(neuronCount + synapseCount);
 
-    // subpopulation(s) for input neurons (a, b, c, d)
-    // subpopulation(s) for output neurons (a, b, c, d)
-    foreach (var _ in Enumerable.Range(0, neuronCount)) {
-      genotype.Add(
-        new float[]{Random.value, Random.value, Random.value, Random.value}
-      );
-    }
+    var neuronChromosomes = Enumerable.Range(0, neuronCount).Select((i) => {
+      return new float[]{
+        Random.value,
+        Random.value,
+        Random.value,
+        Random.value
+      };
+    });
 
     // subpopulation(s) for synapses (w)
-    foreach (var _ in Enumerable.Range(0, synapseCount)) {
-      genotype.Add(new float[]{Random.value});
-    }
+    var synapseChromosomes = Enumerable.Range(0, synapseCount).Select((i) => {
+      return new float[]{
+        Random.value
+      };
+    });
+
+    genotype.AddRange(neuronChromosomes);
+    genotype.AddRange(synapseChromosomes);
 
     this.genotype = genotype.ToArray();
   }
@@ -99,6 +101,11 @@ public class CommonGenotype : IEnumerable<float[]> {
       float b = NumberHelper.Scale(chromosome[1], 0.2f, 0.25f); // 0.2
       float c = NumberHelper.Scale(chromosome[2], -65.0f, -50.0f); // -65.0
       float d = NumberHelper.Scale(chromosome[3], 0.05f, 8.0f); // 2.0
+      // Debug.LogFormat("a: {0} => {1}, b: {2} => {3}, c: {4} => {5}, d: {6} => {7}",
+      //   a, chromosome[0],
+      //   b, chromosome[1],
+      //   c, chromosome[2],
+      //   d, chromosome[3]);
 	    network.AddNeuron(a, b, c, d);
     }
     genotypeOffset += outNeuronCount;
@@ -111,6 +118,7 @@ public class CommonGenotype : IEnumerable<float[]> {
       for (int j = 0; j < outNeuronCount; j++) {
         float[] chromosome = genotype[genotypeOffset + (i * outNeuronCount) + j];
         float w = NumberHelper.Scale(chromosome[0], min, max);
+        // Debug.LogFormat("w: {0} => {1}", w, chromosome[0]);
         network.AddSynapse(inNeuronIds[i], outNeuronIds[j], w, min, max);
       }
     }
@@ -121,5 +129,9 @@ public class CommonGenotype : IEnumerable<float[]> {
       "Incorrect synapse count");
 
     return network;
+  }
+
+  public override string ToString() {
+    return JSON.Serialize(this.genotype);
   }
 }

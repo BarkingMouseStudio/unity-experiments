@@ -12,6 +12,10 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
     public float[] chromosome;
   }
 
+  const float requiredTrials = 0.0f;
+  const float mutationScale = 1.0f;
+  const float mutationRate = 0.125f;
+
   Phenotype[][] subpopulations;
   int generation;
 
@@ -54,8 +58,8 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
     }).ToArray();
   }
 
-  public void Update(float[] fitness) {
-    var total_trials = 0.0f;
+  public Tuple<float, int, int> Update(float[] fitness) {
+    var totalTrials = 0.0f;
     var i = 0;
 
     // Map population fitness to appropriate phenotype
@@ -69,13 +73,14 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
         var pt = subpopulation[ch.First];
         pt.cumulative += fitness[i];
         pt.trials += 1;
-        pt.average = pt.cumulative / ((float)pt.trials);
+        pt.average = pt.cumulative / (float)pt.trials;
+        subpopulation[ch.First] = pt; // Re-assign phenotype value-type
 
-        trials += ((float)pt.trials);
+        trials += (float)pt.trials;
         j++;
       }
 
-      total_trials += trials / ((float)genotype.Length);
+      totalTrials += trials / (float)genotype.Length;
       i++;
     }
 
@@ -85,40 +90,39 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
     }
 
     // Divide the total number of trials by the # evaluated
-    var averageTrials = total_trials / ((float)currentSample.Length);
-    if (averageTrials > 10.0f) {
+    var averageTrials = totalTrials / (float)currentSample.Length;
+    if (averageTrials > requiredTrials) {
       var results = Recombine();
-      Debug.LogFormat("[{0}] Generation complete. (Best: {1}, Offspring: {2}, Mutations: {3})", generation, fitness.Min(f => f), results.First, results.Second);
+      return Tuple.Of(averageTrials, results.First, results.Second);
     } else {
-      Debug.LogFormat("[{0}] Generation complete. (Best: {1})", generation, fitness.Min(f => f));
+      return Tuple.Of(averageTrials, 0, 0);
     }
   }
 
   public Tuple<int, int> Recombine() {
-    var new_subpopulations = new List<Phenotype[]>(this.subpopulations.Length);
+    var newSubpopulations = new List<Phenotype[]>(this.subpopulations.Length);
 
-    var mutation_count = 0;
-    var offspring_count = 0;
-    var p = 0.125f;
+    var mutationCount = 0;
+    var offspringCount = 0;
 
     foreach (var subpopulation in this.subpopulations) {
-      var quartile = Mathf.FloorToInt((float)0.25f * (subpopulation.Length));
-      var half = Mathf.FloorToInt((float)0.5f * (subpopulation.Length));
+      var quartile = Mathf.FloorToInt(0.25f * (float)subpopulation.Length);
+      var half = Mathf.FloorToInt(0.5f * (float)subpopulation.Length);
 
-      offspring_count += half;
+      offspringCount += half;
 
       // Each neuron in the top quartile of its subpopulation is recombined with a
       // higher-ranking neuron in the same subpopulation using crossover and low-probability
       // mutation.
-      var top_quartile = subpopulation.Take(quartile).ToArray();
+      var topQuartile = subpopulation.Take(quartile).ToArray();
 
       var offspring = new List<Phenotype>(half);
-      foreach (var _ in Enumerable.Range(0, half)) {
-        var i1 = Random.Range(0, top_quartile.Length);
-        var i2 = Random.Range(0, top_quartile.Length);
+      for (var i = 0; i < half; i++) {
+        var i1 = Random.Range(0, topQuartile.Length);
+        var i2 = Random.Range(0, topQuartile.Length);
 
-        var pt1 = top_quartile[i1];
-        var pt2 = top_quartile[i2];
+        var pt1 = topQuartile[i1];
+        var pt2 = topQuartile[i2];
 
         var x = Random.Range(0, pt1.chromosome.Length);
 
@@ -129,17 +133,22 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
         ch1.AddRange(ch2);
 
         // Low-probability mutation
-        var mutated_ch = ch1.Select((v) => {
-          if (Random.value < p) {
-            mutation_count += 1;
-            return RandomHelper.NextCauchy(v, 0.1f);
+        var mutatedCh = ch1.Select((v) => {
+          if (Random.value < mutationRate) {
+            mutationCount += 1;
+            return RandomHelper.NextCauchy(v, mutationScale);
           } else {
             return v;
           }
         }).ToArray();
 
+        AssertHelper.Assert(mutatedCh.Length == pt1.chromosome.Length,
+          "Matching chromosome length");
+        AssertHelper.Assert(mutatedCh.Length == pt2.chromosome.Length,
+          "Matching chromosome length");
+
         offspring.Add(new Phenotype{
-          chromosome = mutated_ch,
+          chromosome = mutatedCh,
           cumulative = 0.0f,
           average = 0.0f,
           trials = 0,
@@ -147,14 +156,17 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
       }
 
       // The offspring is used to replace the lowest-ranking half of the population.
-      var new_population = subpopulation.Take(half).ToList();
-      new_population.AddRange(offspring.ToArray());
-      new_subpopulations.Add(new_population.ToArray());
+      var newPopulation = subpopulation.Take(half).ToList();
+      newPopulation.AddRange(offspring.ToArray());
+      newSubpopulations.Add(newPopulation.ToArray());
+
+      AssertHelper.Assert(newPopulation.Count == subpopulation.Length,
+        "Matching replacement population count");
     }
 
-    this.subpopulations = new_subpopulations.ToArray();
+    this.subpopulations = newSubpopulations.ToArray();
     this.generation++;
 
-    return Tuple.Of(offspring_count, mutation_count);
+    return Tuple.Of(offspringCount, mutationCount);
   }
 }

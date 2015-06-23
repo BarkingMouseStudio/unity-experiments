@@ -11,9 +11,9 @@ public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
 
-  int populationSize = 1000;
   int subpopulationSize = 100;
-  int batchSize = 50;
+  int sampleSize = 1;
+  int batchSize = 1;
 
   IEvolutionaryAlgorithm algorithm;
 
@@ -48,8 +48,8 @@ public class EvolutionBehaviour : MonoBehaviour {
       Quaternion rotation = Quaternion.identity;
 
       var t = PoolManager.Pools["Evaluations"].Spawn(prefab, position, rotation, transform);
-
       var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
+
       controllerBehaviour.networkIO = new NetworkIO(genotype.GetPhenotype());
 
       var evaluationBehaviour = t.GetComponent<EvaluationBehaviour>();
@@ -65,10 +65,6 @@ public class EvolutionBehaviour : MonoBehaviour {
 
     // Accumulate fitnesses into array
     fitness.AddRange(evaluations.Select(ev => ev.Fitness));
-
-    // Keep track of lowest fitness
-    Debug.LogFormat("[{0}:{1}] Evaluations complete. ({3})", algorithm.Generation, batchIndex,
-      evaluations.Min(ev => ev.Fitness));
 
     // Cleanup
     List<Transform> children = new List<Transform>(transform.childCount);
@@ -86,18 +82,11 @@ public class EvolutionBehaviour : MonoBehaviour {
     // Setup fitness tests
     int batchIndex = 0;
     foreach (var batch in batches) {
-      var batchFitnessA = new List<float>(batch.Length);
-      var batchFitnessB = new List<float>(batch.Length);
-
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, batchFitnessA));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, batchFitnessB));
+      var batchFitness = new List<float>(batch.Length);
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, batchFitness));
       batchIndex++;
 
-      var batchFitness = batchFitnessA.Zip(batchFitnessB, (a, b) => {
-        return (a + b + Mathf.Abs(a - b)) / 3f;
-      });
-
-      Debug.LogFormat("[{0}:{1}] Batch complete. ({1})", algorithm.Generation, batchIndex, batchFitness.Min(f => f));
+      // Debug.LogFormat("[{0}:{1}] Batch complete. ({2})", algorithm.Generation, batchIndex, batchFitness.Min(f => f));
 
       fitness.AddRange(batchFitness);
     }
@@ -107,21 +96,31 @@ public class EvolutionBehaviour : MonoBehaviour {
     // Create batches from the population
     var batches = CreateBatches(genotypes, batchSize);
     yield return StartCoroutine(EvaluateBatches(batches, fitness));
+    // Debug.LogFormat("[{0}] Population complete. ({1})", algorithm.Generation, fitness.Min(f => f));
   }
 
   IEnumerator Start() {
     // Setup the algorithm with the proto-genotype
     algorithm = new EnforcedSubpopulations(new CommonGenotype(), subpopulationSize);
+    var start = DateTime.Now;
 
     while (true) {
       // Sample from the EA
-      var population = algorithm.Sample(populationSize);
+      var population = algorithm.Sample(sampleSize);
 
       List<float> fitness = new List<float>(population.Length);
       yield return StartCoroutine(EvaluatePopulation(population, fitness));
 
+      var best = fitness.Zip(population, (f, genotype) => {
+        return Tuple.Of(f, genotype);
+      }).OrderBy(f => f.First).First();
+
       // Update the EA's internals
-      algorithm.Update(fitness.ToArray());
+      var results = algorithm.Update(fitness.ToArray());
+      Debug.LogFormat("[{0}] Generation completed at {1}. (Best: {2}, Average Trials: {3}, Offspring: {4}, Mutations: {5})",
+        algorithm.Generation, DateTime.Now - start, best.First,
+        results.First, results.Second, results.Third);
+      Debug.LogFormat("\t{0}", best.Second.ToString());
     }
   }
 }

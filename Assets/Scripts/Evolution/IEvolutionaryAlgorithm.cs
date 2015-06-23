@@ -7,5 +7,5 @@ interface IEvolutionaryAlgorithm {
   CommonGenotype[] Sample(int count);
 
   // Update with the evaluated population's fitness.
-  void Update(float[] fitness);
+  Tuple<float, int, int> Update(float[] fitness);
 }
