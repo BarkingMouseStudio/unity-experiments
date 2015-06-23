@@ -53,8 +53,12 @@ public class EvaluationBehaviour : MonoBehaviour {
 
     evaluator = new Evaluator();
 
-    SetOrientation(Orientations.Random);
+    SetOrientation(orientation);
 	}
+
+  void OnSpawned() {
+    SetOrientation(orientation);
+  }
 
 	void OnDespawned() {
     evaluator = new Evaluator();

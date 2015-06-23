@@ -12,8 +12,8 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
     public float[] chromosome;
   }
 
-  const float requiredTrials = 0.0f;
-  const float mutationScale = 1.0f;
+  const float requiredTrials = 10.0f;
+  const float mutationScale = 0.1f;
   const float mutationRate = 0.125f;
 
   Phenotype[][] subpopulations;
@@ -60,34 +60,47 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
 
   public Tuple<float, int, int> Update(float[] fitness) {
     var totalTrials = 0.0f;
-    var i = 0;
+    var sampleIndex = 0;
 
     // Map population fitness to appropriate phenotype
     foreach (var genotype in currentSample) {
       var trials = 0.0f;
-      int j = 0;
+      int subpopulationIndex = 0;
 
       foreach (var ch in genotype) {
-        var subpopulation = this.subpopulations[j];
+        var subpopulation = this.subpopulations[subpopulationIndex];
 
-        var pt = subpopulation[ch.First];
-        pt.cumulative += fitness[i];
+        var genotypeIndex = ch.First;
+        var pt = subpopulation[genotypeIndex];
+        pt.cumulative += fitness[sampleIndex];
         pt.trials += 1;
         pt.average = pt.cumulative / (float)pt.trials;
         subpopulation[ch.First] = pt; // Re-assign phenotype value-type
 
         trials += (float)pt.trials;
-        j++;
+        subpopulationIndex++;
       }
 
       totalTrials += trials / (float)genotype.Length;
-      i++;
+      sampleIndex++;
     }
 
-    // Sort subpopulations by updated fitness
-    foreach (var subpopulation in this.subpopulations) {
-      subpopulation.OrderBy((a) => a.average);
+    // Sort each subpopulation by updated average fitness
+    for (var i = 0; i < this.subpopulations.Length; i++) {
+      this.subpopulations[i] = this.subpopulations[i].OrderBy(g => g.average).ToArray();
     }
+
+    // A few checks
+    var bestTotal = 0.0f;
+    foreach (var subpopulation in this.subpopulations) {
+      var first = subpopulation.First();
+      var last = subpopulation.Last();
+      bestTotal += first.average;
+
+      AssertHelper.Assert(first.average < last.average,
+        "Subpopulation in correct order");
+    }
+    var bestAverage = bestTotal / this.subpopulations.Length;
 
     // Divide the total number of trials by the # evaluated
     var averageTrials = totalTrials / (float)currentSample.Length;

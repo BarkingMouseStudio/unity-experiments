@@ -38,6 +38,17 @@ public class CommonGenotype : IEnumerable<float[]> {
     // Debug.Log(string.Join(",", outNeuronIds.Select(v => v.ToString()).ToArray()));
   }
 
+  public static CommonGenotype FromJSON(string data) {
+    var obj = (List<object>)JSON.Deserialize(data);
+    var genotypes = obj.Select(o => {
+      var l = (List<object>)o;
+      return l.Select(v => {
+        return (float)(double)v;
+      }).ToArray();
+    }).ToArray();
+    return new CommonGenotype(genotypes);
+  }
+
   public CommonGenotype() {
     var genotype = new List<float[]>(neuronCount + synapseCount);
 
@@ -110,8 +121,8 @@ public class CommonGenotype : IEnumerable<float[]> {
     }
     genotypeOffset += outNeuronCount;
 
-    float min = -20.0f;
-    float max = 20.0f;
+    float min = -40.0f;
+    float max = 40.0f;
 
     // Connect each input neuron to the output neuron.
     for (int i = 0; i < inNeuronCount; i++) {
