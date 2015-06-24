@@ -16,19 +16,19 @@ public class NetworkIO {
   });
 
   public static readonly double[] speeds = new double[]{
-    -50.0, -5.0, -0.5, -0.05, 0.05, 0.5, 5.0, 50.0,
+    -200.0, -100.0, -10.0, -1.0, -0.1, 0.1, 1.0, 10.0, 100.0, 200.0
   };
 
   public static readonly Range[] inputRanges;
 
   static NetworkIO() {
     List<Range> inputRanges = new List<Range>(
-      angularRanges.Length * 2 + linearRanges.Length * 2
+      angularRanges.Length * 1 + linearRanges.Length * 1
     );
     inputRanges.AddRange(angularRanges); // theta lower
-    inputRanges.AddRange(angularRanges); // theta dot lower
+    // inputRanges.AddRange(angularRanges); // theta dot lower
     inputRanges.AddRange(linearRanges); // x
-    inputRanges.AddRange(linearRanges); // x dot
+    // inputRanges.AddRange(linearRanges); // x dot
     NetworkIO.inputRanges = inputRanges.ToArray();
   }
 
@@ -38,23 +38,23 @@ public class NetworkIO {
     this.network = network;
   }
 
-  public float Send(float thetaLower, float thetaDotLower, float x, float xDot) {
+  public float Send(float thetaLower, float x) {
     var aR = angularRanges.Length;
-    var aR2 = aR * 2;
+    // var aR2 = aR * 2;
     var lR = linearRanges.Length;
-    var lR2 = lR * 2;
+    // var lR2 = lR * 2;
 
     // Project world data
-    var worldData = new float[aR2 + lR2];
+    var worldData = new float[aR + lR];
     for (int i = 0; i < worldData.Length; i++) {
       if (i < aR) {
         worldData[i] = thetaLower;
-      } else if (i >= aR && i < aR2) {
-        worldData[i] = thetaDotLower;
-      } else if (i >= aR2 && i < aR2 + lR) {
+      // } else if (i >= aR && i < aR2) {
+      //   worldData[i] = thetaDotLower;
+      } else if (i >= aR && i < aR + lR) {
         worldData[i] = x;
-      } else if (i >= aR2 + lR && i < aR2 + lR2) {
-        worldData[i] = xDot;
+      // } else if (i >= aR2 + lR && i < aR2 + lR2) {
+      //   worldData[i] = xDot;
       }
     }
     // Debug.Log(string.Join(",", worldData.Select(v => v.ToString()).ToArray()));

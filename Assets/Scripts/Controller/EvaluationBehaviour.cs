@@ -73,13 +73,10 @@ public class EvaluationBehaviour : MonoBehaviour {
   public void SetOrientation(Orientations orientation) {
     Quaternion rotation;
 
-    switch (orientation) {
-      case Orientations.Random:
-        rotation = Quaternion.Euler(0, 0, Random.Range(135, 225));
-        break;
-      default:
-        rotation = Quaternion.Euler(0, 0, (int)orientation);
-        break;
+    if (orientation == Orientations.Random) {
+      rotation = Quaternion.Euler(0, 0, Random.Range(135, 225));
+    } else {
+      rotation = Quaternion.Euler(0, 0, (int)orientation);
     }
 
     cart.localRotation = rotation;
@@ -103,7 +100,7 @@ public class EvaluationBehaviour : MonoBehaviour {
     var thetaLower = AngleHelper.GetAngle(lower.rotation);
     var thetaDotLower = AngleHelper.GetAngle(lower.angularVelocity);
     var x = wheel.transform.localPosition.x;
-    var xDot = wheel.velocity.magnitude - 1.0f; // Velocity penalty to encourage movement
+    var xDot = wheel.velocity.magnitude; // Velocity penalty to encourage movement
 
     evaluator.Update(thetaLower, thetaDotLower, x, xDot);
 

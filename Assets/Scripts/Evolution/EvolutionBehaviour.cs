@@ -12,8 +12,8 @@ public class EvolutionBehaviour : MonoBehaviour {
   public Transform prefab;
 
   int subpopulationSize = 100;
-  int sampleSize = 50;
-  int batchSize = 50;
+  int sampleSize = 100;
+  int batchSize = 100;
 
   IEvolutionaryAlgorithm algorithm;
 

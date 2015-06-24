@@ -19,8 +19,8 @@ public class Evaluator {
         var normalizedFitness = fitnessHistory.Aggregate(0.0f,
           (total, next) => total + next,
           (total) => total / fitnessHistory.Length);
-				var normalizedFitnessCount = 1.0f - (fitnessCount / maximumFitnessCount);
-        return 0.1f * normalizedFitnessCount + 0.9f * normalizedFitness;
+				var normalizedFitnessCount = 1.0f - ((float)fitnessCount / (float)maximumFitnessCount);
+        return 0.5f * normalizedFitnessCount + 0.5f * normalizedFitness;
       } else {
         return 1.0f; // Worst case, didn't live long enough
       }
@@ -31,7 +31,8 @@ public class Evaluator {
     var fitness =
       Mathf.Abs(thetaLower) * 1.0f +
       Mathf.Abs(thetaDotLower) * 1.0f +
-      Mathf.Abs(x) * 30.0f + Mathf.Abs(xDot) * 30.0f;
+      Mathf.Abs(x) * 30.0f +
+      Mathf.Abs(xDot - 1.0f) * 30.0f;
     var maximumFitness = 180.0f * 4.0f;
     var normalizedFitness = fitness / maximumFitness;
 

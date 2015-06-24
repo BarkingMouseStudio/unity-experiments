@@ -6,15 +6,23 @@ using System.Linq;
 public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
 
   public struct Phenotype {
-    public float cumulative;
-    public float average;
-    public int trials;
     public float[] chromosome;
+    public float cumulative;
+    public int trials;
+
+    public float Average {
+      get {
+        if (trials == 0) {
+          return float.PositiveInfinity;
+        }
+        return cumulative / (float)trials;
+      }
+    }
   }
 
   const float requiredTrials = 10.0f;
-  const float mutationScale = 0.1f;
-  const float mutationRate = 0.125f;
+  // const float mutationScale = 0.1f;
+  const float mutationRate = 0.2f;
 
   Phenotype[][] subpopulations;
   int generation;
@@ -26,9 +34,8 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
     this.subpopulations = genotype.Select((chromosome) => {
       return Enumerable.Range(0, subpopulationSize).Select((_0) => {
         return new Phenotype{
-          chromosome = chromosome.Select((_1) => Random.Range(0.0f, 1.0f)).ToArray(),
+          chromosome = chromosome.Select((_1) => Random.value).ToArray(),
           cumulative = 0.0f,
-          average = 0.0f,
           trials = 0,
         };
       }).ToArray();
@@ -42,11 +49,20 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
   }
 
   public CommonGenotype[] Sample(int count) {
-    currentSample = Enumerable.Range(0, count).Select((_) => {
+    currentSample = Enumerable.Range(0, count).Select((_0) => {
       return this.subpopulations.Select((subpopulation) => {
-        var index = Random.Range(0, subpopulation.Length);
-        var pt = subpopulation[index];
-        return Tuple.Of(index, pt.chromosome);
+        var tournamentSize = 1; // 1 = random selection
+
+        // Pick N at random
+        var subpopulationSize = subpopulation.Length;
+        var samples = Enumerable.Range(0, tournamentSize).Select((_1) => {
+          var index = Random.Range(0, subpopulationSize);
+          return Tuple.Of(index, subpopulation[index]);
+        }).OrderBy(a => a.Second.Average).ToArray();
+
+        // Return the best of the N
+        var sample = samples[0];
+        return Tuple.Of(sample.First, sample.Second.chromosome);
       }).ToArray();
     }).ToArray();
 
@@ -74,7 +90,6 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
         var pt = subpopulation[genotypeIndex];
         pt.cumulative += fitness[sampleIndex];
         pt.trials += 1;
-        pt.average = pt.cumulative / (float)pt.trials;
         subpopulation[ch.First] = pt; // Re-assign phenotype value-type
 
         trials += (float)pt.trials;
@@ -87,20 +102,15 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
 
     // Sort each subpopulation by updated average fitness
     for (var i = 0; i < this.subpopulations.Length; i++) {
-      this.subpopulations[i] = this.subpopulations[i].OrderBy(g => g.average).ToArray();
-    }
+      this.subpopulations[i] = this.subpopulations[i]
+        .OrderBy(g => g.Average).ToArray();
 
-    // A few checks
-    var bestTotal = 0.0f;
-    foreach (var subpopulation in this.subpopulations) {
-      var first = subpopulation.First();
-      var last = subpopulation.Last();
-      bestTotal += first.average;
-
-      AssertHelper.Assert(first.average < last.average,
-        "Subpopulation in correct order");
+      var firstAverage = this.subpopulations[i].First().Average;
+      var lastAverage = this.subpopulations[i].Last().Average;
+      AssertHelper.Assert(firstAverage <= lastAverage,
+        string.Format("Subpopulation in correct order: {0} <= {1}",
+        firstAverage, lastAverage));
     }
-    var bestAverage = bestTotal / this.subpopulations.Length;
 
     // Divide the total number of trials by the # evaluated
     var averageTrials = totalTrials / (float)currentSample.Length;
@@ -149,7 +159,7 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
         var mutatedCh = ch1.Select((v) => {
           if (Random.value < mutationRate) {
             mutationCount += 1;
-            return RandomHelper.NextCauchy(v, mutationScale);
+            return Random.value; // RandomHelper.NextCauchy(v, mutationScale);
           } else {
             return v;
           }
@@ -163,7 +173,6 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
         offspring.Add(new Phenotype{
           chromosome = mutatedCh,
           cumulative = 0.0f,
-          average = 0.0f,
           trials = 0,
         });
       }
