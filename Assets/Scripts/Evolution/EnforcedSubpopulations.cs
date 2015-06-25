@@ -24,7 +24,7 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
   // const float mutationScale = 0.1f;
   const float mutationRate = 0.2f;
 
-  Phenotype[][] subpopulations;
+  public Phenotype[][] subpopulations;
   int generation;
 
   // Keep track of current sample to match up with fitnesses
@@ -112,6 +112,8 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
         firstAverage, lastAverage));
     }
 
+    this.generation++;
+
     // Divide the total number of trials by the # evaluated
     var averageTrials = totalTrials / (float)currentSample.Length;
     if (averageTrials > requiredTrials) {
@@ -187,7 +189,6 @@ public class EnforcedSubpopulations : IEvolutionaryAlgorithm {
     }
 
     this.subpopulations = newSubpopulations.ToArray();
-    this.generation++;
 
     return Tuple.Of(offspringCount, mutationCount);
   }

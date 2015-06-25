@@ -39,9 +39,21 @@ public class EvaluationBehaviour : MonoBehaviour {
     }
   }
 
+  public float Now {
+    get {
+      return now;
+    }
+  }
+
   public float Fitness {
     get {
       return evaluator.Fitness;
+    }
+  }
+
+  public float Angle {
+    get {
+      return (float)orientation;
     }
   }
 
@@ -53,11 +65,11 @@ public class EvaluationBehaviour : MonoBehaviour {
 
     evaluator = new Evaluator();
 
-    SetOrientation(orientation);
+    SetOrientation();
 	}
 
   void OnSpawned() {
-    SetOrientation(orientation);
+    SetOrientation();
   }
 
 	void OnDespawned() {
@@ -70,16 +82,12 @@ public class EvaluationBehaviour : MonoBehaviour {
     now = 0.0f;
 	}
 
-  public void SetOrientation(Orientations orientation) {
-    Quaternion rotation;
-
+  public void SetOrientation() {
     if (orientation == Orientations.Random) {
-      rotation = Quaternion.Euler(0, 0, Random.Range(135, 225));
-    } else {
-      rotation = Quaternion.Euler(0, 0, (int)orientation);
+      orientation = Random.value > 0.5f ?
+        Orientations.HardLeft : Orientations.HardRight;
     }
-
-    cart.localRotation = rotation;
+    cart.localRotation = Quaternion.Euler(0, 0, (int)orientation);
   }
 
 	void FixedUpdate() {

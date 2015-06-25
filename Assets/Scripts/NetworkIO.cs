@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 // Responsible for marshalling input/output data to/from the neural network.
-// TODO: Consider moving this to layers of special neurons
 public class NetworkIO {
 
   public static readonly Range[] angularRanges = Range.From(new double[]{
