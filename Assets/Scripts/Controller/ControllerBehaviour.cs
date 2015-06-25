@@ -21,9 +21,6 @@ public class ControllerBehaviour : MonoBehaviour {
     wheelJoint = wheel.transform.GetComponentInChildren<WheelJoint2D>();
     evaluation = GetComponent<EvaluationBehaviour>();
 
-    // var genotype = CommonGenotype.FromJSON(
-    //   ""
-    // );
     var genotype = new CommonGenotype();
 
     networkIO = new NetworkIO(genotype.GetPhenotype());
