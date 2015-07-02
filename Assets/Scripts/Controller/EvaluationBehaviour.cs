@@ -22,7 +22,7 @@ public class EvaluationBehaviour : MonoBehaviour {
   public Orientations orientation;
 
   // Evaluation duration
-  const float duration = 10.0f;
+  const float duration = 20.0f;
   float now = 0.0f;
 
   Transform cart;
@@ -65,11 +65,11 @@ public class EvaluationBehaviour : MonoBehaviour {
 
     evaluator = new Evaluator();
 
-    SetOrientation();
+    SetRotation();
 	}
 
   void OnSpawned() {
-    SetOrientation();
+    SetRotation();
   }
 
 	void OnDespawned() {
@@ -82,7 +82,7 @@ public class EvaluationBehaviour : MonoBehaviour {
     now = 0.0f;
 	}
 
-  public void SetOrientation() {
+  void SetRotation() {
     if (orientation == Orientations.Random) {
       orientation = Random.value > 0.5f ?
         Orientations.HardLeft : Orientations.HardRight;

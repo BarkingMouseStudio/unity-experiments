@@ -7,7 +7,7 @@ public class Evaluator {
 
   // Evaluation fitness
   static readonly int fitnessLength = 100;
-  static readonly int maximumFitnessCount = 500; // 10s * 1000ms / 20 ticks
+  static readonly int maximumFitnessCount = 1000; // 10s * 1000ms / 20 ticks
 
   int fitnessIndex = 0;
   int fitnessCount = 0;

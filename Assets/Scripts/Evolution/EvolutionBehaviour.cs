@@ -13,8 +13,8 @@ public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
 
-  int subpopulationSize = 100;
-  int sampleSize = 30;
+  int subpopulationSize = 30;
+  int sampleSize = 200;
   int batchSize = 30;
 
   IEvolutionaryAlgorithm algorithm;
@@ -121,6 +121,9 @@ public class EvolutionBehaviour : MonoBehaviour {
     // Setup the algorithm with the proto-genotype
     algorithm = new EnforcedSubpopulations(new CommonGenotype(), subpopulationSize);
 
+    // float bestFitness = 1.0f;
+    // int bestGeneration = 0;
+
     while (true) {
       // Sample from the EA
       var population = algorithm.Sample(sampleSize);
@@ -131,6 +134,11 @@ public class EvolutionBehaviour : MonoBehaviour {
       var best = results.Zip(population, (result, genotype) => Tuple.Of(result, genotype))
         .OrderBy(result => result.First.fitness)
         .First();
+
+      // if (best.First.fitness < bestFitness) {
+      //   bestFitness = best.First.fitness;
+      //   bestGeneration = algorithm.Generation;
+      // }
 
       // Update the EA's internals
       var updateResults = algorithm.Update(results.Select(r => r.fitness).ToArray());

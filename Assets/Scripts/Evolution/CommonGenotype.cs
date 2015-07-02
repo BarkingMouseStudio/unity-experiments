@@ -26,7 +26,7 @@ public class CommonGenotype : IEnumerable<float[]> {
       (NetworkIO.linearRanges.Length * 2);
     outNeuronCount = NetworkIO.speeds.Length;
 
-    hiddenNeuronCount = 6;
+    hiddenNeuronCount = 12;
 
     neuronCount = inNeuronCount + outNeuronCount + hiddenNeuronCount;
     synapseCount = neuronCount * neuronCount;
@@ -111,7 +111,7 @@ public class CommonGenotype : IEnumerable<float[]> {
       // Debug.LogFormat("{0} {1}", chromosome.Length, string.Join(",", chromosome.Select(x => x.ToString()).ToArray()));
       for (int j = 0; j < neuronCount; j++) {
         // Debug.LogFormat("j: {0}, len: {1}", j, chromosome[j].Length);
-        float w = NumberHelper.Scale(chromosome[4 + j], min, max);
+        float w = NumberHelper.Scale(chromosome[j + 4], min, max);
         network.AddSynapse((ulong)i, (ulong)j, w, min, max);
       }
     }

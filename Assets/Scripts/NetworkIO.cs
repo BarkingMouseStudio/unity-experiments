@@ -15,7 +15,7 @@ public class NetworkIO {
   });
 
   public static readonly double[] speeds = new double[]{
-    -200.0, -100.0, -10.0, -1.0, -0.1, 0.1, 1.0, 10.0, 100.0, 200.0
+    -250.0, -100.0, -10.0, -1.0, -0.1, 0.1, 1.0, 10.0, 100.0, 250.0
   };
 
   public static readonly Range[] inputRanges;
