@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,6 @@ namespace NEAT {
     private List<SynapseInnovation> synapseInnovations = new List<SynapseInnovation>();
 
     private int nextInnovationId = 0;
-
-    public Innovations(int nextInnovationId) {
-      this.nextInnovationId = nextInnovationId;
-    }
 
     // Remove any innovations not found in the genotype set
     public int Prune(List<Genotype> genotypes) {
@@ -34,6 +31,15 @@ namespace NEAT {
 
       var prunedCount = neuronInnovations.Count + synapseInnovations.Count;
       return System.Math.Abs(count - prunedCount);
+    }
+
+    public int GetAddInitialNeuronInnovationId(int i) {
+      if (nextInnovationId < i) {
+        nextInnovationId += i - nextInnovationId;
+      }
+      var innovationId = nextInnovationId;
+      nextInnovationId++;
+      return innovationId;
     }
 
     public int GetAddNeuronInnovationId(int fromId, int toId, int oldSId) {

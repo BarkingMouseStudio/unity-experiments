@@ -10,52 +10,172 @@ namespace NEAT {
   [TestFixture]
   public class MutatorTests {
 
+    private Genotype NewGenotype(Innovations innovations) {
+      var neuronGenes = Enumerable.Range(0, 3).Select(i => {
+        var inId = innovations.GetAddInitialNeuronInnovationId(i);
+        return new NeuronGene(inId);
+      }).ToList();
+
+      var synapseGenes = Enumerable.Range(0, 3).Select(i => {
+        var inId = innovations.GetAddSynapseInnovationId(-1, 1);
+        return new SynapseGene(inId, -1, 1, true);
+      }).ToList();
+
+      return new Genotype(neuronGenes, synapseGenes);
+    }
+
     [Test]
     public void TestAddNeuronMutator() {
       var mutator = new AddNeuronMutator(1.0f);
+      var innovations = new Innovations();
 
-      var neuronGenes = Enumerable.Range(0, 3)
-        .Select(i => new NeuronGene(i))
-        .ToList();
+      var genotype = NewGenotype(innovations);
+      var mutatedGenotype = mutator.Mutate(genotype, innovations);
 
-      var synapseGenes = Enumerable.Range(0, 3)
-        .Select(i => {
-          var inId = innovations.GetAddSynapseInnovationId(0, 1);
-          return new SynapseGene(inId, 0, 1, true);
-          })
-        .ToList();
+      // Compare gene counts
+      Assert.That(mutatedGenotype.neuronGenes.Count - genotype.neuronGenes.Count == 1);
 
-      var innovations = new Innovations(6);
+      Assert.That(mutatedGenotype.synapseGenes.Count - genotype.synapseGenes.Count == 2);
 
-      var genotype = new Genotype(neuronGenes, synapseGenes);
-      mutator.Mutate(genotype, innovations);
+      // Compare innovation ids
+      var aN = new []{0, 1, 2, 4};
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      Assert.That(aN.SequenceEqual(bN));
 
-      Assert.That(false);
+      var aS = new []{3, 3, 3, 4, 5};
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      Assert.That(aS.SequenceEqual(bS));
     }
 
     [Test]
     public void TestAddSynapseMutator() {
-      Assert.That(false);
+      var mutator = new AddSynapseMutator(1.0f);
+      var innovations = new Innovations();
+
+      var genotype = NewGenotype(innovations);
+      var mutatedGenotype = mutator.Mutate(genotype, innovations);
+
+      // Compare gene counts
+      Assert.That(mutatedGenotype.neuronGenes.Count == genotype.neuronGenes.Count);
+
+      Assert.That(mutatedGenotype.synapseGenes.Count - genotype.synapseGenes.Count == 1);
+
+      // Compare innovation ids
+      var aN = new []{0, 1, 2};
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      Assert.That(aN.SequenceEqual(bN));
+
+      var aS = new []{3, 3, 3, 4};
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      Assert.That(aS.SequenceEqual(bS));
     }
 
     [Test]
     public void TestPerturbNeuronMutator() {
-      Assert.That(false);
+      var mutator = new PerturbNeuronMutator(1.0f);
+      var innovations = new Innovations();
+
+      var genotype = NewGenotype(innovations);
+      var mutatedGenotype = mutator.Mutate(genotype, innovations);
+
+      // Compare gene counts
+      Assert.That(mutatedGenotype.neuronGenes.Count == genotype.neuronGenes.Count);
+
+      Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
+
+      // Compare innovation ids
+      var aN = genotype.neuronGenes.Select(g => g.innovationId);
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      Assert.That(aN.SequenceEqual(bN));
+
+      var aS = genotype.synapseGenes.Select(g => g.innovationId);
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      Assert.That(aS.SequenceEqual(bS));
+
+      // Compare fields
+      Assert.That(!genotype.neuronGenes.SequenceEqual(mutatedGenotype.neuronGenes));
+      Assert.That(genotype.synapseGenes.SequenceEqual(mutatedGenotype.synapseGenes));
     }
 
     [Test]
     public void TestPerturbSynapseMutator() {
-      Assert.That(false);
+      var mutator = new PerturbSynapseMutator(1.0f);
+      var innovations = new Innovations();
+
+      var genotype = NewGenotype(innovations);
+      var mutatedGenotype = mutator.Mutate(genotype, innovations);
+
+      // Compare gene counts
+      Assert.That(mutatedGenotype.neuronGenes.Count == genotype.neuronGenes.Count);
+
+      Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
+
+      // Compare innovation ids
+      var aN = genotype.neuronGenes.Select(g => g.innovationId);
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      Assert.That(aN.SequenceEqual(bN));
+
+      var aS = genotype.synapseGenes.Select(g => g.innovationId);
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      Assert.That(aS.SequenceEqual(bS));
+
+      // Compare fields
+      Assert.That(genotype.neuronGenes.SequenceEqual(mutatedGenotype.neuronGenes));
+      Assert.That(!genotype.synapseGenes.SequenceEqual(mutatedGenotype.synapseGenes));
     }
 
     [Test]
     public void TestReplaceNeuronMutator() {
-      Assert.That(false);
+      var mutator = new ReplaceNeuronMutator(1.0f);
+      var innovations = new Innovations();
+
+      var genotype = NewGenotype(innovations);
+      var mutatedGenotype = mutator.Mutate(genotype, innovations);
+
+      // Compare gene counts
+      Assert.That(mutatedGenotype.neuronGenes.Count == genotype.neuronGenes.Count);
+
+      Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
+
+      // Compare innovation ids
+      var aN = genotype.neuronGenes.Select(g => g.innovationId);
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      Assert.That(aN.SequenceEqual(bN));
+
+      var aS = genotype.synapseGenes.Select(g => g.innovationId);
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      Assert.That(aS.SequenceEqual(bS));
+
+      // Compare fields
+      Assert.That(!genotype.neuronGenes.SequenceEqual(mutatedGenotype.neuronGenes));
+      Assert.That(genotype.synapseGenes.SequenceEqual(mutatedGenotype.synapseGenes));
     }
 
     [Test]
     public void TestReplaceSynapseMutator() {
-      Assert.That(false);
+      var mutator = new ReplaceSynapseMutator(1.0f);
+      var innovations = new Innovations();
+
+      var genotype = NewGenotype(innovations);
+      var mutatedGenotype = mutator.Mutate(genotype, innovations);
+
+      // Compare gene counts
+      Assert.That(mutatedGenotype.neuronGenes.Count == genotype.neuronGenes.Count);
+
+      Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
+
+      // Compare innovation ids
+      var aN = genotype.neuronGenes.Select(g => g.innovationId);
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      Assert.That(aN.SequenceEqual(bN));
+
+      var aS = genotype.synapseGenes.Select(g => g.innovationId);
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      Assert.That(aS.SequenceEqual(bS));
+
+      // Compare fields
+      Assert.That(genotype.neuronGenes.SequenceEqual(mutatedGenotype.neuronGenes));
+      Assert.That(!genotype.synapseGenes.SequenceEqual(mutatedGenotype.synapseGenes));
     }
   }
 }

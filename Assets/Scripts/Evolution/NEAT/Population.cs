@@ -27,10 +27,10 @@ namespace NEAT {
     };
 
     public Population(int populationSize) {
+      this.innovations = new Innovations();
       this.genotypes = Enumerable.Range(0, populationSize).Select(i => {
-        return new Genotype(minimalNeuronCount);
+        return new Genotype(minimalNeuronCount, innovations);
       }).ToList();
-      this.innovations = new Innovations(minimalNeuronCount);
     }
 
     public Population(List<Genotype> genotypes, Innovations innovations) {

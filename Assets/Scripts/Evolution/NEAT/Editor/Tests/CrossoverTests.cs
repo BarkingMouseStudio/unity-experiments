@@ -20,7 +20,7 @@ namespace NEAT {
 
       var innovationIds = new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
       var genes = MultipointCrossover.CrossoverGenes(a, b, 0.5f, 0.5f);
-      Debug.Log(string.Join(",", genes.Select(g => g.innovationId.ToString()).ToArray()));
+
       Assert.That(genes.Select(g => g.innovationId).SequenceEqual(innovationIds));
     }
   }

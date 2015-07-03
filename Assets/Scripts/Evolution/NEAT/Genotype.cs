@@ -15,10 +15,11 @@ namespace NEAT {
     public List<NeuronGene> neuronGenes;
     public List<SynapseGene> synapseGenes;
 
-    public Genotype(int minimalNeuronCount) {
+    // TODO: Move this to population since it's dependent on innovations and initial genotype structure.
+    public Genotype(int minimalNeuronCount, Innovations innovations) {
       // The starting genotype neurons use their index as the innovation id
       this.neuronGenes = Enumerable.Range(0, minimalNeuronCount)
-        .Select(i => new NeuronGene(i))
+        .Select(i => new NeuronGene(innovations.GetAddInitialNeuronInnovationId(i)))
         .ToList();
       this.synapseGenes = new List<SynapseGene>();
     }
@@ -34,7 +35,7 @@ namespace NEAT {
       this.synapseGenes = new List<SynapseGene>(other.synapseGenes);
     }
 
-    // new GeneticMeasurement(c1, c2, c3): GeneticMeasurement.Measure(a, b)
+    // TODO: new GeneticMeasurement(c1, c2, c3): GeneticMeasurement.Measure(a, b)
     public static float Distance(Genotype a, Genotype b) {
       var E = 0.0f;
       var D = 0.0f;

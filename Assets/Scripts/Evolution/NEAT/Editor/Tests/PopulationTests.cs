@@ -11,6 +11,7 @@ namespace NEAT {
   public class PopulationTests {
 
     [Test]
+    [Ignore]
     public void TestPopulation() {
       // Population(int populationSize) {}
       // var population = new Population(3);

@@ -12,7 +12,8 @@ namespace NEAT {
 
     [Test]
     public void TestGenotype() {
-      var genotype = new Genotype(3);
+      var innovations = new Innovations();
+      var genotype = new Genotype(3, innovations);
       var clonedGenotype = new Genotype(genotype);
 
       Assert.That(genotype != clonedGenotype);
@@ -22,7 +23,7 @@ namespace NEAT {
       Assert.That(genotype.synapseGenes.SequenceEqual(clonedGenotype.synapseGenes));
       Assert.That(Genotype.Distance(genotype, clonedGenotype) == 0.0f);
 
-      var otherGenotype = new Genotype(3);
+      var otherGenotype = new Genotype(3, innovations);
       Assert.That(Genotype.Distance(genotype, otherGenotype) > 0.0f);
     }
   }
