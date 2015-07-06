@@ -21,22 +21,32 @@ namespace NEAT {
       var neuronGenes = new List<NeuronGene>(genotype.neuronGenes);
       var synapseGenes = new List<SynapseGene>(genotype.synapseGenes);
 
-      // In the add node mutation, an existing connection is split and the new node
-      // placed where the old connection used to be. The old connection is disabled
-      // and two new connections are added to the genome.
+      // In the add node mutation, an existing connection is split and the new
+      // node placed where the old connection used to be. The old connection is
+      // disabled and two new connections are added to the genome.
       var synapseIndex = Random.Range(0, synapseGenes.Count);
       var synapseGene = synapseGenes[synapseIndex];
 
-      var innovationId = innovations.GetAddNeuronInnovationId(synapseGene.fromNeuronId, synapseGene.toNeuronId, synapseGene.InnovationId);
+      var innovationId = innovations.GetAddNeuronInnovationId(
+        synapseGene.fromNeuronId,
+        synapseGene.toNeuronId,
+        synapseGene.InnovationId
+      );
 
       var neuronIndex = neuronGenes.Count;
-      var neuronGene = new NeuronGene(innovationId, neuronIndex);
+      var neuronGene = NeuronGene.Random(innovationId, neuronIndex);
       neuronGenes.Add(neuronGene);
 
-      var synapseGene1 = new SynapseGene(innovationId + 0, synapseGene.fromNeuronId, neuronGene.id, true);
+      var synapseGene1 = new SynapseGene(innovationId + 0,
+        synapseGene.fromNeuronId,
+        neuronGene.InnovationId,
+        true, 0.5f);
       synapseGenes.Add(synapseGene1);
 
-      var synapseGene2 = new SynapseGene(innovationId + 1, neuronGene.id, synapseGene.toNeuronId, true);
+      var synapseGene2 = new SynapseGene(innovationId + 1,
+        neuronGene.InnovationId,
+        synapseGene.toNeuronId,
+        true, 0.5f);
       synapseGenes.Add(synapseGene2);
 
       return new Genotype(neuronGenes, synapseGenes);

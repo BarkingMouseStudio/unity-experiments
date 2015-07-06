@@ -4,7 +4,7 @@ namespace NEAT {
 
   public struct NeuronGene : IHistoricalGene {
 
-    const float mutationScale = 0.1f;
+    const float mutationScale = 0.25f;
 
     private int innovationId;
     public int InnovationId {
@@ -19,6 +19,14 @@ namespace NEAT {
     public float b;
     public float c;
     public float d;
+
+    public static NeuronGene Random(int innovationId, int id) {
+      return new NeuronGene(innovationId, id,
+        UnityEngine.Random.value,
+        UnityEngine.Random.value,
+        UnityEngine.Random.value,
+        UnityEngine.Random.value);
+    }
 
     public NeuronGene(int innovationId, int id) {
       this.innovationId = innovationId;
@@ -40,10 +48,10 @@ namespace NEAT {
 
     public NeuronGene Randomize() {
       return new NeuronGene(innovationId, id,
-        Random.value,
-        Random.value,
-        Random.value,
-        Random.value
+        UnityEngine.Random.value,
+        UnityEngine.Random.value,
+        UnityEngine.Random.value,
+        UnityEngine.Random.value
       );
     }
 

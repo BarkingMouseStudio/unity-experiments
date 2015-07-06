@@ -26,7 +26,7 @@ namespace NEAT {
       this.speciesId = speciesId;
       this.representative = representative;
       this.phenotypes = new List<Phenotype>();
-      this.measurement = new Measurement(1.0f, 1.0f, 1.0f);
+      this.measurement = new Measurement(2.0f, 2.0f, 1.0f);
     }
 
     public Species Next() {
@@ -55,8 +55,10 @@ namespace NEAT {
       for (int i = 0; i < offspringCount; i++) {
         var parent1 = sorted[Random.Range(0, speciesSize)];
         var parent2 = sorted[Random.Range(0, speciesSize)];
+        // TODO: Alloc
         var child = crossover.Crossover(parent1, parent2);
         foreach (var mutator in mutators) {
+          // TODO: Alloc
           child = mutator.Mutate(child, innovations);
         }
         offspring.Add(child);

@@ -34,7 +34,8 @@ namespace NEAT {
         neuronGeneB = candidates[i];
 
         var exists = synapseGenes.Any(s => {
-          return s.fromNeuronId != neuronGeneA.id && s.toNeuronId != neuronGeneB.id;
+          return s.fromNeuronId != neuronGeneA.InnovationId &&
+                 s.toNeuronId   != neuronGeneB.InnovationId;
         });
 
         if (!exists) {
@@ -44,8 +45,8 @@ namespace NEAT {
       }
 
       if (foundNeuron) {
-        var synapseInnovationId = innovations.GetAddSynapseInnovationId(neuronGeneA.id, neuronGeneB.id);
-        var synapseGene = new SynapseGene(synapseInnovationId, neuronGeneA.id, neuronGeneB.id, true);
+        var synapseInnovationId = innovations.GetAddSynapseInnovationId(neuronGeneA.InnovationId, neuronGeneB.InnovationId);
+        var synapseGene = SynapseGene.Random(synapseInnovationId, neuronGeneA.InnovationId, neuronGeneB.InnovationId, true);
         synapseGenes.Add(synapseGene);
       }
 

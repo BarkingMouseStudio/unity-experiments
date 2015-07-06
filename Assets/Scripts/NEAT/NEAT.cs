@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace NEAT {
 
+  // TODO: Builder-pattern
+  // TODO: Species manager
+  // TODO: Single-file configuration
   public class NEAT {
 
     public Population population;
@@ -17,28 +20,27 @@ namespace NEAT {
       }
     }
 
-    // TODO: SpeciesManager
     int nextSpeciesId = 0;
 
     public int desiredSpeciesCount = 10;
-    public float distanceThreshold = 30.0f;
+    public float distanceThreshold = 100.0f;
     public float distanceThresholdAdjustment = 0.1f;
 
-    const int minimalNeuronCount = 46;
-    const float elitism = 0.2f;
+    const float elitism = 0.25f;
 
     MultipointCrossover crossover = new MultipointCrossover();
 
     IMutator[] mutators = new IMutator[]{
       new AddNeuronMutator(0.2f),
       new AddSynapseMutator(0.2f),
-      new PerturbNeuronMutator(0.2f),
-      new PerturbSynapseMutator(0.2f),
-      new ReplaceNeuronMutator(0.1f),
-      new ReplaceSynapseMutator(0.1f),
+      new PerturbNeuronMutator(0.25f),
+      new PerturbSynapseMutator(0.25f),
+      new ReplaceNeuronMutator(0.15f),
+      new ReplaceSynapseMutator(0.15f),
     };
 
     // Update existing species or create a new species using the original, if any
+    // TODO: This allocs a ton
     public List<Species> Speciate(List<Species> spp, List<Phenotype> phenotypes) {
       // Begin new species
       var sppNext = spp.Select(sp => sp.Next()).ToList();
@@ -58,7 +60,9 @@ namespace NEAT {
 
         // Create a new species for the phenotype if necessary
         if (!foundSpecies) {
-          var spNext = new Species(nextSpeciesId++, phenotype.genotype);
+          var spNext = new Species(nextSpeciesId, phenotype.genotype);
+          nextSpeciesId++;
+
           spNext.phenotypes.Add(phenotype);
           sppNext.Add(spNext);
         }
@@ -78,20 +82,19 @@ namespace NEAT {
     }
 
     public static Genotype GetProtoGenotype(Innovations innovations) {
-      var neuronGenes = Enumerable.Range(0, minimalNeuronCount)
-        .Select(i => new NeuronGene(innovations.GetAddInitialNeuronInnovationId(i), i))
+      var neuronGenes = Enumerable.Range(0, NetworkIO.inNeuronCount + NetworkIO.outNeuronCount)
+        .Select(i => NeuronGene.Random(innovations.GetAddInitialNeuronInnovationId(i), i))
         .ToList();
 
-      // TODO: Put references somewher else, like NetworkIO
       var synapseGenes = new List<SynapseGene>();
-      foreach (var inNeuronId in Reifier.inNeuronIds) {
-        foreach (var outNeuronId in Reifier.outNeuronIds) {
-          var fromNeuron = neuronGenes[(int)inNeuronId];
-          var toNeuron = neuronGenes[(int)outNeuronId];
-          var innovationId = innovations.GetAddInitialSynapseInnovationId(fromNeuron.InnovationId, toNeuron.InnovationId);
-          synapseGenes.Add(new SynapseGene(innovationId, fromNeuron.InnovationId, toNeuron.InnovationId, true));
-        }
-      }
+      // foreach (var inNeuronId in NetworkIO.inNeuronIds) {
+      //   foreach (var outNeuronId in NetworkIO.outNeuronIds) {
+      //     var fromNeuron = neuronGenes[(int)inNeuronId];
+      //     var toNeuron = neuronGenes[(int)outNeuronId];
+      //     var innovationId = innovations.GetAddInitialSynapseInnovationId(fromNeuron.InnovationId, toNeuron.InnovationId);
+      //     synapseGenes.Add(SynapseGene.Random(innovationId, fromNeuron.InnovationId, toNeuron.InnovationId, true));
+      //   }
+      // }
 
       return new Genotype(neuronGenes, synapseGenes);
     }
@@ -106,32 +109,39 @@ namespace NEAT {
       spp = Speciate(spp, phenotypes);
 
       if (spp.Count < desiredSpeciesCount) { // Too few
-        distanceThreshold += distanceThreshold * distanceThresholdAdjustment; // Increase threshold
-      } else if (spp.Count > desiredSpeciesCount) { // To many
         distanceThreshold -= distanceThreshold * distanceThresholdAdjustment; // Decrease threshold
-      }
-
-      // Adjust fitnesses
-      foreach (var sp in spp) {
-        foreach (var pt in sp.phenotypes) {
-          pt.adjustedFitness = pt.fitness / sp.Size;
-        }
+      } else if (spp.Count > desiredSpeciesCount) { // To many
+        distanceThreshold += distanceThreshold * distanceThresholdAdjustment; // Increase threshold
       }
 
       var populationSize = this.population.Size;
+
+      // Adjust fitnesses
+      foreach (var sp in spp) {
+        var multiplier = 1.0f + ((float)sp.Size / (float)populationSize);
+        foreach (var pt in sp.phenotypes) {
+          pt.adjustedFitness = pt.fitness * multiplier;
+        }
+      }
+
       var totalAverageFitness = spp.Aggregate(0.0f,
         (total, sp) => total + sp.AverageFitness);
+      var averageFitness = totalAverageFitness / spp.Count;
 
       var sortedSpecies = spp.OrderBy(sp => sp.AverageFitness);
 
-      int totalOffspringCount = 0;
+      var bestSpecies = sortedSpecies.First();
+      var bestPhenotype = bestSpecies.phenotypes.OrderBy(pt => pt.adjustedFitness).First();
 
-      // TODO: Species manager
+      Debug.LogFormat("Species: {0} (Threshold: {1}), Average: {2}",
+        spp.Count, distanceThreshold, averageFitness);
+
+      // TODO: This allocates a bunch
       var nextPopulation = sortedSpecies.Aggregate(new List<Genotype>(populationSize), (genotypes, sp) => {
         var offspringCount = Mathf.CeilToInt(
           (sp.AverageFitness / totalAverageFitness) * (float)populationSize
         );
-        totalOffspringCount += offspringCount;
+        // TODO: Alloc
         var offspring = sp.Reproduce(offspringCount, elitism, crossover, mutators, population.innovations);
         genotypes.AddRange(offspring);
         return genotypes;

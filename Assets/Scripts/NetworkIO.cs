@@ -15,12 +15,34 @@ public class NetworkIO {
   });
 
   public static readonly double[] speeds = new double[]{
-    -250.0, -100.0, -10.0, -1.0, -0.1, 0.1, 1.0, 10.0, 100.0, 250.0
+    -200.0, -100.0, -10.0, -1.0, -0.1, 0.1, 1.0, 10.0, 100.0, 200.0
   };
 
   public static readonly Range[] inputRanges;
 
+  public static readonly ulong[] inNeuronIds;
+  public static readonly ulong[] outNeuronIds;
+
+  public static readonly int inNeuronCount;
+  public static readonly int outNeuronCount;
+
+  public static readonly ulong MAX_DELAY = 20;
+
   static NetworkIO() {
+    inNeuronCount = (NetworkIO.angularRanges.Length * 2) +
+      (NetworkIO.linearRanges.Length * 2);
+    outNeuronCount = NetworkIO.speeds.Length;
+
+    // Set up input neuron ids by order
+    inNeuronIds = Enumerable.Range(0, inNeuronCount)
+      .Select(i => (ulong)i)
+      .ToArray();
+
+    // Set up output neuron ids by order _after_ input neuron ids
+    outNeuronIds = Enumerable.Range(0, outNeuronCount)
+      .Select(i => (ulong)(inNeuronCount + i))
+      .ToArray();
+
     List<Range> inputRanges = new List<Range>(
       angularRanges.Length * 1 + linearRanges.Length * 1
     );
@@ -31,10 +53,12 @@ public class NetworkIO {
     NetworkIO.inputRanges = inputRanges.ToArray();
   }
 
-  Neural.Network network;
+  readonly Neural.Network network;
+  readonly int neuronCount;
 
   public NetworkIO(Neural.Network network) {
     this.network = network;
+    this.neuronCount = (int)network.NeuronCount;
   }
 
   public float Send(float thetaLower, float x) {
@@ -59,28 +83,28 @@ public class NetworkIO {
     // Debug.Log(string.Join(",", worldData.Select(v => v.ToString()).ToArray()));
 
     // Filter world data by ranges
-    double[] input = new double[CommonGenotype.neuronCount];
+    double[] input = new double[neuronCount];
     Range range;
     float data;
     for (int i = 0; i < inputRanges.Length; i++) {
       range = inputRanges[i];
       data = worldData[i];
       if (range.Contains(data)) {
-        input[CommonGenotype.inNeuronIds[i]] = 40.0 * range.Normalize(data);
+        input[inNeuronIds[i]] = 40.0 * range.Normalize(data);
       }
     }
     // Debug.Log(string.Join(",", input.Select(v => v.ToString()).ToArray()));
 
     // Receive output
     var ticks = (ulong)(Time.fixedDeltaTime * 1000.0f);
-    var output = new double[CommonGenotype.neuronCount];
+    var output = new double[neuronCount];
     network.Tick(ticks, input, ref output);
     // Debug.Log(string.Join(",", output.Select(v => v.ToString()).ToArray()));
 
     // Read out neuron V for speed
     float speed = 0.0f;
     for (int i = 0; i < speeds.Length; i++) {
-      speed += (float)((output[CommonGenotype.outNeuronIds[i]] / 30.0) * speeds[i]);
+      speed += (float)((output[outNeuronIds[i]] / 30.0) * speeds[i]);
     }
     return speed;
   }

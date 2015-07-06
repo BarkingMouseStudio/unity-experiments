@@ -20,7 +20,7 @@ public class Evaluator {
           (total, next) => total + next,
           (total) => total / fitnessHistory.Length);
 				var normalizedFitnessCount = 1.0f - ((float)fitnessCount / (float)maximumFitnessCount);
-        return 0.1f * normalizedFitnessCount + 0.9f * normalizedFitness;
+        return 0.5f * normalizedFitnessCount + 0.5f * normalizedFitness;
       } else {
         return 1.0f; // Worst case, didn't live long enough
       }

@@ -5,8 +5,6 @@ using System.Linq;
 
 namespace NEAT {
 
-  // TODO: Proto-genotype instead of `minimalNeuronCount`
-  // TODO: Builder-pattern
   public class Population {
 
     public List<Genotype> genotypes;

@@ -13,8 +13,8 @@ public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
 
-  int batchSize = 25;
-  int populationSize = 100;
+  int batchSize = 50;
+  int populationSize = 500;
 
   List<List<NEAT.Genotype>> CreateBatches(List<NEAT.Genotype> genotypes, int batchSize) {
     return genotypes.Select((gt, i) => {
@@ -53,7 +53,7 @@ public class EvolutionBehaviour : MonoBehaviour {
 
       var evaluationBehaviour = t.GetComponent<EvaluationBehaviour>();
       evaluationBehaviour.genotype = genotype;
-  
+
       evaluations.Add(evaluationBehaviour);
 
       i++;
@@ -118,15 +118,15 @@ public class EvolutionBehaviour : MonoBehaviour {
       var phenotypes = new List<NEAT.Phenotype>(genotypes.Count);
       yield return StartCoroutine(EvaluatePopulation(genotypes, phenotypes));
 
-      var sorted = phenotypes.OrderBy(pt => pt.fitness);
+      var sorted = phenotypes.OrderBy(pt => pt.adjustedFitness);
       var best = sorted.First();
 
       // Update the EA's internals
       neat.Update(phenotypes);
 
-      Debug.LogFormat("[{0}] Generation completed with {1}s and a fitness of {2}.", neat.Generation, best.duration, best.fitness);
+      Debug.LogFormat("[{0}] Generation completed with {1}s and a fitness of {2}.", neat.Generation, best.duration, best.adjustedFitness);
 
-      resultsLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}", neat.Generation, best.fitness, best.duration, best.orientation, best.ToString()));
+      resultsLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}", neat.Generation, best.adjustedFitness, best.duration, best.orientation, best.ToString()));
     }
   }
 }
