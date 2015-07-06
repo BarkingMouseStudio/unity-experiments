@@ -7,84 +7,82 @@ namespace NEAT {
 
   public class Genotype {
 
-    // Distance coefficients
-    const float c1 = 2.0f;
-    const float c2 = 2.0f;
-    const float c3 = 3.0f;
-
     public List<NeuronGene> neuronGenes;
     public List<SynapseGene> synapseGenes;
-
-    // TODO: Move this to population since it's dependent on innovations and initial genotype structure.
-    public Genotype(int minimalNeuronCount, Innovations innovations) {
-      // The starting genotype neurons use their index as the innovation id
-      this.neuronGenes = Enumerable.Range(0, minimalNeuronCount)
-        .Select(i => new NeuronGene(innovations.GetAddInitialNeuronInnovationId(i)))
-        .ToList();
-      this.synapseGenes = new List<SynapseGene>();
-    }
 
     public Genotype(List<NeuronGene> neuronGenes, List<SynapseGene> synapseGenes) {
       this.neuronGenes = neuronGenes;
       this.synapseGenes = synapseGenes;
     }
 
-    // Clone
-    public Genotype(Genotype other) {
-      this.neuronGenes = new List<NeuronGene>(other.neuronGenes);
-      this.synapseGenes = new List<SynapseGene>(other.synapseGenes);
+    public Genotype Clone() {
+      return new Genotype(
+        new List<NeuronGene>(neuronGenes),
+        new List<SynapseGene>(synapseGenes)
+      );
     }
 
-    // TODO: new GeneticMeasurement(c1, c2, c3): GeneticMeasurement.Measure(a, b)
-    public static float Distance(Genotype a, Genotype b) {
-      var E = 0.0f;
-      var D = 0.0f;
-      var W = 0.0f;
-      var N = 0.0f;
+    public Genotype Randomize() {
+      return new Genotype(
+        neuronGenes.Select(g => g.Randomize()).ToList(),
+        synapseGenes.Select(g => g.Randomize()).ToList()
+      );
+    }
 
-      var L = 0.0f;
-      L += Mathf.Max(a.neuronGenes.Count, b.neuronGenes.Count);
-      L += Mathf.Max(a.synapseGenes.Count, b.synapseGenes.Count);
-      if (L == 0.0f) { // Don't divide by zero
-        L = 1.0f;
-      }
+    public string ToJSON() {
+      var neurons = neuronGenes.Select(g => {
+        var dict = new Dictionary<string, object>();
+        dict["innovation"] = g.InnovationId;
+        dict["id"] = g.id;
+        dict["a"] = g.a;
+        dict["b"] = g.b;
+        dict["c"] = g.c;
+        dict["d"] = g.d;
+        return dict;
+      }).ToList();
 
-      foreach (var t in Iterator.IterGenes(a.neuronGenes, b.neuronGenes)) {
-        switch (t.First) {
-          case HistoricalGeneTypes.Aligned:
-            N += Mathf.Abs(a.neuronGenes[t.Second].a - b.neuronGenes[t.Third].a) / 2;
-            N += Mathf.Abs(a.neuronGenes[t.Second].b - b.neuronGenes[t.Third].b) / 2;
-            N += Mathf.Abs(a.neuronGenes[t.Second].c - b.neuronGenes[t.Third].c) / 2;
-            N += Mathf.Abs(a.neuronGenes[t.Second].d - b.neuronGenes[t.Third].d) / 2;
-            break;
-          case HistoricalGeneTypes.DisjointA:
-          case HistoricalGeneTypes.DisjointB:
-            D++;
-            break;
-          case HistoricalGeneTypes.ExcessA:
-          case HistoricalGeneTypes.ExcessB:
-            E++;
-            break;
-        }
-      }
+      var synapses = synapseGenes.Select(g => {
+        var dict = new Dictionary<string, object>();
+        dict["innovation"] = g.InnovationId;
+        dict["weight"] = g.weight;
+        dict["from"] = g.fromNeuronId;
+        dict["to"] = g.toNeuronId;
+        dict["enabled"] = g.isEnabled;
+        return dict;
+      }).ToList();
 
-      foreach (var t in Iterator.IterGenes(a.synapseGenes, b.synapseGenes)) {
-        switch (t.First) {
-          case HistoricalGeneTypes.Aligned:
-            W += Mathf.Abs(a.synapseGenes[t.Second].weight - b.synapseGenes[t.Third].weight) / 2;
-            break;
-          case HistoricalGeneTypes.DisjointA:
-          case HistoricalGeneTypes.DisjointB:
-            D++;
-            break;
-          case HistoricalGeneTypes.ExcessA:
-          case HistoricalGeneTypes.ExcessB:
-            E++;
-            break;
-        }
-      }
+      var obj = new Dictionary<string, List<Dictionary<string, object>>>();
+      obj["neurons"] = neurons;
+      obj["synapses"] = synapses;
 
-      return ((c1 * E) / L) + ((c2 * D) / L) + (c3 * (W + N));
+      return JSON.Serialize(obj);
+    }
+
+    public static Genotype FromJSON(string data) {
+      var obj = (Dictionary<string, object>)JSON.Deserialize(data);
+
+      var neuronGenes = ((List<object>)obj["neurons"]).Select(g => {
+        var neuronGene = (Dictionary<string, object>)g;
+        var innovationId = (int)(long)neuronGene["innovation"];
+        var id = (int)(long)neuronGene["id"];
+        var a = (float)(double)neuronGene["a"];
+        var b = (float)(double)neuronGene["b"];
+        var c = (float)(double)neuronGene["c"];
+        var d = (float)(double)neuronGene["d"];
+        return new NeuronGene(innovationId, id, a, b, c, d);
+      }).ToList();
+
+      var synapseGenes = ((List<object>)obj["synapses"]).Select(g => {
+        var synapseGene = (Dictionary<string, object>)g;
+        var innovationId = (int)(long)synapseGene["innovation"];
+        var fromNeuronId = (int)(long)synapseGene["from"];
+        var toNeuronId = (int)(long)synapseGene["to"];
+        var weight = (float)(double)synapseGene["weight"];
+        var isEnabled = (bool)synapseGene["enabled"];
+        return new SynapseGene(innovationId, fromNeuronId, toNeuronId, isEnabled, weight);
+      }).ToList();
+
+      return new Genotype(neuronGenes, synapseGenes);
     }
   }
 }

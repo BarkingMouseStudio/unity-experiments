@@ -16,7 +16,6 @@ public class CommonGenotype : IEnumerable<float[]> {
 
   public static readonly int inNeuronCount;
   public static readonly int outNeuronCount;
-  public static readonly int hiddenNeuronCount;
 
   private static readonly ulong MAX_DELAY = 20;
   private readonly float[][] genotype;
@@ -26,9 +25,7 @@ public class CommonGenotype : IEnumerable<float[]> {
       (NetworkIO.linearRanges.Length * 2);
     outNeuronCount = NetworkIO.speeds.Length;
 
-    hiddenNeuronCount = 12;
-
-    neuronCount = inNeuronCount + outNeuronCount + hiddenNeuronCount;
+    neuronCount = inNeuronCount + outNeuronCount;
     synapseCount = neuronCount * neuronCount;
 
     // Set up input neuron ids by order

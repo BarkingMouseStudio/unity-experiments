@@ -14,7 +14,7 @@ namespace NEAT {
     }
 
     public Genotype Mutate(Genotype genotype, Innovations innovations) {
-      if (Random.value > p) {
+      if (Random.value > p || genotype.synapseGenes.Count == 0) {
         return genotype;
       }
 
@@ -27,15 +27,16 @@ namespace NEAT {
       var synapseIndex = Random.Range(0, synapseGenes.Count);
       var synapseGene = synapseGenes[synapseIndex];
 
-      var innovationId = innovations.GetAddNeuronInnovationId(synapseGene.fromId, synapseGene.toId, synapseGene.innovationId);
+      var innovationId = innovations.GetAddNeuronInnovationId(synapseGene.fromNeuronId, synapseGene.toNeuronId, synapseGene.InnovationId);
 
-      var neuronGene = new NeuronGene(innovationId);
+      var neuronIndex = neuronGenes.Count;
+      var neuronGene = new NeuronGene(innovationId, neuronIndex);
       neuronGenes.Add(neuronGene);
 
-      var synapseGene1 = new SynapseGene(innovationId + 0, synapseGene.fromId, neuronGene.innovationId, true);
+      var synapseGene1 = new SynapseGene(innovationId + 0, synapseGene.fromNeuronId, neuronGene.id, true);
       synapseGenes.Add(synapseGene1);
 
-      var synapseGene2 = new SynapseGene(innovationId + 1, neuronGene.innovationId, synapseGene.toId, true);
+      var synapseGene2 = new SynapseGene(innovationId + 1, neuronGene.id, synapseGene.toNeuronId, true);
       synapseGenes.Add(synapseGene2);
 
       return new Genotype(neuronGenes, synapseGenes);

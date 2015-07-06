@@ -13,7 +13,7 @@ namespace NEAT {
     private Genotype NewGenotype(Innovations innovations) {
       var neuronGenes = Enumerable.Range(0, 3).Select(i => {
         var inId = innovations.GetAddInitialNeuronInnovationId(i);
-        return new NeuronGene(inId);
+        return new NeuronGene(inId, inId);
       }).ToList();
 
       var synapseGenes = Enumerable.Range(0, 3).Select(i => {
@@ -39,11 +39,11 @@ namespace NEAT {
 
       // Compare innovation ids
       var aN = new []{0, 1, 2, 4};
-      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.InnovationId);
       Assert.That(aN.SequenceEqual(bN));
 
       var aS = new []{3, 3, 3, 4, 5};
-      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.InnovationId);
       Assert.That(aS.SequenceEqual(bS));
     }
 
@@ -62,11 +62,11 @@ namespace NEAT {
 
       // Compare innovation ids
       var aN = new []{0, 1, 2};
-      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.InnovationId);
       Assert.That(aN.SequenceEqual(bN));
 
       var aS = new []{3, 3, 3, 4};
-      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.InnovationId);
       Assert.That(aS.SequenceEqual(bS));
     }
 
@@ -84,12 +84,12 @@ namespace NEAT {
       Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
 
       // Compare innovation ids
-      var aN = genotype.neuronGenes.Select(g => g.innovationId);
-      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      var aN = genotype.neuronGenes.Select(g => g.InnovationId);
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.InnovationId);
       Assert.That(aN.SequenceEqual(bN));
 
-      var aS = genotype.synapseGenes.Select(g => g.innovationId);
-      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      var aS = genotype.synapseGenes.Select(g => g.InnovationId);
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.InnovationId);
       Assert.That(aS.SequenceEqual(bS));
 
       // Compare fields
@@ -111,12 +111,12 @@ namespace NEAT {
       Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
 
       // Compare innovation ids
-      var aN = genotype.neuronGenes.Select(g => g.innovationId);
-      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      var aN = genotype.neuronGenes.Select(g => g.InnovationId);
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.InnovationId);
       Assert.That(aN.SequenceEqual(bN));
 
-      var aS = genotype.synapseGenes.Select(g => g.innovationId);
-      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      var aS = genotype.synapseGenes.Select(g => g.InnovationId);
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.InnovationId);
       Assert.That(aS.SequenceEqual(bS));
 
       // Compare fields
@@ -138,12 +138,12 @@ namespace NEAT {
       Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
 
       // Compare innovation ids
-      var aN = genotype.neuronGenes.Select(g => g.innovationId);
-      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      var aN = genotype.neuronGenes.Select(g => g.InnovationId);
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.InnovationId);
       Assert.That(aN.SequenceEqual(bN));
 
-      var aS = genotype.synapseGenes.Select(g => g.innovationId);
-      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      var aS = genotype.synapseGenes.Select(g => g.InnovationId);
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.InnovationId);
       Assert.That(aS.SequenceEqual(bS));
 
       // Compare fields
@@ -165,12 +165,12 @@ namespace NEAT {
       Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
 
       // Compare innovation ids
-      var aN = genotype.neuronGenes.Select(g => g.innovationId);
-      var bN = mutatedGenotype.neuronGenes.Select(g => g.innovationId);
+      var aN = genotype.neuronGenes.Select(g => g.InnovationId);
+      var bN = mutatedGenotype.neuronGenes.Select(g => g.InnovationId);
       Assert.That(aN.SequenceEqual(bN));
 
-      var aS = genotype.synapseGenes.Select(g => g.innovationId);
-      var bS = mutatedGenotype.synapseGenes.Select(g => g.innovationId);
+      var aS = genotype.synapseGenes.Select(g => g.InnovationId);
+      var bS = mutatedGenotype.synapseGenes.Select(g => g.InnovationId);
       Assert.That(aS.SequenceEqual(bS));
 
       // Compare fields

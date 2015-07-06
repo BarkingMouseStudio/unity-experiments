@@ -5,10 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-public interface IJSONSerializable {
-  object ToJSON();
-}
-
 public static class JSON {
 
   sealed class Parser : IDisposable {

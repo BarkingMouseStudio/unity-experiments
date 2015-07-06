@@ -6,42 +6,49 @@ namespace NEAT {
 
     const float mutationScale = 0.1f;
 
-    public int innovationId;
+    private int innovationId;
     public int InnovationId {
       get {
         return innovationId;
       }
     }
 
+    public int id;
+
     public float a;
     public float b;
     public float c;
     public float d;
 
-    public NeuronGene(int innovationId) {
+    public NeuronGene(int innovationId, int id) {
       this.innovationId = innovationId;
-
-      a = RandomHelper.NextCauchy(0.5f, mutationScale);
-      b = RandomHelper.NextCauchy(0.5f, mutationScale);
-      c = RandomHelper.NextCauchy(0.5f, mutationScale);
-      d = RandomHelper.NextCauchy(0.5f, mutationScale);
+      this.id = id;
+      this.a = 0.5f;
+      this.b = 0.5f;
+      this.c = 0.5f;
+      this.d = 0.5f;
     }
 
-    public NeuronGene(int innovationId, float a, float b, float c, float d) {
+    public NeuronGene(int innovationId, int id, float a, float b, float c, float d) {
       this.innovationId = innovationId;
+      this.id = id;
       this.a = a;
       this.b = b;
       this.c = c;
       this.d = d;
     }
 
-    /// Create a new NeuronGene with randomized properties.
     public NeuronGene Randomize() {
-      return new NeuronGene(innovationId);
+      return new NeuronGene(innovationId, id,
+        Random.value,
+        Random.value,
+        Random.value,
+        Random.value
+      );
     }
 
     public NeuronGene Perturb() {
-      return new NeuronGene(innovationId,
+      return new NeuronGene(innovationId, id,
         RandomHelper.NextCauchy(a, mutationScale),
         RandomHelper.NextCauchy(b, mutationScale),
         RandomHelper.NextCauchy(c, mutationScale),

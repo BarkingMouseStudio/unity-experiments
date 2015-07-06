@@ -7,30 +7,30 @@ namespace NEAT {
     const float mutationScale = 0.1f;
     const float toggleProbability = 0.2f;
 
-    public int innovationId;
+    private int innovationId;
     public int InnovationId {
       get {
         return innovationId;
       }
     }
 
-    public int fromId;
-    public int toId;
+    public int fromNeuronId;
+    public int toNeuronId;
     public bool isEnabled;
     public float weight;
 
-    public SynapseGene(int innovationId, int fromId, int toId, bool isEnabled) {
+    public SynapseGene(int innovationId, int fromNeuronId, int toNeuronId, bool isEnabled) {
       this.innovationId = innovationId;
-      this.fromId = fromId;
-      this.toId = toId;
+      this.fromNeuronId = fromNeuronId;
+      this.toNeuronId = toNeuronId;
       this.isEnabled = isEnabled;
       this.weight = Mathf.Clamp01(RandomHelper.NextCauchy(0.5f, mutationScale));
     }
 
-    public SynapseGene(int innovationId, int fromId, int toId, bool isEnabled, float weight) {
+    public SynapseGene(int innovationId, int fromNeuronId, int toNeuronId, bool isEnabled, float weight) {
       this.innovationId = innovationId;
-      this.fromId = fromId;
-      this.toId = toId;
+      this.fromNeuronId = fromNeuronId;
+      this.toNeuronId = toNeuronId;
       this.isEnabled = isEnabled;
       this.weight = weight;
     }

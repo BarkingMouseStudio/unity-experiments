@@ -8,24 +8,15 @@ using PathologicalGames;
 using System.IO;
 
 // Responsible for spawning evaluation prefabs, waiting for their completion and
-// passing the results back to the EA.
+// passing the phenotypes back to the EA.
 public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
 
-  int subpopulationSize = 30;
-  int sampleSize = 200;
-  int batchSize = 30;
+  int batchSize = 25;
+  int populationSize = 100;
 
-  IEvolutionaryAlgorithm algorithm;
-
-  public struct Result {
-    public float fitness;
-    public float duration;
-    public float orientation;
-  }
-
-  CommonGenotype[][] CreateBatches(CommonGenotype[] genotypes, int batchSize) {
+  List<List<NEAT.Genotype>> CreateBatches(List<NEAT.Genotype> genotypes, int batchSize) {
     return genotypes.Select((gt, i) => {
       return new {
         Batch = Mathf.FloorToInt(i / batchSize),
@@ -34,11 +25,11 @@ public class EvolutionBehaviour : MonoBehaviour {
     }).GroupBy((gt) => {
       return gt.Batch;
     }).Select((grp) => {
-      return grp.Select(g => g.Genotype).ToArray();
-    }).ToArray();
+      return grp.Select(g => g.Genotype).ToList();
+    }).ToList();
   }
 
-  IEnumerator EvaluateBatch(int batchIndex, CommonGenotype[] batch, List<Result> results) {
+  IEnumerator EvaluateBatch(int batchIndex, List<NEAT.Genotype> batch, List<NEAT.Phenotype> phenotypes) {
     IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
 
     float spacing = 28.0f;
@@ -56,11 +47,13 @@ public class EvolutionBehaviour : MonoBehaviour {
       Quaternion rotation = Quaternion.identity;
 
       var t = PoolManager.Pools["Evaluations"].Spawn(prefab, position, rotation, transform);
-      var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
 
-      controllerBehaviour.networkIO = new NetworkIO(genotype.GetPhenotype());
+      var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
+      controllerBehaviour.networkIO = new NetworkIO(Reifier.Reify(genotype));
 
       var evaluationBehaviour = t.GetComponent<EvaluationBehaviour>();
+      evaluationBehaviour.genotype = genotype;
+  
       evaluations.Add(evaluationBehaviour);
 
       i++;
@@ -71,14 +64,12 @@ public class EvolutionBehaviour : MonoBehaviour {
       yield return new WaitForFixedUpdate();
     }
 
+    var batchPhenotypes = evaluations.Select(ev => {
+      return new NEAT.Phenotype(ev.genotype, ev.Fitness, ev.Now, ev.Angle);
+    }).ToList();
+
     // Accumulate fitnesses into array
-    results.AddRange(evaluations.Select(ev => {
-      return new Result{
-        fitness = ev.Fitness,
-        duration = ev.Now,
-        orientation = ev.Angle,
-      };
-    }));
+    phenotypes.AddRange(batchPhenotypes);
 
     // Cleanup
     List<Transform> children = new List<Transform>(transform.childCount);
@@ -92,21 +83,22 @@ public class EvolutionBehaviour : MonoBehaviour {
     }
   }
 
-  IEnumerator EvaluateBatches(CommonGenotype[][] batches, List<Result> results) {
+  IEnumerator EvaluateBatches(List<List<NEAT.Genotype>> batches, List<NEAT.Phenotype> phenotypes) {
     int batchIndex = 0;
     foreach (var batch in batches) {
-      var batchFitness = new List<Result>(batch.Length);
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, batchFitness));
-      batchIndex++;
+      var batchPhenotypes = new List<NEAT.Phenotype>(batch.Count);
 
-      results.AddRange(batchFitness);
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, batchPhenotypes));
+
+      phenotypes.AddRange(batchPhenotypes);
+      batchIndex++;
     }
   }
 
-  IEnumerator EvaluatePopulation(CommonGenotype[] genotypes, List<Result> results) {
+  IEnumerator EvaluatePopulation(List<NEAT.Genotype> genotypes, List<NEAT.Phenotype> phenotypes) {
     // Create batches from the population
     var batches = CreateBatches(genotypes, batchSize);
-    yield return StartCoroutine(EvaluateBatches(batches, results));
+    yield return StartCoroutine(EvaluateBatches(batches, phenotypes));
   }
 
   StreamWriter resultsLog;
@@ -116,35 +108,25 @@ public class EvolutionBehaviour : MonoBehaviour {
   }
 
   IEnumerator Start() {
-    resultsLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/Logs/results.csv"));
+    resultsLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/Logs/phenotypes.csv"));
 
-    // Setup the algorithm with the proto-genotype
-    algorithm = new EnforcedSubpopulations(new CommonGenotype(), subpopulationSize);
-
-    // float bestFitness = 1.0f;
-    // int bestGeneration = 0;
+    var neat = new NEAT.NEAT(populationSize);
 
     while (true) {
-      // Sample from the EA
-      var population = algorithm.Sample(sampleSize);
+      var genotypes = neat.Sample();
 
-      var results = new List<Result>(population.Length);
-      yield return StartCoroutine(EvaluatePopulation(population, results));
+      var phenotypes = new List<NEAT.Phenotype>(genotypes.Count);
+      yield return StartCoroutine(EvaluatePopulation(genotypes, phenotypes));
 
-      var best = results.Zip(population, (result, genotype) => Tuple.Of(result, genotype))
-        .OrderBy(result => result.First.fitness)
-        .First();
-
-      // if (best.First.fitness < bestFitness) {
-      //   bestFitness = best.First.fitness;
-      //   bestGeneration = algorithm.Generation;
-      // }
+      var sorted = phenotypes.OrderBy(pt => pt.fitness);
+      var best = sorted.First();
 
       // Update the EA's internals
-      var updateResults = algorithm.Update(results.Select(r => r.fitness).ToArray());
-      Debug.LogFormat("[{0}] Generation completed with {1}s and a fitness of {2}. ({3})", algorithm.Generation, best.First.duration, best.First.fitness, updateResults.First);
+      neat.Update(phenotypes);
 
-      resultsLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}", algorithm.Generation, best.First.fitness, best.First.duration, best.First.orientation, best.Second.ToString()));
+      Debug.LogFormat("[{0}] Generation completed with {1}s and a fitness of {2}.", neat.Generation, best.duration, best.fitness);
+
+      resultsLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}", neat.Generation, best.fitness, best.duration, best.orientation, best.ToString()));
     }
   }
 }

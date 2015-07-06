@@ -11,27 +11,18 @@ namespace NEAT {
   public class PopulationTests {
 
     [Test]
-    [Ignore]
     public void TestPopulation() {
-      // Population(int populationSize) {}
-      // var population = new Population(3);
+      var innovations = new Innovations();
 
-      // int GetAddNeuronInnovationId(int fromId, int toId, int oldSId)
-      // int GetAddSynapseInnovationId(int fromId, int toId)
+      var neuronGenes = Enumerable.Range(0, 3)
+        .Select(i => new NeuronGene(innovations.GetAddInitialNeuronInnovationId(i), i))
+        .ToList();
+      var synapseGenes = new List<SynapseGene>();
+      var protoGenotype = new Genotype(neuronGenes, synapseGenes);
 
-      // void MutateAddNeuron(List<NeuronGene> neuronGenes, List<SynapseGene> synapseGenes)
-      // void MutateAddSynapse(List<NeuronGene> neuronGenes, List<SynapseGene> synapseGenes)
-
-      // Genotype Mutate(Genotype other)
-      // Genotype Crossover(Phenotype a, Phenotype b)
-
-      // List<Genotype> Reproduce(List<Phenotype> phenotypes, int offspringCount)
-
-      // TODO: Clone
-      // TODO: Verify pruning
-      // Population(Population other, List<Genotype> genotypes)
-
-      Assert.That(false);
+      var populationSize = 10;
+      var population = new Population(populationSize, protoGenotype, innovations);
+      Assert.That(population.Size == populationSize);
     }
   }
 }

@@ -32,6 +32,8 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   Evaluator evaluator;
 
+  public NEAT.Genotype genotype;
+
   private bool isComplete = false;
   public bool IsComplete {
     get {
