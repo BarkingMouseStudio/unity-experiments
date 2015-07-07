@@ -5,6 +5,8 @@ using System.Linq;
 
 namespace NEAT {
 
+  // In the add connection mutation, a single new connection gene is added
+  // connecting two previously unconnected nodes.
   public class AddSynapseMutator : IMutator {
 
     float p;
@@ -21,8 +23,6 @@ namespace NEAT {
       var neuronGenes = new List<NeuronGene>(genotype.neuronGenes);
       var synapseGenes = new List<SynapseGene>(genotype.synapseGenes);
 
-      // In the add connection mutation, a single new connection gene is added
-      // connecting two previously unconnected nodes.
       var neuronGeneA = neuronGenes[Random.Range(0, neuronGenes.Count)];
 
       var candidates = new List<NeuronGene>(neuronGenes);

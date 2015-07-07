@@ -11,6 +11,7 @@ namespace NEAT {
     public Genotype representative;
 
     public List<Phenotype> phenotypes;
+    public List<Phenotype> elites;
 
     private Measurement measurement;
 
@@ -26,7 +27,7 @@ namespace NEAT {
       this.speciesId = speciesId;
       this.representative = representative;
       this.phenotypes = new List<Phenotype>();
-      this.measurement = new Measurement(2.0f, 2.0f, 1.0f);
+      this.measurement = new Measurement(3.0f, 3.0f, 2.0f);
     }
 
     public Species Next() {
@@ -45,16 +46,17 @@ namespace NEAT {
 
     // Return offspring to be aggregated into new population
     public List<Genotype> Reproduce(int offspringCount, float elitism, MultipointCrossover crossover, IMutator[] mutators, Innovations innovations) {
-      var speciesSize = phenotypes.Count();
-      var eliteCount = Mathf.FloorToInt(elitism * (float)speciesSize);
+      var eliteCount = Mathf.FloorToInt(elitism * (float)Size);
 
-      var sorted = phenotypes.OrderBy((g) => g.adjustedFitness).ToList();
-      var nextPopulation = sorted.Take(eliteCount).Select(pt => pt.genotype).ToList();
+      phenotypes = phenotypes.OrderBy((g) => g.adjustedFitness).ToList();
+      elites = phenotypes.Take(eliteCount).ToList();
 
+      var nextPopulation = elites.Select(pt => pt.genotype).ToList();
       var offspring = new List<Genotype>(offspringCount);
+
       for (int i = 0; i < offspringCount; i++) {
-        var parent1 = sorted[Random.Range(0, speciesSize)];
-        var parent2 = sorted[Random.Range(0, speciesSize)];
+        var parent1 = phenotypes[Random.Range(0, Size)];
+        var parent2 = phenotypes[Random.Range(0, Size)];
         // TODO: Alloc
         var child = crossover.Crossover(parent1, parent2);
         foreach (var mutator in mutators) {

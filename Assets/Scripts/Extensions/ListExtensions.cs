@@ -19,7 +19,6 @@ public static class IListExtensions {
   }
 }
 
-
 public static class ListExtensions {
 
   public static void Shuffle<T>(this List<T> list) {

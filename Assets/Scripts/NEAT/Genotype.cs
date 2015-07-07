@@ -29,6 +29,19 @@ namespace NEAT {
       );
     }
 
+    public bool ContainsInnovation(Innovation innov) {
+      switch (innov.type) {
+        case InnovationType.Neuron:
+          return genotypes.Any(gt =>
+            gt.neuronGenes.Any(g => g.InnovationId == innov.innovationId));
+        case InnovationType.Synapse:
+          return genotypes.Any(gt =>
+            gt.synapseGenes.Any(g => g.InnovationId == innov.innovationId));
+        default:
+          return false;
+      }
+    }
+
     public string ToJSON() {
       var neurons = neuronGenes.Select(g => {
         var dict = new Dictionary<string, object>();
@@ -77,9 +90,9 @@ namespace NEAT {
         var innovationId = (int)(long)synapseGene["innovation"];
         var fromNeuronId = (int)(long)synapseGene["from"];
         var toNeuronId = (int)(long)synapseGene["to"];
-        var weight = (float)(double)synapseGene["weight"];
+        var weight = (float)System.Convert.ToDouble(synapseGene["weight"]);
         var isEnabled = (bool)synapseGene["enabled"];
-        return new SynapseGene(innovationId, fromNeuronId, toNeuronId, isEnabled, weight);
+        return new SynapseGene(innovationId, fromNeuronId, toNeuronId, isEnabled, (float)weight);
       }).ToList();
 
       return new Genotype(neuronGenes, synapseGenes);

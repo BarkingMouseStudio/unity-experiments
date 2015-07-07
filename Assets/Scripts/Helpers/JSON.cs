@@ -428,17 +428,13 @@ public static class JSON {
     }
 
     void SerializeOther(object value) {
-        if (value is float
-            || value is int
-            || value is uint
-            || value is long
-            || value is double
-            || value is sbyte
-            || value is byte
-            || value is short
-            || value is ushort
-            || value is ulong
-            || value is decimal) {
+      if (value is float) {
+        builder.Append(((float)value).ToString("r")); // Round-trip
+      } else if (value is double) {
+        builder.Append(((double)value).ToString("r")); // Round-trip
+      } else if (value is int || value is uint || value is long ||
+                 value is sbyte || value is byte || value is short ||
+                 value is ushort || value is ulong || value is decimal) {
             builder.Append(value.ToString());
         } else {
           SerializeString(value.ToString());

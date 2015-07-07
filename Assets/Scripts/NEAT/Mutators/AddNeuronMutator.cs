@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace NEAT {
 
+  // In the add node mutation, an existing connection is split and the new
+  // node placed where the old connection used to be. The old connection is
+  // disabled and two new connections are added to the genome.
   public class AddNeuronMutator : IMutator {
 
     float p;
@@ -21,9 +24,6 @@ namespace NEAT {
       var neuronGenes = new List<NeuronGene>(genotype.neuronGenes);
       var synapseGenes = new List<SynapseGene>(genotype.synapseGenes);
 
-      // In the add node mutation, an existing connection is split and the new
-      // node placed where the old connection used to be. The old connection is
-      // disabled and two new connections are added to the genome.
       var synapseIndex = Random.Range(0, synapseGenes.Count);
       var synapseGene = synapseGenes[synapseIndex];
 

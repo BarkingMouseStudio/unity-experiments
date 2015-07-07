@@ -5,24 +5,21 @@ using System.Linq;
 
 namespace NEAT {
 
-  // TODO: Consider unifying lists and using enum type (makes it easier to get/add new types).
-  // TODO: GetInnovationId(InnovationType, ids)
   public class Innovations {
 
-    private List<NeuronInnovation> neuronInnovations = new List<NeuronInnovation>();
-    private List<SynapseInnovation> synapseInnovations = new List<SynapseInnovation>();
-
+    private List<Innovation> innovations = new List<Innovation>();
     private int nextInnovationId = 0;
 
     public int Count {
       get {
-        return neuronInnovations.Count + synapseInnovations.Count;
+        return innovations.Count;
       }
     }
 
-    public int GetAddInitialNeuronInnovationId(int i) {
+    public int GetInitialNeuronInnovationId(int i) {
       foreach (var innov in neuronInnovations) {
-        if (innov.innovationId == i) {
+        if (innov.type == InnovationType.Neuron &&
+            innov.innovationId == i) {
           return innov.innovationId;
         }
       }
@@ -32,77 +29,54 @@ namespace NEAT {
         nextInnovationId += i - nextInnovationId;
       }
 
-      var innovNext = new NeuronInnovation(nextInnovationId, -1, 1, -1);
+      var innovNext = new Innovation(InnovationType.Neuron, nextInnovationId, -1, 1, -1);
       nextInnovationId++;
 
-      neuronInnovations.Add(innovNext);
+      innovations.Add(innovNext);
       return innovNext.innovationId;
     }
 
-    public int GetAddInitialSynapseInnovationId(int fromNeuronId, int toNeuronId) {
-      foreach (var innov in synapseInnovations) {
-        if (innov.fromNeuronId == fromNeuronId && innov.toNeuronId == toNeuronId) {
-          return innov.innovationId;
-        }
-      }
-
-      var innovNext = new SynapseInnovation(nextInnovationId, fromNeuronId, toNeuronId);
-      nextInnovationId++;
-
-      synapseInnovations.Add(innovNext);
-      return innovNext.innovationId;
-    }
-
-    public int GetAddNeuronInnovationId(int fromId, int toId, int oldSId) {
-      foreach (var innov in neuronInnovations) {
-        // Does the added neuron share the same mutation properties?
-        if (innov.fromNeuronId == fromId &&
+    public int GetNeuronInnovationId(int fromNeuronId, int toNeuronId, int oldSynapseInnovationId) {
+      foreach (var innov in innovations) {
+        if (innov.type == InnovationType.Neuron &&
+            innov.fromNeuronId == fromId &&
             innov.toNeuronId == toId &&
-            innov.oldSynapseInnovationId == oldSId) {
+            innov.oldSynapseInnovationId == oldSynapseInnovationId) {
           return innov.innovationId;
         }
       }
 
-      // Increment by two for each synapse—neuron receives first id since it's
-      // unique within the network for neurons.
-      var innovNext = new NeuronInnovation(nextInnovationId, fromId, toId, oldSId);
-      nextInnovationId += 2;
+      var innovation = new Innovation(InnovationType.Neuron, nextInnovationId, fromNeuronId, toNeuronId, oldSynapseInnovationId);
+      innovations.Add(innovation);
 
-      neuronInnovations.Add(innovNext);
-      return innovNext.innovationId;
+      nextInnovationId++;
+      return innovation.innovationId;
     }
 
-    public int GetAddSynapseInnovationId(int fromId, int toId) {
-      foreach (var innov in synapseInnovations) {
-        if (innov.fromNeuronId == fromId && innov.toNeuronId == toId) {
+    public int GetSynapseInnovationId(int fromNeuronId, int toNeuronId) {
+      foreach (var innov in innovations) {
+        if (innov.type == InnovationType.Synapse &&
+            innov.fromNeuronId == fromNeuronId &&
+            innov.toNeuronId == toNeuronId) {
           return innov.innovationId;
         }
       }
 
-      var innovNext = new SynapseInnovation(nextInnovationId, fromId, toId);
-      nextInnovationId++;
+      var innovation = new Innovation(InnovationType.Synapse, nextInnovationId, fromNeuronId, toNeuronId, -1);
+      innovations.Add(innovation);
 
-      synapseInnovations.Add(innovNext);
-      return innovNext.innovationId;
+      nextInnovationId++;
+      return innovation.innovationId;
     }
 
     // Remove any innovations not found in the genotype set
     public int Prune(List<Genotype> genotypes) {
-      var count = neuronInnovations.Count + synapseInnovations.Count;
+      var initialCount = innovations.Count;
 
-      neuronInnovations = neuronInnovations.Where(innov => {
-        return genotypes.Any(gt => {
-          return gt.neuronGenes.Any(g => g.InnovationId == innov.innovationId);
-        });
-      }).ToList();
+      innovations = innovations.Where(innov =>
+        genotypes.ContainsInnovation(innov)).ToList();
 
-      synapseInnovations = synapseInnovations.Where(innov => {
-        return genotypes.Any(gt => {
-          return gt.synapseGenes.Any(g => g.InnovationId == innov.innovationId);
-        });
-      }).ToList();
-
-      var prunedCount = neuronInnovations.Count + synapseInnovations.Count;
+      var prunedCount = innovations.Count;
       return System.Math.Abs(count - prunedCount);
     }
   }

@@ -8,6 +8,7 @@ using System.Linq;
 public class ControllerBehaviour : MonoBehaviour {
 
   public NetworkIO networkIO;
+  public TextAsset json;
 
   WheelJoint2D wheelJoint;
   Rigidbody2D lower;
@@ -20,6 +21,8 @@ public class ControllerBehaviour : MonoBehaviour {
     wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
     wheelJoint = wheel.transform.GetComponentInChildren<WheelJoint2D>();
     evaluation = GetComponent<EvaluationBehaviour>();
+
+    networkIO = new NetworkIO(Reifier.Reify(NEAT.Genotype.FromJSON(json.text)));
   }
 
   void OnDespawned() {

@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.Assertions;
 
 // Responsible for marshalling input/output data to/from the neural network.
 public class NetworkIO {
@@ -29,8 +30,8 @@ public class NetworkIO {
   public static readonly ulong MAX_DELAY = 20;
 
   static NetworkIO() {
-    inNeuronCount = (NetworkIO.angularRanges.Length * 2) +
-      (NetworkIO.linearRanges.Length * 2);
+    inNeuronCount = (NetworkIO.angularRanges.Length * 1) +
+      (NetworkIO.linearRanges.Length * 1);
     outNeuronCount = NetworkIO.speeds.Length;
 
     // Set up input neuron ids by order
@@ -51,6 +52,8 @@ public class NetworkIO {
     inputRanges.AddRange(linearRanges); // x
     // inputRanges.AddRange(linearRanges); // x dot
     NetworkIO.inputRanges = inputRanges.ToArray();
+
+    Assert.AreEqual(inputRanges.Count, inNeuronCount);
   }
 
   readonly Neural.Network network;
@@ -80,7 +83,6 @@ public class NetworkIO {
       //   worldData[i] = xDot;
       }
     }
-    // Debug.Log(string.Join(",", worldData.Select(v => v.ToString()).ToArray()));
 
     // Filter world data by ranges
     double[] input = new double[neuronCount];
@@ -93,13 +95,11 @@ public class NetworkIO {
         input[inNeuronIds[i]] = 40.0 * range.Normalize(data);
       }
     }
-    // Debug.Log(string.Join(",", input.Select(v => v.ToString()).ToArray()));
 
     // Receive output
     var ticks = (ulong)(Time.fixedDeltaTime * 1000.0f);
     var output = new double[neuronCount];
     network.Tick(ticks, input, ref output);
-    // Debug.Log(string.Join(",", output.Select(v => v.ToString()).ToArray()));
 
     // Read out neuron V for speed
     float speed = 0.0f;

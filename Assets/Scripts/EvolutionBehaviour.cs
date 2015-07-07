@@ -13,7 +13,7 @@ public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
 
-  int batchSize = 50;
+  int batchSize = 25;
   int populationSize = 500;
 
   List<List<NEAT.Genotype>> CreateBatches(List<NEAT.Genotype> genotypes, int batchSize) {
@@ -101,14 +101,20 @@ public class EvolutionBehaviour : MonoBehaviour {
     yield return StartCoroutine(EvaluateBatches(batches, phenotypes));
   }
 
-  StreamWriter resultsLog;
+  StreamWriter elitesLog;
+  StreamWriter eliteFitnessLog;
+  StreamWriter speciesLog;
 
   void OnApplicationQuit() {
-    resultsLog.Close();
+    elitesLog.Close();
+    eliteFitnessLog.Close();
+    speciesLog.Close();
   }
 
   IEnumerator Start() {
-    resultsLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/Logs/phenotypes.csv"));
+    elitesLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/Logs/elites.csv"));
+    eliteFitnessLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/Logs/elite_fitness.csv"));
+    speciesLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/Logs/species.csv"));
 
     var neat = new NEAT.NEAT(populationSize);
 
@@ -118,15 +124,22 @@ public class EvolutionBehaviour : MonoBehaviour {
       var phenotypes = new List<NEAT.Phenotype>(genotypes.Count);
       yield return StartCoroutine(EvaluatePopulation(genotypes, phenotypes));
 
-      var sorted = phenotypes.OrderBy(pt => pt.adjustedFitness);
-      var best = sorted.First();
+      // Grab the raw best
+      var best = phenotypes.OrderBy(pt => pt.fitness).First();
 
       // Update the EA's internals
       neat.Update(phenotypes);
 
-      Debug.LogFormat("[{0}] Generation completed with {1}s and a fitness of {2}.", neat.Generation, best.duration, best.adjustedFitness);
+      Debug.LogFormat("[{0}] Generation completed. Best Duration: {1}s. Best Fitness: {2}.",
+        neat.Generation, best.duration, best.fitness);
 
-      resultsLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}", neat.Generation, best.adjustedFitness, best.duration, best.orientation, best.ToString()));
+      foreach (var sp in neat.spp) {
+        speciesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}", neat.Generation, sp.speciesId, sp.Size, sp.AverageFitness));
+        foreach (var pt in sp.elites) {
+          eliteFitnessLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}", neat.Generation, sp.speciesId, pt.fitness, pt.adjustedFitness, pt.duration));
+          elitesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}, {5}", neat.Generation, sp.speciesId, pt.fitness, pt.adjustedFitness, pt.duration, pt.genotype.ToJSON()));
+        }
+      }
     }
   }
 }

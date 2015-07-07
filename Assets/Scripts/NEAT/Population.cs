@@ -23,6 +23,10 @@ namespace NEAT {
       this.innovations.Prune(genotypes);
     }
 
+    public Population Next(List<Genotype> genotypes) {
+      return new Population(genotypes, innovations);
+    }
+
     public int Size {
       get {
         return genotypes.Count;

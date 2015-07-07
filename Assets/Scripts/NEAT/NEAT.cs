@@ -5,9 +5,12 @@ using System.Linq;
 
 namespace NEAT {
 
-  // TODO: Builder-pattern
   // TODO: Species manager
+  // TODO: Get rid of neuron id (not useful in sim)
+  // TODO: Builder-pattern
   // TODO: Single-file configuration
+  // TODO: Innovations: Consider unifying lists and using enum type (makes it easier to get/add new types).
+  // TODO: Innovations: GetInnovationId(InnovationType, ids)
   public class NEAT {
 
     public Population population;
@@ -24,7 +27,7 @@ namespace NEAT {
 
     public int desiredSpeciesCount = 10;
     public float distanceThreshold = 100.0f;
-    public float distanceThresholdAdjustment = 0.1f;
+    public float distanceThresholdAdjustment = 0.2f;
 
     const float elitism = 0.25f;
 
@@ -68,6 +71,12 @@ namespace NEAT {
         }
       }
 
+      if (spp.Count < desiredSpeciesCount) { // Too few
+        distanceThreshold -= distanceThreshold * distanceThresholdAdjustment; // Decrease threshold
+      } else if (spp.Count > desiredSpeciesCount) { // To many
+        distanceThreshold += distanceThreshold * distanceThresholdAdjustment; // Increase threshold
+      }
+
       // Prune empty species
       var dead = sppNext.Where(sp => sp.phenotypes.Count == 0);
       return sppNext.Except(dead).ToList();
@@ -108,12 +117,6 @@ namespace NEAT {
       // Update species and distance threshold
       spp = Speciate(spp, phenotypes);
 
-      if (spp.Count < desiredSpeciesCount) { // Too few
-        distanceThreshold -= distanceThreshold * distanceThresholdAdjustment; // Decrease threshold
-      } else if (spp.Count > desiredSpeciesCount) { // To many
-        distanceThreshold += distanceThreshold * distanceThresholdAdjustment; // Increase threshold
-      }
-
       var populationSize = this.population.Size;
 
       // Adjust fitnesses
@@ -126,28 +129,27 @@ namespace NEAT {
 
       var totalAverageFitness = spp.Aggregate(0.0f,
         (total, sp) => total + sp.AverageFitness);
-      var averageFitness = totalAverageFitness / spp.Count;
 
-      var sortedSpecies = spp.OrderBy(sp => sp.AverageFitness);
+      Debug.LogFormat("Species: {0} (Threshold: {1})",
+        spp.Count, distanceThreshold);
 
-      var bestSpecies = sortedSpecies.First();
-      var bestPhenotype = bestSpecies.phenotypes.OrderBy(pt => pt.adjustedFitness).First();
-
-      Debug.LogFormat("Species: {0} (Threshold: {1}), Average: {2}",
-        spp.Count, distanceThreshold, averageFitness);
+      spp.Shuffle();
 
       // TODO: This allocates a bunch
-      var nextPopulation = sortedSpecies.Aggregate(new List<Genotype>(populationSize), (genotypes, sp) => {
+      var nextPopulation = spp.Aggregate(new List<Genotype>(populationSize), (genotypes, sp) => {
+        // TODO: Select elites from species to prepopulate
+        // TODO: Select N from species, then crossover/mutate here
         var offspringCount = Mathf.CeilToInt(
           (sp.AverageFitness / totalAverageFitness) * (float)populationSize
         );
-        // TODO: Alloc
+
+        // TODO: This allocates a bunch
         var offspring = sp.Reproduce(offspringCount, elitism, crossover, mutators, population.innovations);
         genotypes.AddRange(offspring);
         return genotypes;
       }, (offspring) => {
         offspring = offspring.Take(populationSize).ToList();
-        return new Population(offspring, population.innovations);
+        return population.Next(offspring);
       });
 
       this.population = nextPopulation;
