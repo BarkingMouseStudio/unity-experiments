@@ -4,8 +4,6 @@ namespace NEAT {
 
   public struct NeuronGene : IHistoricalGene {
 
-    const float mutationScale = 0.25f;
-
     private int innovationId;
     public int InnovationId {
       get {
@@ -13,33 +11,29 @@ namespace NEAT {
       }
     }
 
-    public int id;
-
     public float a;
     public float b;
     public float c;
     public float d;
 
-    public static NeuronGene Random(int innovationId, int id) {
-      return new NeuronGene(innovationId, id,
+    public static NeuronGene Random(int innovationId) {
+      return new NeuronGene(innovationId,
         UnityEngine.Random.value,
         UnityEngine.Random.value,
         UnityEngine.Random.value,
         UnityEngine.Random.value);
     }
 
-    public NeuronGene(int innovationId, int id) {
+    public NeuronGene(int innovationId) {
       this.innovationId = innovationId;
-      this.id = id;
       this.a = 0.5f;
       this.b = 0.5f;
       this.c = 0.5f;
       this.d = 0.5f;
     }
 
-    public NeuronGene(int innovationId, int id, float a, float b, float c, float d) {
+    public NeuronGene(int innovationId, float a, float b, float c, float d) {
       this.innovationId = innovationId;
-      this.id = id;
       this.a = a;
       this.b = b;
       this.c = c;
@@ -47,7 +41,7 @@ namespace NEAT {
     }
 
     public NeuronGene Randomize() {
-      return new NeuronGene(innovationId, id,
+      return new NeuronGene(innovationId,
         UnityEngine.Random.value,
         UnityEngine.Random.value,
         UnityEngine.Random.value,
@@ -55,8 +49,8 @@ namespace NEAT {
       );
     }
 
-    public NeuronGene Perturb() {
-      return new NeuronGene(innovationId, id,
+    public NeuronGene Perturb(float mutationScale) {
+      return new NeuronGene(innovationId,
         RandomHelper.NextCauchy(a, mutationScale),
         RandomHelper.NextCauchy(b, mutationScale),
         RandomHelper.NextCauchy(c, mutationScale),

@@ -15,7 +15,7 @@ namespace NEAT {
       var innovations = new Innovations();
 
       var neuronGenes = Enumerable.Range(0, 3)
-        .Select(i => new NeuronGene(innovations.GetAddInitialNeuronInnovationId(i), i))
+        .Select(i => new NeuronGene(innovations.GetInitialNeuronInnovationId(i)))
         .ToList();
       var synapseGenes = new List<SynapseGene>();
       var genotype = new Genotype(neuronGenes, synapseGenes);
@@ -31,7 +31,7 @@ namespace NEAT {
     [Test]
     public void TestGenotypeSerialization() {
       var neuronGenes = Enumerable.Range(0, 3)
-        .Select(i => new NeuronGene(i, i))
+        .Select(i => new NeuronGene(i))
         .ToList();
       var synapseGenes = Enumerable.Range(0, 3)
         .Select(i => new SynapseGene(i, 0, 1, true, 0.5f))
@@ -40,7 +40,7 @@ namespace NEAT {
 
       var json = genotype.ToJSON();
 
-      var expectedJSON = "{\"neurons\":[{\"innovation\":0,\"id\":0,\"a\":0.5,\"b\":0.5,\"c\":0.5,\"d\":0.5},{\"innovation\":1,\"id\":1,\"a\":0.5,\"b\":0.5,\"c\":0.5,\"d\":0.5},{\"innovation\":2,\"id\":2,\"a\":0.5,\"b\":0.5,\"c\":0.5,\"d\":0.5}],\"synapses\":[{\"innovation\":0,\"weight\":0.5,\"from\":0,\"to\":1,\"enabled\":true},{\"innovation\":1,\"weight\":0.5,\"from\":0,\"to\":1,\"enabled\":true},{\"innovation\":2,\"weight\":0.5,\"from\":0,\"to\":1,\"enabled\":true}]}";
+      var expectedJSON = "{\"neurons\":[{\"innovation\":0,\"a\":0.5,\"b\":0.5,\"c\":0.5,\"d\":0.5},{\"innovation\":1,\"a\":0.5,\"b\":0.5,\"c\":0.5,\"d\":0.5},{\"innovation\":2,\"a\":0.5,\"b\":0.5,\"c\":0.5,\"d\":0.5}],\"synapses\":[{\"innovation\":0,\"weight\":0.5,\"from\":0,\"to\":1,\"enabled\":true},{\"innovation\":1,\"weight\":0.5,\"from\":0,\"to\":1,\"enabled\":true},{\"innovation\":2,\"weight\":0.5,\"from\":0,\"to\":1,\"enabled\":true}]}";
       Assert.That(json == expectedJSON);
 
       genotype = Genotype.FromJSON(json);

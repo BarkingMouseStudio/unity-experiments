@@ -14,7 +14,6 @@ public class EvolutionBehaviour : MonoBehaviour {
   public Transform prefab;
 
   int batchSize = 25;
-  int populationSize = 500;
 
   List<List<NEAT.Genotype>> CreateBatches(List<NEAT.Genotype> genotypes, int batchSize) {
     return genotypes.Select((gt, i) => {
@@ -105,6 +104,19 @@ public class EvolutionBehaviour : MonoBehaviour {
   StreamWriter eliteFitnessLog;
   StreamWriter speciesLog;
 
+  void LogResult(NEAT.Result result) {
+    Debug.LogFormat("[{0}] Generation completed. Best Duration: {1}s. Best Fitness: {2}.",
+      result.generation, result.best.duration, result.best.fitness);
+
+    foreach (var sp in result.spp) {
+      speciesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}", result.generation, sp.speciesId, sp.Size, sp.AverageFitness));
+      foreach (var pt in sp.elites) {
+        eliteFitnessLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}", result.generation, sp.speciesId, pt.fitness, pt.adjustedFitness, pt.duration));
+        elitesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}, {5}", result.generation, sp.speciesId, pt.fitness, pt.adjustedFitness, pt.duration, pt.genotype.ToJSON()));
+      }
+    }
+  }
+
   void OnApplicationQuit() {
     elitesLog.Close();
     eliteFitnessLog.Close();
@@ -116,30 +128,32 @@ public class EvolutionBehaviour : MonoBehaviour {
     eliteFitnessLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/Logs/elite_fitness.csv"));
     speciesLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/Logs/species.csv"));
 
-    var neat = new NEAT.NEAT(populationSize);
+    var innovations = new NEAT.Innovations();
+    var neuronGenes = Enumerable.Range(0, NetworkIO.inNeuronCount + NetworkIO.outNeuronCount)
+      .Select(i => NEAT.NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
+      .ToList();
+    var protoGenotype = new NEAT.Genotype(neuronGenes, new List<NEAT.SynapseGene>());
 
-    while (true) {
-      var genotypes = neat.Sample();
+    var engine = new NEAT.Builder()
+      .Evaluation(EvaluatePopulation)
+      .Results(LogResult)
+      .Innovations(innovations)
+      .ProtoGenotype(protoGenotype)
+      .Population(500)
+      .Elitism(0.25f)
+      .Species(10, 30.0f, 0.2f)
+      .Measurement(new NEAT.Measurement(3.0f, 3.0f, 2.0f))
+      .Crossover(new NEAT.MultipointCrossover())
+      .Mutators(new NEAT.IMutator[]{
+        new NEAT.AddNeuronMutator(0.2f),
+        new NEAT.AddSynapseMutator(0.2f),
+        new NEAT.PerturbNeuronMutator(0.25f, 0.25f),
+        new NEAT.PerturbSynapseMutator(0.25f, 0.25f, 0.2f),
+        new NEAT.ReplaceNeuronMutator(0.15f),
+        new NEAT.ReplaceSynapseMutator(0.15f, 0.2f),
+      })
+      .Build();
 
-      var phenotypes = new List<NEAT.Phenotype>(genotypes.Count);
-      yield return StartCoroutine(EvaluatePopulation(genotypes, phenotypes));
-
-      // Grab the raw best
-      var best = phenotypes.OrderBy(pt => pt.fitness).First();
-
-      // Update the EA's internals
-      neat.Update(phenotypes);
-
-      Debug.LogFormat("[{0}] Generation completed. Best Duration: {1}s. Best Fitness: {2}.",
-        neat.Generation, best.duration, best.fitness);
-
-      foreach (var sp in neat.spp) {
-        speciesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}", neat.Generation, sp.speciesId, sp.Size, sp.AverageFitness));
-        foreach (var pt in sp.elites) {
-          eliteFitnessLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}", neat.Generation, sp.speciesId, pt.fitness, pt.adjustedFitness, pt.duration));
-          elitesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}, {5}", neat.Generation, sp.speciesId, pt.fitness, pt.adjustedFitness, pt.duration, pt.genotype.ToJSON()));
-        }
-      }
-    }
+    yield return StartCoroutine(engine.Run(this));
   }
 }

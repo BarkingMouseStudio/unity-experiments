@@ -8,15 +8,15 @@ using System.Linq;
 namespace NEAT {
 
   [TestFixture]
-  public class IteratorTests {
+  public class GeneEnumerableTests {
 
     [Test]
-    public void TestIterator() {
+    public void TestGeneEnumerable() {
       var innovationIdsA = new int[]{1, 2, 3, 4, 5, 8};
       var innovationIdsB = new int[]{1, 2, 3, 4, 5, 6, 7, 9, 10};
 
-      var genesA = innovationIdsA.Select(i => new NeuronGene(i, i)).ToList();
-      var genesB = innovationIdsB.Select(i => new NeuronGene(i, i)).ToList();
+      var genesA = innovationIdsA.Select(i => new NeuronGene(i)).ToList();
+      var genesB = innovationIdsB.Select(i => new NeuronGene(i)).ToList();
 
       var innovationIds = new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
@@ -34,7 +34,7 @@ namespace NEAT {
       };
 
       int j = 0;
-      foreach (var t in Iterator.IterGenes<NeuronGene>(genesA, genesB)) {
+      foreach (var t in new GeneEnumerable<NeuronGene>(genesA, genesB)) {
         Assert.That(t.First == alignment[j]);
 
         switch (t.First) {

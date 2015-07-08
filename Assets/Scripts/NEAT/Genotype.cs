@@ -22,21 +22,19 @@ namespace NEAT {
       );
     }
 
-    public Genotype Randomize() {
+    public Genotype Randomize(float toggleProbability) {
       return new Genotype(
         neuronGenes.Select(g => g.Randomize()).ToList(),
-        synapseGenes.Select(g => g.Randomize()).ToList()
+        synapseGenes.Select(g => g.Randomize(toggleProbability)).ToList()
       );
     }
 
     public bool ContainsInnovation(Innovation innov) {
       switch (innov.type) {
         case InnovationType.Neuron:
-          return genotypes.Any(gt =>
-            gt.neuronGenes.Any(g => g.InnovationId == innov.innovationId));
+          return neuronGenes.Any(g => g.InnovationId == innov.innovationId);
         case InnovationType.Synapse:
-          return genotypes.Any(gt =>
-            gt.synapseGenes.Any(g => g.InnovationId == innov.innovationId));
+          return synapseGenes.Any(g => g.InnovationId == innov.innovationId);
         default:
           return false;
       }
@@ -46,7 +44,6 @@ namespace NEAT {
       var neurons = neuronGenes.Select(g => {
         var dict = new Dictionary<string, object>();
         dict["innovation"] = g.InnovationId;
-        dict["id"] = g.id;
         dict["a"] = g.a;
         dict["b"] = g.b;
         dict["c"] = g.c;
@@ -77,12 +74,11 @@ namespace NEAT {
       var neuronGenes = ((List<object>)obj["neurons"]).Select(g => {
         var neuronGene = (Dictionary<string, object>)g;
         var innovationId = (int)(long)neuronGene["innovation"];
-        var id = (int)(long)neuronGene["id"];
         var a = (float)(double)neuronGene["a"];
         var b = (float)(double)neuronGene["b"];
         var c = (float)(double)neuronGene["c"];
         var d = (float)(double)neuronGene["d"];
-        return new NeuronGene(innovationId, id, a, b, c, d);
+        return new NeuronGene(innovationId, a, b, c, d);
       }).ToList();
 
       var synapseGenes = ((List<object>)obj["synapses"]).Select(g => {

@@ -27,7 +27,7 @@ namespace NEAT {
       var neuronDiff = 0.0f;
       var neuronExcess = 0.0f;
       var neuronDisjoint = 0.0f;
-      foreach (var t in Iterator.IterGenes(a.neuronGenes, b.neuronGenes)) {
+      foreach (var t in new GeneEnumerable<NeuronGene>(a.neuronGenes, b.neuronGenes)) {
         switch (t.First) {
           case HistoricalGeneTypes.Aligned:
             neuronDiff += Mathf.Abs(a.neuronGenes[t.Second].a - b.neuronGenes[t.Third].a) / 2;
@@ -54,7 +54,7 @@ namespace NEAT {
       var synapseDiff = 0.0f;
       var synapseExcess = 0.0f;
       var synapseDisjoint = 0.0f;
-      foreach (var t in Iterator.IterGenes(a.synapseGenes, b.synapseGenes)) {
+      foreach (var t in new GeneEnumerable<SynapseGene>(a.synapseGenes, b.synapseGenes)) {
         switch (t.First) {
           case HistoricalGeneTypes.Aligned:
             synapseDiff += Mathf.Abs(a.synapseGenes[t.Second].weight - b.synapseGenes[t.Third].weight) / 2;

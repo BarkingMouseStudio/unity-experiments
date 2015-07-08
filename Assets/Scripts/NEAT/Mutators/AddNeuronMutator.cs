@@ -27,14 +27,13 @@ namespace NEAT {
       var synapseIndex = Random.Range(0, synapseGenes.Count);
       var synapseGene = synapseGenes[synapseIndex];
 
-      var innovationId = innovations.GetAddNeuronInnovationId(
+      var innovationId = innovations.GetNeuronInnovationId(
         synapseGene.fromNeuronId,
         synapseGene.toNeuronId,
         synapseGene.InnovationId
       );
 
-      var neuronIndex = neuronGenes.Count;
-      var neuronGene = NeuronGene.Random(innovationId, neuronIndex);
+      var neuronGene = NeuronGene.Random(innovationId);
       neuronGenes.Add(neuronGene);
 
       var synapseGene1 = new SynapseGene(innovationId + 0,

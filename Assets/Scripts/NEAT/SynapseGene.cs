@@ -4,9 +4,6 @@ namespace NEAT {
 
   public struct SynapseGene : IHistoricalGene {
 
-    const float mutationScale = 0.25f;
-    const float toggleProbability = 0.2f;
-
     private int innovationId;
     public int InnovationId {
       get {
@@ -39,7 +36,7 @@ namespace NEAT {
       this.weight = weight;
     }
 
-    public SynapseGene Randomize() {
+    public SynapseGene Randomize(float toggleProbability) {
       var synapseGene = this;
       if (UnityEngine.Random.value < toggleProbability) {
         synapseGene.isEnabled = RandomHelper.NextBool();
@@ -49,7 +46,7 @@ namespace NEAT {
       return synapseGene;
     }
 
-    public SynapseGene Perturb() {
+    public SynapseGene Perturb(float mutationScale, float toggleProbability) {
       var synapseGene = this;
       if (UnityEngine.Random.value < toggleProbability) {
         synapseGene.isEnabled = RandomHelper.NextBool();

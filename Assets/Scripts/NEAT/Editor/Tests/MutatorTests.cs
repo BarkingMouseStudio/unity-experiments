@@ -12,12 +12,12 @@ namespace NEAT {
 
     private Genotype NewGenotype(Innovations innovations) {
       var neuronGenes = Enumerable.Range(0, 3).Select(i => {
-        var inId = innovations.GetAddInitialNeuronInnovationId(i);
-        return new NeuronGene(inId, inId);
+        var inId = innovations.GetInitialNeuronInnovationId(i);
+        return new NeuronGene(inId);
       }).ToList();
 
       var synapseGenes = Enumerable.Range(0, 3).Select(i => {
-        var inId = innovations.GetAddSynapseInnovationId(-1, 1);
+        var inId = innovations.GetSynapseInnovationId(-1, 1);
         return new SynapseGene(inId, -1, 1, true);
       }).ToList();
 
@@ -72,7 +72,7 @@ namespace NEAT {
 
     [Test]
     public void TestPerturbNeuronMutator() {
-      var mutator = new PerturbNeuronMutator(1.0f);
+      var mutator = new PerturbNeuronMutator(1.0f, 0.25f);
       var innovations = new Innovations();
 
       var genotype = NewGenotype(innovations);
@@ -99,7 +99,7 @@ namespace NEAT {
 
     [Test]
     public void TestPerturbSynapseMutator() {
-      var mutator = new PerturbSynapseMutator(1.0f);
+      var mutator = new PerturbSynapseMutator(1.0f, 0.25f, 0.2f);
       var innovations = new Innovations();
 
       var genotype = NewGenotype(innovations);
@@ -153,7 +153,7 @@ namespace NEAT {
 
     [Test]
     public void TestReplaceSynapseMutator() {
-      var mutator = new ReplaceSynapseMutator(1.0f);
+      var mutator = new ReplaceSynapseMutator(1.0f, 0.2f);
       var innovations = new Innovations();
 
       var genotype = NewGenotype(innovations);

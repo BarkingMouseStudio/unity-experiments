@@ -17,7 +17,7 @@ namespace NEAT {
     }
 
     public int GetInitialNeuronInnovationId(int i) {
-      foreach (var innov in neuronInnovations) {
+      foreach (var innov in innovations) {
         if (innov.type == InnovationType.Neuron &&
             innov.innovationId == i) {
           return innov.innovationId;
@@ -39,8 +39,8 @@ namespace NEAT {
     public int GetNeuronInnovationId(int fromNeuronId, int toNeuronId, int oldSynapseInnovationId) {
       foreach (var innov in innovations) {
         if (innov.type == InnovationType.Neuron &&
-            innov.fromNeuronId == fromId &&
-            innov.toNeuronId == toId &&
+            innov.fromNeuronId == fromNeuronId &&
+            innov.toNeuronId == toNeuronId &&
             innov.oldSynapseInnovationId == oldSynapseInnovationId) {
           return innov.innovationId;
         }
@@ -49,7 +49,7 @@ namespace NEAT {
       var innovation = new Innovation(InnovationType.Neuron, nextInnovationId, fromNeuronId, toNeuronId, oldSynapseInnovationId);
       innovations.Add(innovation);
 
-      nextInnovationId++;
+      nextInnovationId += 2; // We increment by 2: once for each synapse
       return innovation.innovationId;
     }
 
@@ -74,10 +74,10 @@ namespace NEAT {
       var initialCount = innovations.Count;
 
       innovations = innovations.Where(innov =>
-        genotypes.ContainsInnovation(innov)).ToList();
+        genotypes.Any(gt => gt.ContainsInnovation(innov))).ToList();
 
       var prunedCount = innovations.Count;
-      return System.Math.Abs(count - prunedCount);
+      return System.Math.Abs(initialCount - prunedCount);
     }
   }
 }

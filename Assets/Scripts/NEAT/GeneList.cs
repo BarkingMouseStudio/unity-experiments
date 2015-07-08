@@ -1,13 +1,23 @@
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace NEAT {
 
-  // TODO: Consider converting to IEnumerable wrapper class for lists of genes
-  public static class Iterator {
+  public class GeneEnumerable<T> : IEnumerable<Tuple<HistoricalGeneTypes, int, int>> where T : IHistoricalGene{
 
-    public static IEnumerable<Tuple<HistoricalGeneTypes, int, int>> IterGenes<T>(List<T> genesA, List<T> genesB) where T : IHistoricalGene {
+    List<T> genesA;
+    List<T> genesB;
+
+    public GeneEnumerable(List<T> genesA, List<T> genesB) {
+      this.genesA = genesA;
+      this.genesB = genesB;
+    }
+
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+      return this.GetEnumerator();
+    }
+
+    public IEnumerator<Tuple<HistoricalGeneTypes, int, int>> GetEnumerator() {
       int i = 0, j = 0;
       for (; i < genesA.Count && j < genesB.Count;) {
         var geneA = genesA[i];

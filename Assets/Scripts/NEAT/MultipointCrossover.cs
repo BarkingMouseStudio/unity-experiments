@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace NEAT {
 
-  public class MultipointCrossover {
+  public class MultipointCrossover : ICrossover {
 
-    public static List<T> CrossoverGenes<T>(List<T> a, List<T> b, float fitnessA, float fitnessB) where T : IHistoricalGene {
+    static List<T> CrossoverGenes<T>(List<T> a, List<T> b, float fitnessA, float fitnessB) where T : IHistoricalGene {
       var newGenes = new List<T>(System.Math.Max(a.Count, b.Count));
-      foreach (var t in Iterator.IterGenes(a, b)) {
+      foreach (var t in new GeneEnumerable<T>(a, b)) {
         switch (t.First) {
           case HistoricalGeneTypes.Aligned: // Pick random aligned gene
             newGenes.Add(Random.value < 0.5f ? a[t.Second] : b[t.Third]);

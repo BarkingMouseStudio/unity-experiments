@@ -45,7 +45,7 @@ namespace NEAT {
       }
 
       if (foundNeuron) {
-        var synapseInnovationId = innovations.GetAddSynapseInnovationId(neuronGeneA.InnovationId, neuronGeneB.InnovationId);
+        var synapseInnovationId = innovations.GetSynapseInnovationId(neuronGeneA.InnovationId, neuronGeneB.InnovationId);
         var synapseGene = SynapseGene.Random(synapseInnovationId, neuronGeneA.InnovationId, neuronGeneB.InnovationId, true);
         synapseGenes.Add(synapseGene);
       }

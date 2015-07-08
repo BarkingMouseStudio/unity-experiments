@@ -13,8 +13,6 @@ namespace NEAT {
     public List<Phenotype> phenotypes;
     public List<Phenotype> elites;
 
-    private Measurement measurement;
-
     public float AverageFitness {
       get {
         return phenotypes.Aggregate(0.0f,
@@ -27,14 +25,13 @@ namespace NEAT {
       this.speciesId = speciesId;
       this.representative = representative;
       this.phenotypes = new List<Phenotype>();
-      this.measurement = new Measurement(3.0f, 3.0f, 2.0f);
     }
 
     public Species Next() {
       return new Species(speciesId, representative);
     }
 
-    public float Distance(Phenotype candidate) {
+    public float Distance(Phenotype candidate, Measurement measurement) {
       return measurement.Distance(representative, candidate.genotype);
     }
 

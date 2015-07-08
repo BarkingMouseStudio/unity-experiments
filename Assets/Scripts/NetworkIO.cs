@@ -97,6 +97,7 @@ public class NetworkIO {
     }
 
     // Receive output
+    // TODO: Compute real time scale
     var ticks = (ulong)(Time.fixedDeltaTime * 1000.0f);
     var output = new double[neuronCount];
     network.Tick(ticks, input, ref output);
