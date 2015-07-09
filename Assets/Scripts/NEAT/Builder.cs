@@ -10,7 +10,7 @@ namespace NEAT {
     public int populationSize = 500;
     public float elitism = 0.2f;
 
-    public int speciesCount = 10;
+    public int desiredSpeciesCount = 10;
     public float distanceThreshold = 100.0f;
     public float distanceThresholdAdjustment = 0.2f;
 
@@ -25,21 +25,8 @@ namespace NEAT {
     public Innovations innovations;
     public Genotype protoGenotype;
 
-    public Func<List<Genotype>, List<Phenotype>, IEnumerator> evaluation;
-    public Action<Result> results;
-
     public Builder Innovations(Innovations innovations) {
       this.innovations = innovations;
-      return this;
-    }
-
-    public Builder Results(Action<Result> results) {
-      this.results = results;
-      return this;
-    }
-
-    public Builder Evaluation(Func<List<Genotype>, List<Phenotype>, IEnumerator> evaluation) {
-      this.evaluation = evaluation;
       return this;
     }
 
@@ -58,8 +45,8 @@ namespace NEAT {
       return this;
     }
 
-    public Builder Species(int speciesCount, float distanceThreshold, float distanceThresholdAdjustment) {
-      this.speciesCount = speciesCount;
+    public Builder Species(int desiredSpeciesCount, float distanceThreshold, float distanceThresholdAdjustment) {
+      this.desiredSpeciesCount = desiredSpeciesCount;
       this.distanceThreshold = distanceThreshold;
       this.distanceThresholdAdjustment = distanceThresholdAdjustment;
       return this;
@@ -91,8 +78,6 @@ namespace NEAT {
       Assert.IsNotNull(measurement, "Must define measurement");
       Assert.IsNotNull(crossover, "Must define crossover");
       Assert.IsNotNull(mutators, "Must define mutators");
-      Assert.IsNotNull(evaluation, "Must define evaluation");
-      Assert.IsNotNull(results, "Must define results");
       return new Engine(this);
     }
   }

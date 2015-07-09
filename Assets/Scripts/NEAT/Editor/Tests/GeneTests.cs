@@ -47,12 +47,15 @@ namespace NEAT {
       Assert.That(synapseGeneRand.InnovationId == 3);
       Assert.That(synapseGeneRand.fromNeuronId == 0);
       Assert.That(synapseGeneRand.toNeuronId == 1);
-      Assert.That(synapseGeneRand.weight != synapseGene.weight);
+      Assert.That(!synapseGeneRand.isEnabled ||
+        synapseGeneRand.weight != synapseGene.weight);
 
       var synapseGenePert = synapseGene.Perturb(0.25f, 0.2f);
       Assert.That(synapseGenePert.InnovationId == 3);
       Assert.That(synapseGenePert.fromNeuronId == 0);
       Assert.That(synapseGenePert.toNeuronId == 1);
+      Assert.That(!synapseGeneRand.isEnabled ||
+        synapseGeneRand.weight != synapseGene.weight);
     }
   }
 }

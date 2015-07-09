@@ -7,17 +7,49 @@ namespace NEAT {
 
   public class SpeciesManager {
 
-    public List<Species> spp = new List<Species>();
+    List<Species> spp = new List<Species>();
     int nextSpeciesId = 0;
 
-    public int desiredSpeciesCount;
-    public float distanceThreshold;
-    public float distanceThresholdAdjustment;
+    int desiredSpeciesCount;
+    float distanceThreshold;
+    float distanceThresholdAdjustment;
+
+    public List<Species> Species {
+      get {
+        return spp;
+      }
+    }
+
+    public float TotalAverageFitness {
+      get {
+        return spp.Aggregate(0.0f,
+          (total, sp) => total + sp.AverageFitness);
+      }
+    }
+
+    public SpeciesManager(int desiredSpeciesCount, float distanceThreshold, float distanceThresholdAdjustment) {
+      this.desiredSpeciesCount = desiredSpeciesCount;
+      this.distanceThreshold = distanceThreshold;
+      this.distanceThresholdAdjustment = distanceThresholdAdjustment;
+    }
+
+    public void AdjustFitness(int populationSize) {
+      foreach (var sp in spp) {
+        sp.AdjustFitness(populationSize);
+      }
+    }
+
+    public void Sort() {
+      foreach (var sp in spp) {
+        sp.Sort();
+      }
+      spp.Sort((a, b) => a.AverageFitness.CompareTo(b.AverageFitness));
+    }
 
     // Update existing species or create a new species using the original, if any
-    public List<Species> Speciate(List<Species> spp, List<Phenotype> phenotypes, Measurement measurement) {
+    public void Speciate(List<Phenotype> phenotypes, Measurement measurement) {
       // Begin new species
-      var sppNext = spp.Select(sp => sp.Next()).ToList();
+      var sppNext = spp.Select(sp => new Species(sp.speciesId, sp.representative)).ToList();
 
       // Place genotypes
       foreach (var phenotype in phenotypes) {
@@ -50,7 +82,7 @@ namespace NEAT {
 
       // Prune empty species
       var dead = sppNext.Where(sp => sp.phenotypes.Count == 0);
-      return sppNext.Except(dead).ToList();
+      this.spp = sppNext.Except(dead).ToList();
     }
   }
 }

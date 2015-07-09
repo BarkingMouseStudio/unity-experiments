@@ -22,7 +22,9 @@ public class ControllerBehaviour : MonoBehaviour {
     wheelJoint = wheel.transform.GetComponentInChildren<WheelJoint2D>();
     evaluation = GetComponent<EvaluationBehaviour>();
 
-    networkIO = new NetworkIO(Reifier.Reify(NEAT.Genotype.FromJSON(json.text)));
+    if (json != null) {
+      networkIO = new NetworkIO(Reifier.Reify(NEAT.Genotype.FromJSON(json.text)));
+    }
   }
 
   void OnDespawned() {

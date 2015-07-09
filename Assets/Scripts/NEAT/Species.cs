@@ -13,6 +13,12 @@ namespace NEAT {
     public List<Phenotype> phenotypes;
     public List<Phenotype> elites;
 
+    public int Size {
+      get {
+        return phenotypes.Count;
+      }
+    }
+
     public float AverageFitness {
       get {
         return phenotypes.Aggregate(0.0f,
@@ -27,44 +33,19 @@ namespace NEAT {
       this.phenotypes = new List<Phenotype>();
     }
 
-    public Species Next() {
-      return new Species(speciesId, representative);
-    }
-
     public float Distance(Phenotype candidate, Measurement measurement) {
       return measurement.Distance(representative, candidate.genotype);
     }
 
-    public int Size {
-      get {
-        return phenotypes.Count;
+    public void AdjustFitness(int populationSize) {
+      var multiplier = 1.0f + ((float)phenotypes.Count / (float)populationSize);
+      foreach (var pt in phenotypes) {
+        pt.adjustedFitness = pt.fitness * multiplier;
       }
     }
 
-    // Return offspring to be aggregated into new population
-    public List<Genotype> Reproduce(int offspringCount, float elitism, MultipointCrossover crossover, IMutator[] mutators, Innovations innovations) {
-      var eliteCount = Mathf.FloorToInt(elitism * (float)Size);
-
-      phenotypes = phenotypes.OrderBy((g) => g.adjustedFitness).ToList();
-      elites = phenotypes.Take(eliteCount).ToList();
-
-      var nextPopulation = elites.Select(pt => pt.genotype).ToList();
-      var offspring = new List<Genotype>(offspringCount);
-
-      for (int i = 0; i < offspringCount; i++) {
-        var parent1 = phenotypes[Random.Range(0, Size)];
-        var parent2 = phenotypes[Random.Range(0, Size)];
-        // TODO: Alloc
-        var child = crossover.Crossover(parent1, parent2);
-        foreach (var mutator in mutators) {
-          // TODO: Alloc
-          child = mutator.Mutate(child, innovations);
-        }
-        offspring.Add(child);
-      }
-
-      nextPopulation.AddRange(offspring);
-      return nextPopulation;
+    public void Sort() {
+      phenotypes.Sort((a, b) => a.adjustedFitness.CompareTo(b.adjustedFitness));
     }
   }
 }

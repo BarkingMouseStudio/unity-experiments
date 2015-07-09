@@ -59,9 +59,18 @@ public class NetworkIO {
   readonly Neural.Network network;
   readonly int neuronCount;
 
+  double[] input;
+  double[] output;
+
+  float lastUpdate = 0.0f;
+
   public NetworkIO(Neural.Network network) {
     this.network = network;
     this.neuronCount = (int)network.NeuronCount;
+    this.lastUpdate = Time.realtimeSinceStartup;
+
+    this.input = new double[this.neuronCount];
+    this.output = new double[this.neuronCount];
   }
 
   public float Send(float thetaLower, float x) {
@@ -84,8 +93,11 @@ public class NetworkIO {
       }
     }
 
+    for (int i = 0; i < neuronCount; i++) {
+      input[i] = 0.0f;
+    }
+
     // Filter world data by ranges
-    double[] input = new double[neuronCount];
     Range range;
     float data;
     for (int i = 0; i < inputRanges.Length; i++) {
@@ -96,10 +108,14 @@ public class NetworkIO {
       }
     }
 
+    var now = Time.realtimeSinceStartup;
+    var ticks = (ulong)Mathf.FloorToInt((now - lastUpdate) * 1000.0f);
+    this.lastUpdate = now;
+
     // Receive output
-    // TODO: Compute real time scale
-    var ticks = (ulong)(Time.fixedDeltaTime * 1000.0f);
-    var output = new double[neuronCount];
+    for (int i = 0; i < neuronCount; i++) {
+      output[i] = 0.0f;
+    }
     network.Tick(ticks, input, ref output);
 
     // Read out neuron V for speed
