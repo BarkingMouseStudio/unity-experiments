@@ -26,7 +26,7 @@ namespace NEAT {
       }
     }
 
-    public List<Genotype> Population {
+    public List<Genotype> Genotypes {
       get {
         return genotypes;
       }
@@ -88,8 +88,8 @@ namespace NEAT {
       Assert.IsTrue(phenotypes.First().adjustedFitness <= phenotypes.Last().adjustedFitness);
 
       // Produce offspring
-      this.population = Reproduce(builder.populationSize);
-      Assert.AreEqual(this.population.Count, builder.populationSize);
+      this.genotypes = Reproduce(builder.populationSize);
+      Assert.AreEqual(this.genotypes.Count, builder.populationSize);
       generation++;
     }
   }

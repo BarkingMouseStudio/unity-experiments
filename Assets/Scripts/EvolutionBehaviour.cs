@@ -162,7 +162,7 @@ public class EvolutionBehaviour : MonoBehaviour {
 
     while (true) {
       var phenotypes = new List<NEAT.Phenotype>(populationSize);
-      yield return StartCoroutine(EvaluatePopulation(engine.Population, phenotypes));
+      yield return StartCoroutine(EvaluatePopulation(engine.Genotypes, phenotypes));
       engine.Next(phenotypes);
       LogResults(engine.Generation, phenotypes, engine.Species);
     }

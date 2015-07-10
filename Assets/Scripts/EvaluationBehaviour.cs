@@ -22,8 +22,6 @@ public class EvaluationBehaviour : MonoBehaviour {
   // float[] angles = new float[]{135f, 225f}; // , 150f, 165f, 175f, 185f, 195f, 210f
   public Orientations orientation;
 
-  public Orientations orientation;
-
   Transform cart;
   Transform handle;
   Rigidbody2D lower;
