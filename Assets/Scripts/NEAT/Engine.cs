@@ -10,7 +10,7 @@ namespace NEAT {
     SpeciesManager species;
     int generation = 0;
 
-    List<Genotype> population;
+    List<Genotype> genotypes;
     Builder builder;
 
     public List<Species> Species {
@@ -27,50 +27,49 @@ namespace NEAT {
 
     public List<Genotype> Population {
       get {
-        return population;
+        return genotypes;
       }
     }
 
     public Engine(Builder builder) {
       this.builder = builder;
-      this.population = Enumerable.Range(0, builder.populationSize)
-        .Select(_ => builder.protoGenotype.Randomize(builder.toggleProbability))
+      this.genotypes = Enumerable.Range(0, builder.populationSize)
+        .Select(_ => {
+          var genotype = builder.protoGenotype.Clone();
+          genotype.Randomize(builder.toggleProbability);
+          return genotype;
+        })
         .ToList();
 
-      // TODO: Move to builder as arg
       this.species = new SpeciesManager(builder.desiredSpeciesCount,
         builder.distanceThreshold,
         builder.distanceThresholdAdjustment);
     }
 
-    public void Sample(out List<Phenotype> phenotypes, out List<Genotype> genotypes) {
-      phenotypes = new List<Phenotype>(population.Count);
-      genotypes = population;
-    }
-
-    List<Genotype> Reproduce(List<Phenotype> phenotypes, int offspringCount, int populationSize) {
+    List<Genotype> Reproduce(List<Phenotype> phenotypes, int offspringCount) {
       var totalAverageFitness = species.TotalAverageFitness;
       var offspring = new List<Genotype>(offspringCount);
       foreach (var sp in species.Species) {
         var speciesOffspringCount = Mathf.CeilToInt(
-          (sp.AverageFitness / totalAverageFitness) * (float)populationSize
+          (sp.AverageFitness / totalAverageFitness) * (float)offspringCount
         );
+        // Debug.LogFormat("Species: {0} => {1} ({2})", sp.speciesId, speciesOffspringCount, sp.AverageFitness);
         for (int i = 0; i < speciesOffspringCount; i++) {
           var parent1 = phenotypes[Random.Range(0, sp.Size)];
           var parent2 = phenotypes[Random.Range(0, sp.Size)];
           var child = builder.crossover.Crossover(parent1, parent2);
           foreach (var mutator in builder.mutators) {
-            child = mutator.Mutate(child, builder.innovations);
+            mutator.Mutate(child, builder.innovations);
           }
           offspring.Add(child);
         }
       }
-      return offspring;
+      return offspring.Take(offspringCount).ToList();
     }
 
     public void Next(List<Phenotype> phenotypes) {
-      var populationSize = population.Count;
-      var nextPopulation = new List<Genotype>(population.Count);
+      var populationSize = genotypes.Count;
+      var nextPopulation = new List<Genotype>(genotypes.Count);
 
       // Speciate phenotypes
       species.Speciate(phenotypes, builder.measurement);
@@ -82,16 +81,16 @@ namespace NEAT {
       // Take elites
       var eliteCount = Mathf.FloorToInt(builder.elitism * populationSize);
       var elites = phenotypes.Take(eliteCount)
-        .Select(pt => pt.genotype)
+        .Select(pt => pt.genotype.Clone())
         .ToList();
       nextPopulation.AddRange(elites);
 
       // Produce offspring
       var offspringCount = populationSize - eliteCount;
-      var offspring = Reproduce(phenotypes, offspringCount, populationSize);
+      var offspring = Reproduce(phenotypes, offspringCount);
       nextPopulation.AddRange(offspring);
 
-      this.population = nextPopulation;
+      this.genotypes = nextPopulation.Take(populationSize).ToList();
       generation++;
     }
   }

@@ -80,6 +80,9 @@ namespace NEAT {
         distanceThreshold += distanceThreshold * distanceThresholdAdjustment; // Increase threshold
       }
 
+      Debug.LogFormat("Species Count: {0}, Distance Threshold: {1}",
+        sppNext.Count, distanceThreshold);
+
       // Prune empty species
       var dead = sppNext.Where(sp => sp.phenotypes.Count == 0);
       this.spp = sppNext.Except(dead).ToList();

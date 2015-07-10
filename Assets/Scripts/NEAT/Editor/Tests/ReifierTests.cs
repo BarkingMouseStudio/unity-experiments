@@ -26,7 +26,7 @@ namespace NEAT {
       var generationCount = 100;
       for (int i = 0; i < generationCount; i++) {
         foreach (var mutator in mutators) {
-          genotype = mutator.Mutate(genotype, innovations);
+          mutator.Mutate(genotype, innovations);
         }
         Reifier.Reify(genotype);
       }

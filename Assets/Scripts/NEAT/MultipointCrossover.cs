@@ -27,8 +27,10 @@ namespace NEAT {
     }
 
     public Genotype Crossover(Phenotype a, Phenotype b) {
-      var newNeuronGenes = CrossoverGenes<NeuronGene>(a.genotype.neuronGenes, b.genotype.neuronGenes, a.adjustedFitness, b.adjustedFitness);
-      var newSynapseGenes = CrossoverGenes<SynapseGene>(a.genotype.synapseGenes, b.genotype.synapseGenes, a.adjustedFitness, b.adjustedFitness);
+      var aGenotype = a.genotype.Clone();
+      var bGenotype = b.genotype.Clone();
+      var newNeuronGenes = CrossoverGenes<NeuronGene>(aGenotype.neuronGenes, bGenotype.neuronGenes, a.adjustedFitness, b.adjustedFitness);
+      var newSynapseGenes = CrossoverGenes<SynapseGene>(aGenotype.synapseGenes, bGenotype.synapseGenes, a.adjustedFitness, b.adjustedFitness);
       return new Genotype(newNeuronGenes, newSynapseGenes);
     }
   }

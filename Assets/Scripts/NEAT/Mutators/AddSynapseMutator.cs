@@ -15,17 +15,14 @@ namespace NEAT {
       this.p = p;
     }
 
-    public Genotype Mutate(Genotype genotype, Innovations innovations) {
-      if (Random.value > p && genotype.neuronGenes.Count > 1) {
-        return genotype;
+    public void Mutate(Genotype genotype, Innovations innovations) {
+      if (Random.value > p) {
+        return;
       }
 
-      var neuronGenes = new List<NeuronGene>(genotype.neuronGenes);
-      var synapseGenes = new List<SynapseGene>(genotype.synapseGenes);
+      var neuronGeneA = genotype.neuronGenes[Random.Range(0, genotype.neuronGenes.Count)];
 
-      var neuronGeneA = neuronGenes[Random.Range(0, neuronGenes.Count)];
-
-      var candidates = new List<NeuronGene>(neuronGenes);
+      var candidates = new List<NeuronGene>(genotype.neuronGenes);
       candidates.Shuffle();
 
       NeuronGene neuronGeneB = default(NeuronGene);
@@ -33,10 +30,9 @@ namespace NEAT {
       for (var i = 0; i < candidates.Count; i++) {
         neuronGeneB = candidates[i];
 
-        var exists = synapseGenes.Any(s => {
-          return s.fromNeuronId != neuronGeneA.InnovationId &&
-                 s.toNeuronId   != neuronGeneB.InnovationId;
-        });
+        var exists = genotype.synapseGenes.Any(s =>
+          s.fromNeuronId != neuronGeneA.InnovationId &&
+          s.toNeuronId   != neuronGeneB.InnovationId);
 
         if (!exists) {
           foundNeuron = true;
@@ -47,10 +43,8 @@ namespace NEAT {
       if (foundNeuron) {
         var synapseInnovationId = innovations.GetSynapseInnovationId(neuronGeneA.InnovationId, neuronGeneB.InnovationId);
         var synapseGene = SynapseGene.Random(synapseInnovationId, neuronGeneA.InnovationId, neuronGeneB.InnovationId, true);
-        synapseGenes.Add(synapseGene);
+        genotype.synapseGenes.Add(synapseGene);
       }
-
-      return new Genotype(neuronGenes, synapseGenes);
     }
   }
 }

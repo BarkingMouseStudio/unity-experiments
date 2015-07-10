@@ -13,7 +13,7 @@ public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
 
-  int batchSize = 25;
+  int batchSize = 100;
 
   List<List<NEAT.Genotype>> CreateBatches(List<NEAT.Genotype> genotypes, int batchSize) {
     return genotypes.Select((gt, i) => {
@@ -86,6 +86,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     int batchIndex = 0;
     foreach (var batch in batches) {
       var batchPhenotypes = new List<NEAT.Phenotype>(batch.Count);
+      Debug.LogFormat("Batch #: {0} of {1}", batchIndex, batches.Count);
 
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, batchPhenotypes));
 
@@ -106,8 +107,11 @@ public class EvolutionBehaviour : MonoBehaviour {
 
   void LogResults(int generation, List<NEAT.Phenotype> phenotypes, List<NEAT.Species> spp) {
     var best = phenotypes.First();
-    Debug.LogFormat("[{0}] Generation completed. Best Duration: {1}s. Best Fitness: {2}.",
-      generation, best.duration, best.fitness);
+    var neuronCount = best.genotype.neuronGenes.Count;
+    var synapseCount = best.genotype.synapseGenes.Count;
+
+    Debug.LogFormat("[{0}] Generation completed. Best Duration: {1}s Best Fitness: {2} ({3}, {4})",
+      generation, best.duration, best.fitness, neuronCount, synapseCount);
 
     foreach (var sp in spp) {
       speciesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}", generation, sp.speciesId, sp.Size, sp.AverageFitness));
@@ -133,7 +137,8 @@ public class EvolutionBehaviour : MonoBehaviour {
     var neuronGenes = Enumerable.Range(0, NetworkIO.inNeuronCount + NetworkIO.outNeuronCount)
       .Select(i => NEAT.NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
       .ToList();
-    var protoGenotype = new NEAT.Genotype(neuronGenes, new List<NEAT.SynapseGene>());
+    var synapseGenes = new List<NEAT.SynapseGene>();
+    var protoGenotype = new NEAT.Genotype(neuronGenes, synapseGenes);
 
     var populationSize = 500;
     var engine = new NEAT.Builder()
@@ -141,7 +146,8 @@ public class EvolutionBehaviour : MonoBehaviour {
       .ProtoGenotype(protoGenotype)
       .Population(populationSize)
       .Elitism(0.25f)
-      .Species(10, 30.0f, 0.2f)
+      .Species(10, 50.0f, 0.2f)
+      .Mutation(0.25f, 0.2f)
       .Measurement(new NEAT.Measurement(3.0f, 3.0f, 2.0f))
       .Crossover(new NEAT.MultipointCrossover())
       .Mutators(new NEAT.IMutator[]{
@@ -150,7 +156,7 @@ public class EvolutionBehaviour : MonoBehaviour {
         new NEAT.PerturbNeuronMutator(0.25f, 0.25f),
         new NEAT.PerturbSynapseMutator(0.25f, 0.25f, 0.2f),
         new NEAT.ReplaceNeuronMutator(0.15f),
-        new NEAT.ReplaceSynapseMutator(0.15f, 0.2f),
+        new NEAT.ReplaceSynapseMutator(0.15f, 0.25f),
       })
       .Build();
 

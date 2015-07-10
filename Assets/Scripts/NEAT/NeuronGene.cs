@@ -40,6 +40,10 @@ namespace NEAT {
       this.d = d;
     }
 
+    public NeuronGene Clone() {
+      return new NeuronGene(innovationId, a, b, c, d);
+    }
+
     public NeuronGene Randomize() {
       return new NeuronGene(innovationId,
         UnityEngine.Random.value,

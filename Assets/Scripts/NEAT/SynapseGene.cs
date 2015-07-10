@@ -36,6 +36,10 @@ namespace NEAT {
       this.weight = weight;
     }
 
+    public SynapseGene Clone() {
+      return new SynapseGene(innovationId, fromNeuronId, toNeuronId, isEnabled, weight);
+    }
+
     public SynapseGene Randomize(float toggleProbability) {
       var synapseGene = this;
       if (UnityEngine.Random.value < toggleProbability) {

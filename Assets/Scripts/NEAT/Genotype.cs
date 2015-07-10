@@ -17,16 +17,18 @@ namespace NEAT {
 
     public Genotype Clone() {
       return new Genotype(
-        new List<NeuronGene>(neuronGenes),
-        new List<SynapseGene>(synapseGenes)
+        new List<NeuronGene>(neuronGenes.Select(g => g.Clone())),
+        new List<SynapseGene>(synapseGenes.Select(g => g.Clone()))
       );
     }
 
-    public Genotype Randomize(float toggleProbability) {
-      return new Genotype(
-        neuronGenes.Select(g => g.Randomize()).ToList(),
-        synapseGenes.Select(g => g.Randomize(toggleProbability)).ToList()
-      );
+    public void Randomize(float toggleProbability) {
+      foreach (var neuronGene in neuronGenes) {
+        neuronGene.Randomize();
+      }
+      foreach (var synapseGene in synapseGenes) {
+        synapseGene.Randomize(toggleProbability);
+      }
     }
 
     public bool ContainsInnovation(Innovation innov) {

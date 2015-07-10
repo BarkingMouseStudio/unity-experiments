@@ -30,11 +30,11 @@ namespace NEAT {
       var innovations = new Innovations();
 
       var genotype = NewGenotype(innovations);
-      var mutatedGenotype = mutator.Mutate(genotype, innovations);
+      var mutatedGenotype = genotype.Clone();
+      mutator.Mutate(mutatedGenotype, innovations);
 
       // Compare gene counts
       Assert.That(mutatedGenotype.neuronGenes.Count - genotype.neuronGenes.Count == 1);
-
       Assert.That(mutatedGenotype.synapseGenes.Count - genotype.synapseGenes.Count == 2);
 
       // Compare innovation ids
@@ -53,11 +53,11 @@ namespace NEAT {
       var innovations = new Innovations();
 
       var genotype = NewGenotype(innovations);
-      var mutatedGenotype = mutator.Mutate(genotype, innovations);
+      var mutatedGenotype = genotype.Clone();
+      mutator.Mutate(mutatedGenotype, innovations);
 
       // Compare gene counts
       Assert.That(mutatedGenotype.neuronGenes.Count == genotype.neuronGenes.Count);
-
       Assert.That(mutatedGenotype.synapseGenes.Count - genotype.synapseGenes.Count == 1);
 
       // Compare innovation ids
@@ -76,11 +76,11 @@ namespace NEAT {
       var innovations = new Innovations();
 
       var genotype = NewGenotype(innovations);
-      var mutatedGenotype = mutator.Mutate(genotype, innovations);
+      var mutatedGenotype = genotype.Clone();
+      mutator.Mutate(mutatedGenotype, innovations);
 
       // Compare gene counts
       Assert.That(mutatedGenotype.neuronGenes.Count == genotype.neuronGenes.Count);
-
       Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
 
       // Compare innovation ids
@@ -103,11 +103,11 @@ namespace NEAT {
       var innovations = new Innovations();
 
       var genotype = NewGenotype(innovations);
-      var mutatedGenotype = mutator.Mutate(genotype, innovations);
+      var mutatedGenotype = genotype.Clone();
+      mutator.Mutate(mutatedGenotype, innovations);
 
       // Compare gene counts
       Assert.That(mutatedGenotype.neuronGenes.Count == genotype.neuronGenes.Count);
-
       Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
 
       // Compare innovation ids
@@ -130,11 +130,11 @@ namespace NEAT {
       var innovations = new Innovations();
 
       var genotype = NewGenotype(innovations);
-      var mutatedGenotype = mutator.Mutate(genotype, innovations);
+      var mutatedGenotype = genotype.Clone();
+      mutator.Mutate(mutatedGenotype, innovations);
 
       // Compare gene counts
       Assert.That(mutatedGenotype.neuronGenes.Count == genotype.neuronGenes.Count);
-
       Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
 
       // Compare innovation ids
@@ -157,11 +157,11 @@ namespace NEAT {
       var innovations = new Innovations();
 
       var genotype = NewGenotype(innovations);
-      var mutatedGenotype = mutator.Mutate(genotype, innovations);
+      var mutatedGenotype = genotype.Clone();
+      mutator.Mutate(mutatedGenotype, innovations);
 
       // Compare gene counts
       Assert.That(mutatedGenotype.neuronGenes.Count == genotype.neuronGenes.Count);
-
       Assert.That(mutatedGenotype.synapseGenes.Count == genotype.synapseGenes.Count);
 
       // Compare innovation ids

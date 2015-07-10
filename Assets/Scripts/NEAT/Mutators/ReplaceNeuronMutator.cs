@@ -13,12 +13,13 @@ namespace NEAT {
       this.p = p;
     }
 
-    public Genotype Mutate(Genotype genotype, Innovations innovations) {
+    public void Mutate(Genotype genotype, Innovations innovations) {
       var p2 = Mathf.Pow(p, 2.0f);
-      var neuronGenes = genotype.neuronGenes.Select((neuronGene) => {
-        return Random.value < p2 ? neuronGene.Randomize() : neuronGene;
-      }).ToList();
-      return new Genotype(neuronGenes, genotype.synapseGenes);
+      for (int i = 0; i < genotype.neuronGenes.Count; i++) {
+        if (Random.value < p2) {
+          genotype.neuronGenes[i] = genotype.neuronGenes[i].Randomize();
+        }
+      }
     }
   }
 }

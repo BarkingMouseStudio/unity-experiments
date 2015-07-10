@@ -19,14 +19,14 @@ namespace NEAT {
       Assert.That(neuronGene.c == 0.3f);
       Assert.That(neuronGene.d == 0.4f);
 
-      var neuronGeneRand = neuronGene.Randomize();
+      var neuronGeneRand = neuronGene.Clone().Randomize();
       Assert.That(neuronGeneRand.InnovationId == 3);
       Assert.That(neuronGeneRand.a != neuronGene.a);
       Assert.That(neuronGeneRand.b != neuronGene.b);
       Assert.That(neuronGeneRand.c != neuronGene.c);
       Assert.That(neuronGeneRand.d != neuronGene.d);
 
-      var neuronGenePert = neuronGene.Perturb(0.25f);
+      var neuronGenePert = neuronGene.Clone().Perturb(0.25f);
       Assert.That(neuronGenePert.InnovationId == 3);
       Assert.That(neuronGenePert.a != neuronGene.a);
       Assert.That(neuronGenePert.b != neuronGene.b);
@@ -43,14 +43,14 @@ namespace NEAT {
       Assert.That(synapseGene.isEnabled == true);
       Assert.That(synapseGene.weight == 0.5f);
 
-      var synapseGeneRand = synapseGene.Randomize(0.2f);
+      var synapseGeneRand = synapseGene.Clone().Randomize(0.2f);
       Assert.That(synapseGeneRand.InnovationId == 3);
       Assert.That(synapseGeneRand.fromNeuronId == 0);
       Assert.That(synapseGeneRand.toNeuronId == 1);
       Assert.That(!synapseGeneRand.isEnabled ||
         synapseGeneRand.weight != synapseGene.weight);
 
-      var synapseGenePert = synapseGene.Perturb(0.25f, 0.2f);
+      var synapseGenePert = synapseGene.Clone().Perturb(0.25f, 0.2f);
       Assert.That(synapseGenePert.InnovationId == 3);
       Assert.That(synapseGenePert.fromNeuronId == 0);
       Assert.That(synapseGenePert.toNeuronId == 1);

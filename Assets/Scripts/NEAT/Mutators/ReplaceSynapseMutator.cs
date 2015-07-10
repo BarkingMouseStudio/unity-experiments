@@ -15,12 +15,14 @@ namespace NEAT {
       this.toggleProbability = toggleProbability;
     }
 
-    public Genotype Mutate(Genotype genotype, Innovations innovations) {
+    public void Mutate(Genotype genotype, Innovations innovations) {
       var p2 = Mathf.Pow(p, 2.0f);
-      var synapseGenes = genotype.synapseGenes.Select((synapseGene) => {
-        return Random.value < p2 ? synapseGene.Randomize(toggleProbability) : synapseGene;
-      }).ToList();
-      return new Genotype(genotype.neuronGenes, synapseGenes);
+      for (int i = 0; i < genotype.synapseGenes.Count; i++) {
+        if (Random.value < p2) {
+          genotype.synapseGenes[i] = genotype.synapseGenes[i]
+            .Randomize(toggleProbability);
+        }
+      }
     }
   }
 }

@@ -19,11 +19,9 @@ public class EvaluationBehaviour : MonoBehaviour {
     Random = -1,
   }
 
-  public Orientations orientation;
+  float[] angles = new float[]{135f, 225f}; // , 150f, 165f, 175f, 185f, 195f, 210f
 
-  // Evaluation duration
-  const float duration = 20.0f;
-  float now = 0.0f;
+  public Orientations orientation;
 
   Transform cart;
   Transform handle;
@@ -31,6 +29,9 @@ public class EvaluationBehaviour : MonoBehaviour {
   Rigidbody2D wheel;
 
   Evaluator evaluator;
+
+  float startTime;
+  float endTime;
 
   public NEAT.Genotype genotype;
 
@@ -43,7 +44,7 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   public float Now {
     get {
-      return now;
+      return endTime - startTime;
     }
   }
 
@@ -72,6 +73,7 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   void OnSpawned() {
     SetRotation();
+    startTime = Time.time;
   }
 
 	void OnDespawned() {
@@ -79,17 +81,21 @@ public class EvaluationBehaviour : MonoBehaviour {
 
     // Reset status
     isComplete = false;
-
-    // Reset timer
-    now = 0.0f;
 	}
 
   void SetRotation() {
+    float angle;
     if (orientation == Orientations.Random) {
-      orientation = Random.value > 0.5f ?
-        Orientations.HardLeft : Orientations.HardRight;
+      angle = angles[Random.Range(0, angles.Length)];
+    } else {
+      angle = (float)orientation;
     }
-    cart.localRotation = Quaternion.Euler(0, 0, (int)orientation);
+    cart.localRotation = Quaternion.Euler(0f, 0f, angle);
+  }
+
+  void Complete() {
+    isComplete = true;
+    endTime = Time.time;
   }
 
 	void FixedUpdate() {
@@ -97,13 +103,13 @@ public class EvaluationBehaviour : MonoBehaviour {
       return;
     }
 
-    if (wheel.transform.position.y < -2.0) {
-      isComplete = true;
+    if (wheel.transform.position.y < -2.0f) {
+      Complete();
       return;
     }
 
-    if (handle.position.y < 0.0) {
-      isComplete = true;
+    if (handle.position.y < 0.0f) {
+      Complete();
       return;
     }
 
@@ -113,7 +119,5 @@ public class EvaluationBehaviour : MonoBehaviour {
     var xDot = wheel.velocity.magnitude; // Velocity penalty to encourage movement
 
     evaluator.Update(thetaLower, thetaDotLower, x, xDot);
-
-    now += Time.fixedDeltaTime;
 	}
 }
