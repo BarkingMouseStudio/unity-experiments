@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,50 +49,52 @@ namespace NEAT {
       genotypes = population;
     }
 
-    List<Genotype> Reproduce(List<Phenotype> phenotypes, int offspringCount, int populationSize) {
+    List<Genotype> Reproduce(int populationSize) {
+      // For each species, produce a new portion of the total offspring
+      // proportional to that species' contributions to the total average
+      // fitness.
+
       var totalAverageFitness = species.TotalAverageFitness;
-      var offspring = new List<Genotype>(offspringCount);
+      var offspring = new List<Genotype>(populationSize);
       foreach (var sp in species.Species) {
-        var speciesOffspringCount = Mathf.CeilToInt(
-          (sp.AverageFitness / totalAverageFitness) * (float)offspringCount
+        var speciesContribution = Mathf.CeilToInt(
+          (sp.AverageFitness / totalAverageFitness) * (float)populationSize
         );
+        var speciesOffspring = new List<Genotype>(speciesContribution);
+
+        var speciesEliteCount = Mathf.FloorToInt(builder.elitism * speciesContribution);
+        var speciesElites = sp.phenotypes.Take(speciesEliteCount)
+          .Select(pt => pt.genotype);
+        speciesOffspring.AddRange(speciesElites);
+
+        var speciesOffspringCount = speciesContribution - speciesEliteCount;
         for (int i = 0; i < speciesOffspringCount; i++) {
-          var parent1 = phenotypes[Random.Range(0, sp.Size)];
-          var parent2 = phenotypes[Random.Range(0, sp.Size)];
+          var parent1 = sp.phenotypes[Random.Range(0, sp.phenotypes.Count)];
+          var parent2 = sp.phenotypes[Random.Range(0, sp.phenotypes.Count)];
           var child = builder.crossover.Crossover(parent1, parent2);
           foreach (var mutator in builder.mutators) {
             child = mutator.Mutate(child, builder.innovations);
           }
-          offspring.Add(child);
+          speciesOffspring.Add(child);
         }
+
+        offspring.AddRange(speciesOffspring);
       }
-      return offspring;
+      return offspring.Take(populationSize).ToList();
     }
 
     public void Next(List<Phenotype> phenotypes) {
-      var populationSize = population.Count;
-      var nextPopulation = new List<Genotype>(population.Count);
-
       // Speciate phenotypes
       species.Speciate(phenotypes, builder.measurement);
-      species.AdjustFitness(populationSize);
+      species.AdjustFitness(builder.populationSize);
       species.Sort();
 
       phenotypes.Sort((a, b) => a.adjustedFitness.CompareTo(b.adjustedFitness));
-
-      // Take elites
-      var eliteCount = Mathf.FloorToInt(builder.elitism * populationSize);
-      var elites = phenotypes.Take(eliteCount)
-        .Select(pt => pt.genotype)
-        .ToList();
-      nextPopulation.AddRange(elites);
+      Assert.IsTrue(phenotypes.First().adjustedFitness <= phenotypes.Last().adjustedFitness);
 
       // Produce offspring
-      var offspringCount = populationSize - eliteCount;
-      var offspring = Reproduce(phenotypes, offspringCount, populationSize);
-      nextPopulation.AddRange(offspring);
-
-      this.population = nextPopulation;
+      this.population = Reproduce(builder.populationSize);
+      Assert.AreEqual(this.population.Count, builder.populationSize);
       generation++;
     }
   }

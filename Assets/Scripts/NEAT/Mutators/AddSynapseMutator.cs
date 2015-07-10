@@ -16,7 +16,7 @@ namespace NEAT {
     }
 
     public Genotype Mutate(Genotype genotype, Innovations innovations) {
-      if (Random.value > p && genotype.neuronGenes.Count > 1) {
+      if (Random.value > p) {
         return genotype;
       }
 

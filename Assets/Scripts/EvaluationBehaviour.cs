@@ -19,7 +19,7 @@ public class EvaluationBehaviour : MonoBehaviour {
     Random = -1,
   }
 
-  float[] angles = new float[]{135f, 225f}; // , 150f, 165f, 175f, 185f, 195f, 210f
+  // float[] angles = new float[]{135f, 225f}; // , 150f, 165f, 175f, 185f, 195f, 210f
   public Orientations orientation;
 
   // Evaluation duration
