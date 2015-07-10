@@ -146,7 +146,7 @@ public class EvolutionBehaviour : MonoBehaviour {
       .ProtoGenotype(protoGenotype)
       .Population(populationSize)
       .Elitism(0.25f)
-      .Species(10, 30.0f, 0.2f)
+      .Species(10, 50.0f, 0.2f)
       // .Mutation(0.25f, 0.2f)
       .Measurement(new NEAT.Measurement(3.0f, 3.0f, 2.0f))
       .Crossover(new NEAT.MultipointCrossover())

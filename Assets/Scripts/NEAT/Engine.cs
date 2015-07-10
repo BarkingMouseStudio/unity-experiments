@@ -55,12 +55,11 @@ namespace NEAT {
         var speciesContribution = Mathf.CeilToInt(
           (sp.AverageFitness / totalAverageFitness) * (float)populationSize
         );
-        var speciesOffspring = new List<Genotype>(speciesContribution);
 
         var speciesEliteCount = Mathf.FloorToInt(builder.elitism * speciesContribution);
         var speciesElites = sp.phenotypes.Take(speciesEliteCount)
-          .Select(pt => pt.genotype.Clone());
-        speciesOffspring.AddRange(speciesElites);
+          .Select(pt => pt.genotype);
+        offspring.AddRange(speciesElites);
 
         var speciesOffspringCount = speciesContribution - speciesEliteCount;
         for (int i = 0; i < speciesOffspringCount; i++) {
@@ -70,10 +69,8 @@ namespace NEAT {
           foreach (var mutator in builder.mutators) {
             mutator.Mutate(child, builder.innovations);
           }
-          speciesOffspring.Add(child);
+          offspring.Add(child);
         }
-
-        offspring.AddRange(speciesOffspring);
       }
       return offspring.Take(populationSize).ToList();
     }
@@ -89,7 +86,6 @@ namespace NEAT {
 
       // Produce offspring
       this.genotypes = Reproduce(builder.populationSize);
-      Assert.AreEqual(this.genotypes.Count, builder.populationSize);
       generation++;
     }
   }
