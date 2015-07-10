@@ -86,7 +86,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     int batchIndex = 0;
     foreach (var batch in batches) {
       var batchPhenotypes = new List<NEAT.Phenotype>(batch.Count);
-      Debug.LogFormat("Batch #: {0} of {1}", batchIndex, batches.Count);
+      // Debug.LogFormat("Batch #: {0} of {1}", batchIndex, batches.Count);
 
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, batchPhenotypes));
 
