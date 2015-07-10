@@ -34,11 +34,8 @@ namespace NEAT {
     public Engine(Builder builder) {
       this.builder = builder;
       this.genotypes = Enumerable.Range(0, builder.populationSize)
-        .Select(_ => {
-          var genotype = builder.protoGenotype.Clone();
-          genotype.Randomize(builder.toggleProbability);
-          return genotype;
-        })
+        .Select(_ =>
+          builder.protoGenotype.Randomize(builder.toggleProbability))
         .ToList();
 
       this.species = new SpeciesManager(builder.desiredSpeciesCount,

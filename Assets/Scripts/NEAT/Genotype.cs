@@ -22,13 +22,12 @@ namespace NEAT {
       );
     }
 
-    public void Randomize(float toggleProbability) {
-      foreach (var neuronGene in neuronGenes) {
-        neuronGene.Randomize();
-      }
-      foreach (var synapseGene in synapseGenes) {
-        synapseGene.Randomize(toggleProbability);
-      }
+    public Genotype Randomize(float toggleProbability) {
+      var neuronGenesRand = neuronGenes.Select(g =>
+        g.Randomize()).ToList();
+      var synapseGenesRand = synapseGenes.Select(g =>
+        g.Randomize(toggleProbability)).ToList();
+      return new Genotype(neuronGenesRand, synapseGenesRand);
     }
 
     public bool ContainsInnovation(Innovation innov) {
