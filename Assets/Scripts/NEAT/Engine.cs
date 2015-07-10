@@ -53,7 +53,7 @@ namespace NEAT {
       var offspring = new List<Genotype>(offspringCount);
       foreach (var sp in species.Species) {
         var speciesOffspringCount = Mathf.CeilToInt(
-          (sp.AverageFitness / totalAverageFitness) * (float)populationSize
+          (sp.AverageFitness / totalAverageFitness) * (float)offspringCount
         );
         for (int i = 0; i < speciesOffspringCount; i++) {
           var parent1 = phenotypes[Random.Range(0, sp.Size)];

@@ -13,7 +13,7 @@ public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
 
-  int batchSize = 25;
+  int batchSize = 100;
 
   List<List<NEAT.Genotype>> CreateBatches(List<NEAT.Genotype> genotypes, int batchSize) {
     return genotypes.Select((gt, i) => {
