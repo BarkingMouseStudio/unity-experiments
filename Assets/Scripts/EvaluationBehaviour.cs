@@ -19,6 +19,7 @@ public class EvaluationBehaviour : MonoBehaviour {
     Random = -1,
   }
 
+  float[] angles = new float[]{135f, 225f}; // , 150f, 165f, 175f, 185f, 195f, 210f
   public Orientations orientation;
 
   // Evaluation duration
@@ -85,11 +86,13 @@ public class EvaluationBehaviour : MonoBehaviour {
 	}
 
   void SetRotation() {
+    float angle;
     if (orientation == Orientations.Random) {
-      orientation = Random.value > 0.5f ?
-        Orientations.HardLeft : Orientations.HardRight;
+      angle = 135.0f; // angles[Random.Range(0, angles.Length)];
+    } else {
+      angle = (float)orientation;
     }
-    cart.localRotation = Quaternion.Euler(0, 0, (int)orientation);
+    cart.localRotation = Quaternion.Euler(0f, 0f, angle);
   }
 
 	void FixedUpdate() {
@@ -97,12 +100,12 @@ public class EvaluationBehaviour : MonoBehaviour {
       return;
     }
 
-    if (wheel.transform.position.y < -2.0) {
+    if (wheel.transform.position.y < -2.0f) {
       isComplete = true;
       return;
     }
 
-    if (handle.position.y < 0.0) {
+    if (handle.position.y < 0.0f) {
       isComplete = true;
       return;
     }
