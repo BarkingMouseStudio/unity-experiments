@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,6 +45,7 @@ namespace NEAT {
         sp.Sort();
       }
       spp.Sort((a, b) => a.AverageFitness.CompareTo(b.AverageFitness));
+      Assert.IsTrue(spp.First().AverageFitness <= spp.Last().AverageFitness);
     }
 
     // Update existing species or create a new species using the original, if any

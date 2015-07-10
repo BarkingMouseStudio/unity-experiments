@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace NEAT {
       get {
         return phenotypes.Aggregate(0.0f,
           (total, pt) => total + pt.adjustedFitness,
-          (total) => total / phenotypes.Count);
+          (total) => total / (float)phenotypes.Count);
       }
     }
 
@@ -46,6 +47,7 @@ namespace NEAT {
 
     public void Sort() {
       phenotypes.Sort((a, b) => a.adjustedFitness.CompareTo(b.adjustedFitness));
+      Assert.IsTrue(phenotypes.First().adjustedFitness <= phenotypes.Last().adjustedFitness);
     }
   }
 }
