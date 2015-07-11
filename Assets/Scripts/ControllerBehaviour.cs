@@ -16,9 +16,6 @@ public class ControllerBehaviour : MonoBehaviour {
 
   EvaluationBehaviour evaluation;
 
-  float minSpeed = -2000.0f;
-  float maxSpeed = +2000.0f;
-
   void Awake() {
     lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
     wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
@@ -37,7 +34,7 @@ public class ControllerBehaviour : MonoBehaviour {
 
   void SetMotorSpeed(float speed) {
     var motor = wheelJoint.motor;
-	  motor.motorSpeed = Mathf.Clamp(speed, minSpeed, maxSpeed);
+	  motor.motorSpeed = speed;
   	wheelJoint.motor = motor;
   }
 

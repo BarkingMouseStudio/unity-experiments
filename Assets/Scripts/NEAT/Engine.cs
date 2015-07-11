@@ -44,16 +44,16 @@ namespace NEAT {
         builder.distanceThresholdAdjustment);
     }
 
-    List<Genotype> Reproduce(int populationSize) {
+    List<Genotype> Reproduce() {
       // For each species, produce a new portion of the total offspring
       // proportional to that species' contributions to the total average
       // fitness.
 
       var totalAverageFitness = species.TotalAverageFitness;
-      var offspring = new List<Genotype>(populationSize);
+      var offspring = new List<Genotype>(builder.populationSize);
       foreach (var sp in species.Species) {
         var speciesContribution = Mathf.CeilToInt(
-          (sp.AverageFitness / totalAverageFitness) * (float)populationSize
+          (sp.AverageFitness / totalAverageFitness) * (float)builder.populationSize
         );
 
         var speciesEliteCount = Mathf.FloorToInt(builder.elitism * speciesContribution);
@@ -72,7 +72,7 @@ namespace NEAT {
           offspring.Add(child);
         }
       }
-      return offspring.Take(populationSize).ToList();
+      return offspring.Take(builder.populationSize).ToList();
     }
 
     public void Next(List<Phenotype> phenotypes) {
@@ -85,7 +85,7 @@ namespace NEAT {
       Assert.IsTrue(phenotypes.First().adjustedFitness <= phenotypes.Last().adjustedFitness);
 
       // Produce offspring
-      this.genotypes = Reproduce(builder.populationSize);
+      this.genotypes = Reproduce();
       generation++;
     }
   }

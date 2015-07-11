@@ -145,16 +145,16 @@ public class EvolutionBehaviour : MonoBehaviour {
       .Innovations(innovations)
       .ProtoGenotype(protoGenotype)
       .Population(populationSize)
-      .Elitism(0.25f)
+      .Elitism(0.35f)
       .Species(10, 50.0f, 0.2f)
-      // .Mutation(0.25f, 0.2f)
+      .Mutation(0.5f, 0.2f)
       .Measurement(new NEAT.Measurement(3.0f, 3.0f, 2.0f))
       .Crossover(new NEAT.MultipointCrossover())
       .Mutators(new NEAT.IMutator[]{
         new NEAT.AddNeuronMutator(0.2f),
         new NEAT.AddSynapseMutator(0.2f),
-        new NEAT.PerturbNeuronMutator(0.25f, 0.25f),
-        new NEAT.PerturbSynapseMutator(0.25f, 0.25f, 0.2f),
+        new NEAT.PerturbNeuronMutator(0.25f, 0.5f),
+        new NEAT.PerturbSynapseMutator(0.25f, 0.5f, 0.2f),
         new NEAT.ReplaceNeuronMutator(0.15f),
         new NEAT.ReplaceSynapseMutator(0.15f, 0.2f),
       })
