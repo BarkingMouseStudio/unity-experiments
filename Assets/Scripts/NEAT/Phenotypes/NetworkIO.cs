@@ -34,8 +34,6 @@ public class NetworkIO {
     }
   }
 
-  const ulong MAX_DELAY = 20;
-
   static NetworkIO() {
     inNeuronCount = (NetworkIO.angularRanges.Length * 1) +
       (NetworkIO.linearRanges.Length * 1);
@@ -52,7 +50,8 @@ public class NetworkIO {
       .ToArray();
 
     List<Range> inputRanges = new List<Range>(
-      angularRanges.Length * 1 + linearRanges.Length * 1
+      angularRanges.Length * 1 +
+      linearRanges.Length * 1
     );
     inputRanges.AddRange(angularRanges); // theta lower
     // inputRanges.AddRange(angularRanges); // theta dot lower
@@ -61,13 +60,15 @@ public class NetworkIO {
     NetworkIO.inputRanges = inputRanges.ToArray();
 
     Assert.AreEqual(inputRanges.Count, inNeuronCount);
-    Assert.AreEqual(inputRanges.Count, inNeuronCount);
+    Assert.AreEqual(inNeuronIds.Length, inNeuronCount);
+    Assert.AreEqual(outNeuronIds.Length, outNeuronCount);
   }
 
   readonly Neural.Network network;
   readonly int neuronCount;
 
   readonly double[] input;
+  readonly float[] worldData;
   double[] output;
 
   float lastUpdate = 0.0f;
@@ -77,7 +78,7 @@ public class NetworkIO {
     var neuronGenes = genotype.NeuronGenes.ToList();
     var synapseGenes = genotype.SynapseGenes.ToList();
 
-    var network = new Neural.Network(NetworkIO.MAX_DELAY);
+    var network = new Neural.Network();
 
     foreach (var neuronGene in neuronGenes) {
       float a = NumberHelper.Scale(neuronGene.a, 0.02f, 0.1f); // 0.1
@@ -100,6 +101,7 @@ public class NetworkIO {
 
       var fromNeuronId = neuronGenes.FindIndex(n => n.InnovationId == synapseGene.fromNeuronId);
       var toNeuronId = neuronGenes.FindIndex(n => n.InnovationId == synapseGene.toNeuronId);
+
       Assert.AreNotEqual(fromNeuronId, -1, "Must find from-neuron id");
       Assert.AreNotEqual(toNeuronId, -1, "Must find to-neuron id");
 
@@ -122,6 +124,7 @@ public class NetworkIO {
 
     this.input = new double[this.neuronCount];
     this.output = new double[this.neuronCount];
+    this.worldData = new float[inNeuronCount];
   }
 
   public float Send(float thetaLower, float x) {
@@ -131,7 +134,6 @@ public class NetworkIO {
     // var lR2 = lR * 2;
 
     // Project world data
-    var worldData = new float[aR + lR];
     for (int i = 0; i < worldData.Length; i++) {
       if (i < aR) {
         worldData[i] = thetaLower;
@@ -141,11 +143,17 @@ public class NetworkIO {
         worldData[i] = x;
       // } else if (i >= aR2 + lR && i < aR2 + lR2) {
       //   worldData[i] = xDot;
+      } else {
+        worldData[i] = 0.0f;
       }
     }
 
     for (int i = 0; i < input.Length; i++) {
       input[i] = 0.0f;
+    }
+
+    for (int i = 0; i < output.Length; i++) {
+      output[i] = 0.0f;
     }
 
     // Filter world data by ranges
@@ -161,12 +169,9 @@ public class NetworkIO {
 
     var now = Time.time;
     var ticks = (ulong)Mathf.FloorToInt((now - lastUpdate) * 1000.0f);
-    this.lastUpdate = now;
+    lastUpdate = now;
 
     // Receive output
-    for (int i = 0; i < output.Length; i++) {
-      output[i] = 0.0f;
-    }
     network.Tick(ticks, input, ref output);
 
     // Read out neuron V for speed

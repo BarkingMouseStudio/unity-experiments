@@ -26,7 +26,11 @@ public class ResetBehaviour : MonoBehaviour {
 	}
 
   void SaveState(Transform transform, List<State> states) {
-    var rigidbody = transform.GetComponent<Rigidbody2D>();
+    Rigidbody2D rigidbody = transform.GetComponent<Rigidbody2D>();
+    bool isKinematic = false;
+    if (rigidbody != null) {
+      isKinematic = rigidbody.isKinematic;
+    }
     var state = new State{
       transform = transform,
       position = transform.localPosition,
@@ -34,7 +38,7 @@ public class ResetBehaviour : MonoBehaviour {
       scale = transform.localScale,
       states = new List<State>(transform.childCount),
       rigidbody = rigidbody,
-      isKinematic = rigidbody.isKinematic,
+      isKinematic = isKinematic,
     };
     states.Add(state);
 
@@ -49,9 +53,11 @@ public class ResetBehaviour : MonoBehaviour {
       state.transform.localRotation = state.rotation;
       state.transform.localScale = state.scale;
 
-      state.rigidbody.velocity = Vector2.zero;
-      state.rigidbody.angularVelocity = 0;
-      state.rigidbody.isKinematic = state.isKinematic;
+      if (state.rigidbody != null) {
+        state.rigidbody.velocity = Vector2.zero;
+        state.rigidbody.angularVelocity = 0;
+        state.rigidbody.isKinematic = state.isKinematic;
+      }
 
       RestoreState(state.states);
     }

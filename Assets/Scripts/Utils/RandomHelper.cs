@@ -7,7 +7,8 @@ public static class RandomHelper {
   }
 
   public static float NextGaussian() {
-    return Mathf.Sqrt(-2.0f * Mathf.Log(Random.value)) * Mathf.Sin(2.0f * Mathf.PI * Random.value);
+    return Mathf.Sqrt(-2.0f * Mathf.Log(Random.value)) *
+           Mathf.Sin(2.0f * Mathf.PI * Random.value);
   }
 
   public static float NextCauchy(float m, float gamma) {

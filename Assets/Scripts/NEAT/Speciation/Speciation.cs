@@ -30,9 +30,9 @@ namespace NEAT {
       this.distanceMetric = distanceMetric;
     }
 
-    public Specie[] Speciate(Specie[] speciesList, Phenotype[] phenotypes) {
+    public Specie[] Speciate(Specie[] species, Phenotype[] phenotypes) {
       // Begin new species
-      var speciesListNext = speciesList.Select(sp =>
+      var speciesListNext = species.Select(sp =>
         new Specie(sp.SpeciesId, sp.Representative)).ToList();
 
       // Place genotypes
@@ -58,6 +58,7 @@ namespace NEAT {
         }
       }
 
+      // Adjust threshold to accomodate the correct number of species
       if (speciesListNext.Count < desiredSpeciesCount) { // Too few
         distanceThreshold -= distanceThreshold * distanceThresholdAdjustment; // Decrease threshold
       } else if (speciesListNext.Count > desiredSpeciesCount) { // To many
@@ -66,7 +67,16 @@ namespace NEAT {
 
       // Prune empty species
       var dead = speciesListNext.Where(sp => sp.Count == 0);
-      return speciesListNext.Except(dead).ToArray();
+      var specieNext = speciesListNext.Except(dead).ToArray();
+
+      // Adjust each species' phenotypes' fitness
+      foreach (var specie in specieNext) {
+        foreach (var phenotype in specie) {
+          phenotype.AdjustedFitness = phenotype.Fitness / specie.Count;
+        }
+      }
+
+      return specieNext;
     }
   }
 }

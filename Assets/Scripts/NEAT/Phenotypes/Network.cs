@@ -36,11 +36,13 @@ namespace Neural {
       }
     }
 
+    private const ulong MAX_DELAY = 20;
+
     private IntPtr ptr;
     private bool disposed;
 
-    public Network(ulong maxDelay) {
-      ptr = CreateNetwork(new size_t(maxDelay));
+    public Network() {
+      ptr = CreateNetwork(new size_t(MAX_DELAY));
   		Assert(ptr != IntPtr.Zero, "Failed to initialize the neural network.");
     }
 

@@ -10,8 +10,10 @@ namespace NEAT {
   [TestFixture]
   public class GenotypeStreamTests {
 
-    [Test]
-    public void TestGenotypeStream() {
+    Genotype protoGenotype;
+
+    [SetUp]
+    public void Init() {
       var innovations = new InnovationCollection();
 
       var neuronGenes = Enumerable.Range(0, 3).Select(i => {
@@ -23,9 +25,13 @@ namespace NEAT {
         var inId = innovations.GetSynapseInnovationId(-1, 1);
         return new SynapseGene(inId, -1, 1, true);
       }).ToArray();
-      var protoGenotype = new Genotype(neuronGenes, synapseGenes);
 
-      var stream = new GenotypeStream(protoGenotype, innovations);
+      protoGenotype = new Genotype(neuronGenes, synapseGenes);
+    }
+
+    [Test]
+    public void TestGenotypeStream() {
+      var stream = new GenotypeStream(protoGenotype);
       var genotypes = stream.Take(5);
 
       // Correct count

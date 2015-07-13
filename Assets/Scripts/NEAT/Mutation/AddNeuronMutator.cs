@@ -20,7 +20,11 @@ namespace NEAT {
 
     public override void MutateGenotype(Genotype genotype, MutationResults results) {
       // We require a synapse to split
-      if (Random.value > p || genotype.SynapseCount == 0) {
+      if (genotype.SynapseCount == 0) {
+        return;
+      }
+      
+      if (Random.value > p) {
         return;
       }
 

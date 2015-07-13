@@ -7,31 +7,53 @@ using System.Linq;
 
 namespace NEAT {
 
+  // NOTE: These aren't very good tests since they only test whether
+  // exceptions are thrown.
+
   [TestFixture]
   public class NetworkIOTests {
 
+    InnovationCollection innovations;
+    Genotype protoGenotype;
+
+    [SetUp]
+    public void Init() {
+      innovations = new InnovationCollection();
+
+      var neuronGenes = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
+        .Select(i => new NeuronGene(innovations.GetInitialNeuronInnovationId(i)))
+        .ToArray();
+
+      protoGenotype = new Genotype(neuronGenes, new SynapseGene[0]);
+    }
+
     [Test]
-    [Ignore("Needs improvement")]
-    public void TestNetworkIO() {
-      // var innovations = new InnovationCollection();
-      // var neuronGenes = Enumerable.Range(0, NetworkIO.inNeuronCount + NetworkIO.outNeuronCount)
-      //   .Select(i => NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
-      //   .ToArray();
-      // var genotype = new Genotype(neuronGenes, new SynapseGene[0]);
-      //
-      // var mutators = new IMutator[]{
-      //   new AddNeuronMutator(1.0f, innovations),
-      //   new AddSynapseMutator(1.0f, innovations),
-      // };
-      //
-      // var generationCount = 100;
-      // for (int i = 0; i < generationCount; i++) {
-      //   var results = new MutationResults();
-      //   foreach (var mutator in mutators) {
-      //     mutator.MutateGenotype(genotype, results);
-      //   }
-      //   Reifier.Reify(genotype);
-      // }
+    public void TestNetworkIO_FromGenotype() {
+      var genotype = Genotype.FromPrototype(protoGenotype);
+
+      var mutators = new IMutator[]{
+        new AddNeuronMutator(1.0f, innovations),
+        new AddSynapseMutator(1.0f, innovations),
+      };
+
+      // Ensure that the network remains valid after a number of
+      // structural mutations.
+      var generationCount = 100;
+      for (int i = 0; i < generationCount; i++) {
+        var results = new MutationResults();
+        foreach (var mutator in mutators) {
+          mutator.MutateGenotype(genotype, results);
+        }
+        NetworkIO.FromGenotype(genotype);
+      }
+    }
+
+    [Test]
+    public void TestNetworkIO_Send() {
+      var genotype = Genotype.FromPrototype(protoGenotype);
+      var network = NetworkIO.FromGenotype(genotype);
+      var speed = network.Send(30.0f, 3.0f);
+      Assert.AreEqual(0.0f, speed);
     }
   }
 }

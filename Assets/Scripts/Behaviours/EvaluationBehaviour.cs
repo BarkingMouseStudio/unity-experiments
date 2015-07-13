@@ -22,11 +22,16 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   public Orientations orientation;
 
-  static readonly int[] angles;
-
-  static EvaluationBehaviour() {
-    angles = Enum.GetValues(typeof(Orientations)).Cast<int>().ToArray();
-  }
+  static readonly float[] angles = new float[]{
+    135f,
+    150f,
+    165f,
+    175f,
+    185f,
+    195f,
+    210f,
+    225f,
+  };
 
   Transform cart;
   Transform handle;
@@ -38,6 +43,8 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   float startTime;
   float endTime;
+
+  Vector3 startPosition;
 
   // TODO: Use Phenotype (not Genotype)
   public NEAT.Genotype Genotype { get; set; }
@@ -67,16 +74,7 @@ public class EvaluationBehaviour : MonoBehaviour {
     }
   }
 
-	void Awake() {
-    cart = transform.Find("Cart");
-    handle = transform.Find("Cart/Lower/Handle");
-    lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
-    wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
-	}
-
-  Vector3 startPosition;
-
-  void OnSpawned() {
+  void Init() {
     SetRotation();
 
     startPosition = transform.position;
@@ -84,6 +82,19 @@ public class EvaluationBehaviour : MonoBehaviour {
     // TODO: Move time, angle and fitness accessors to Evaluator (=> EvaluationInfo)
     evaluator = new Evaluator();
     startTime = Time.time;
+  }
+
+	void Awake() {
+    cart = transform.Find("Cart");
+    handle = transform.Find("Cart/Lower/Handle");
+    lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
+    wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
+
+    Init();
+	}
+
+  void OnSpawned() {
+    Init();
   }
 
 	void OnDespawned() {
@@ -94,9 +105,7 @@ public class EvaluationBehaviour : MonoBehaviour {
   void SetRotation() {
     float angle = 0.0f;
     if (orientation == Orientations.Random) {
-      while (angle == 0.0f || angle == -1.0f) {
-        angle = (float)angles[UnityEngine.Random.Range(0, angles.Length)];
-      }
+      angle = angles[UnityEngine.Random.Range(0, angles.Length)];
     } else {
       angle = (float)orientation;
     }

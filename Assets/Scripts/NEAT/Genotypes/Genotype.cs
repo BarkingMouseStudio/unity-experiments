@@ -40,7 +40,7 @@ namespace NEAT {
       }
     }
 
-    public static Genotype FromPrototype(Genotype protoGenotype, InnovationCollection innovations) {
+    public static Genotype FromPrototype(Genotype protoGenotype) {
       var neuronGenes = protoGenotype.NeuronGenes
         .Select(g => NeuronGene.FromPrototype(g))
         .ToArray();
