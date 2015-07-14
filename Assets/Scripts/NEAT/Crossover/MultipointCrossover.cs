@@ -1,6 +1,8 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NEAT {
 
@@ -8,6 +10,7 @@ namespace NEAT {
 
     static T[] CrossoverGenes<T>(T[] a, T[] b, float fitnessA, float fitnessB) where T : IHistoricalGene {
       var newGenes = new List<T>(System.Math.Max(a.Length, b.Length));
+
       foreach (var t in new GeneEnumerable<T>(a, b)) {
         switch (t.First) {
           case HistoricalGeneTypes.Aligned: // Pick random aligned gene
@@ -23,7 +26,27 @@ namespace NEAT {
             break;
         }
       }
+
+      Assert.IsTrue(IsSorted(newGenes),
+        "Gene innovations must occur in ascending order");
+
       return newGenes.ToArray();
+    }
+
+    static bool IsSorted<T>(List<T> genes) where T : IHistoricalGene {
+      int count = genes.Count;
+      if (count == 0) {
+        return true;
+      }
+
+      int prev = genes[0].InnovationId;
+      for (int i = 1; i < count; i++) {
+        if (genes[i].InnovationId <= prev) {
+          return false;
+        }
+      }
+
+      return true;
     }
 
     public Genotype Crossover(Phenotype a, Phenotype b) {

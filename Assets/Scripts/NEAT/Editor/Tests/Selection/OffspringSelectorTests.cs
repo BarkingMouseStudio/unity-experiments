@@ -22,8 +22,8 @@ namespace NEAT {
       }).ToArray();
 
       var synapseGenes = Enumerable.Range(0, 3).Select(i => {
-        var inId = innovations.GetSynapseInnovationId(-1, 1);
-        return new SynapseGene(inId, -1, 1, true);
+        var inId = innovations.GetSynapseInnovationId(i, i + 1);
+        return new SynapseGene(inId, i, i + 1, true);
       }).ToArray();
 
       var protoGenotype = new Genotype(neuronGenes, synapseGenes);
