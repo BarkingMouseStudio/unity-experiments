@@ -54,6 +54,10 @@ namespace NEAT {
       this.d = other.d;
     }
 
+    public override string ToString() {
+      return innovationId.ToString();
+    }
+
     public IDictionary<string, object> ToJSON() {
       return new Dictionary<string, object>(){
         { "innovation", innovationId },
