@@ -27,8 +27,13 @@ namespace NEAT {
         }
       }
 
-      Assert.IsTrue(IsSorted(newGenes),
-        "Gene innovations must occur in ascending order");
+      var sorted = IsSorted(newGenes);
+      Assert.IsTrue(sorted, "Gene innovations must occur in ascending order");
+      if (!sorted) {
+        Debug.LogFormat("a: {0}", a.Stringify());
+        Debug.LogFormat("b: {0}", b.Stringify());
+        Debug.LogFormat("offspring: {0}", newGenes.Stringify());
+      }
 
       return newGenes.ToArray();
     }
