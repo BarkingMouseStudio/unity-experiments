@@ -8,10 +8,10 @@ public class Evaluator {
   // Evaluation fitness
   const int fitnessLength = 100;
 
-  const float fitnessCountWeight = 0.1f;
-  const float fitnessWeight = 0.9f;
+  const float fitnessCountWeight = 0.5f;
+  const float fitnessWeight = 0.5f;
 
-  const int maximumFitnessCount = 1500; // 30s * 1000ms / 20 ticks
+  const int maximumFitnessCount = 500; // 30s * 1000ms / 20 ticks
   const float maximumFitness = 180.0f * 4.0f;
 
   int fitnessIndex = 0;

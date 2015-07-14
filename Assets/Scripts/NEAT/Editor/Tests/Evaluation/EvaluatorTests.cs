@@ -31,11 +31,11 @@ namespace NEAT {
       var evaluator = new Evaluator();
       Assert.AreEqual(1.0f, evaluator.Fitness);
 
-      for (int i = 0; i < 100; i++) {
-        evaluator.Update(0.0f, 0.0f, 0.0f, 0.0f);
+      for (int i = 0; i < 500; i++) {
+        evaluator.Update(0.0f, 0.0f, 0.0f, 1.0f);
       }
 
-      Assert.AreEqual(0.13f, evaluator.Fitness, 0.1f);
+      Assert.AreEqual(0.0f, evaluator.Fitness);
     }
 
     [Test]
