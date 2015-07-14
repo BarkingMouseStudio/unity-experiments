@@ -17,7 +17,8 @@ public class NetworkIO {
   });
 
   static readonly double[] speeds = new double[]{
-    -200.0, -100.0, -10.0, -1.0, -0.1, 0.1, 1.0, 10.0, 100.0, 200.0
+    -250.0, -200.0, -150.0, -100.0, -50.0, -10.0, -1.0, -0.1,
+    0.1, 1.0, 10.0, 50.0, 100.0, 150.0, 200.0, 250.0
   };
 
   static readonly Range[] inputRanges;
@@ -67,9 +68,9 @@ public class NetworkIO {
   readonly Neural.Network network;
   readonly int neuronCount;
 
-  readonly double[] input;
-  readonly float[] worldData;
+  double[] input;
   double[] output;
+  float[] worldData;
 
   // Responsible for relaying the genotype structure to the neural network.
   public static NetworkIO FromGenotype(NEAT.Genotype genotype) {
@@ -124,23 +125,11 @@ public class NetworkIO {
     this.worldData = new float[inNeuronCount];
   }
 
-  public float Send(float thetaLower, float thetaDotLower, float x, float xDot) {
+  public static void PopulateWorldData(float[] worldData, float thetaLower, float thetaDotLower, float x, float xDot) {
     var aR = angularRanges.Length;
     var aR2 = aR * 2;
     var lR = linearRanges.Length;
     var lR2 = lR * 2;
-
-    for (int i = 0; i < input.Length; i++) {
-      input[i] = 0.0f;
-    }
-
-    for (int i = 0; i < output.Length; i++) {
-      output[i] = 0.0f;
-    }
-
-    for (int i = 0; i < worldData.Length; i++) {
-      worldData[i] = 0.0f;
-    }
 
     // Project world data
     for (int i = 0; i < worldData.Length; i++) {
@@ -148,33 +137,48 @@ public class NetworkIO {
         worldData[i] = thetaLower;
       } else if (i >= aR && i < aR2) {
         worldData[i] = thetaDotLower;
-      } else if (i >= aR && i < aR + lR) {
+      } else if (i >= aR2 && i < aR2 + lR) {
         worldData[i] = x;
       } else if (i >= aR2 + lR && i < aR2 + lR2) {
         worldData[i] = xDot;
       }
     }
+  }
 
+  public static void MapInput(double[] input, float[] worldData) {
     // Filter world data by ranges
     Range range;
     float data;
-    for (int i = 0; i < inputRanges.Length; i++) {
+    for (int i = 0; i < inNeuronIds.Length; i++) {
       range = inputRanges[i];
       data = worldData[i];
       if (range.Contains(data)) {
-        input[inNeuronIds[i]] = 40.0; // * range.Normalize(data);
+        input[inNeuronIds[i]] = 30.0;
       }
     }
+  }
 
-    // Receive output
-    var ticks = (ulong)(Time.fixedDeltaTime * 1000.0f);
-    network.Tick(ticks, input, ref output);
-
+  public static float MapOutput(double[] output) {
     // Read out neuron V for speed
     float speed = 0.0f;
-    for (int i = 0; i < speeds.Length; i++) {
+    for (int i = 0; i < outNeuronIds.Length; i++) {
       speed += (float)((output[outNeuronIds[i]] / 30.0) * speeds[i]);
     }
     return speed;
+  }
+
+  public float Send(float thetaLower, float thetaDotLower, float x, float xDot) {
+    Array.Clear(input, 0, input.Length);
+    Array.Clear(output, 0, output.Length);
+    Array.Clear(worldData, 0, worldData.Length);
+
+    PopulateWorldData(worldData, thetaLower, thetaDotLower, x, xDot);
+
+    MapInput(input, worldData);
+
+    // Receive output
+    network.Tick(20ul, input, ref output); // TODO: fixedDeltaTime?
+
+    return MapOutput(output);
   }
 }
