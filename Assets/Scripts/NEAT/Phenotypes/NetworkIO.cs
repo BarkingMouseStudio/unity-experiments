@@ -35,8 +35,8 @@ public class NetworkIO {
   }
 
   static NetworkIO() {
-    inNeuronCount = (NetworkIO.angularRanges.Length * 1) +
-      (NetworkIO.linearRanges.Length * 1);
+    inNeuronCount = (NetworkIO.angularRanges.Length * 2) +
+      (NetworkIO.linearRanges.Length * 2);
     outNeuronCount = NetworkIO.speeds.Length;
 
     // Set up input neuron ids by order
@@ -50,13 +50,13 @@ public class NetworkIO {
       .ToArray();
 
     List<Range> inputRanges = new List<Range>(
-      angularRanges.Length * 1 +
-      linearRanges.Length * 1
+      angularRanges.Length * 2 +
+      linearRanges.Length * 2
     );
     inputRanges.AddRange(angularRanges); // theta lower
-    // inputRanges.AddRange(angularRanges); // theta dot lower
+    inputRanges.AddRange(angularRanges); // theta dot lower
     inputRanges.AddRange(linearRanges); // x
-    // inputRanges.AddRange(linearRanges); // x dot
+    inputRanges.AddRange(linearRanges); // x dot
     NetworkIO.inputRanges = inputRanges.ToArray();
 
     Assert.AreEqual(inputRanges.Count, inNeuronCount);
@@ -124,11 +124,11 @@ public class NetworkIO {
     this.worldData = new float[inNeuronCount];
   }
 
-  public float Send(float thetaLower, float x) {
+  public float Send(float thetaLower, float thetaDotLower, float x, float xDot) {
     var aR = angularRanges.Length;
-    // var aR2 = aR * 2;
+    var aR2 = aR * 2;
     var lR = linearRanges.Length;
-    // var lR2 = lR * 2;
+    var lR2 = lR * 2;
 
     for (int i = 0; i < input.Length; i++) {
       input[i] = 0.0f;
@@ -138,18 +138,20 @@ public class NetworkIO {
       output[i] = 0.0f;
     }
 
+    for (int i = 0; i < worldData.Length; i++) {
+      worldData[i] = 0.0f;
+    }
+
     // Project world data
     for (int i = 0; i < worldData.Length; i++) {
       if (i < aR) {
         worldData[i] = thetaLower;
-      // } else if (i >= aR && i < aR2) {
-      //   worldData[i] = thetaDotLower;
+      } else if (i >= aR && i < aR2) {
+        worldData[i] = thetaDotLower;
       } else if (i >= aR && i < aR + lR) {
         worldData[i] = x;
-      // } else if (i >= aR2 + lR && i < aR2 + lR2) {
-      //   worldData[i] = xDot;
-      } else {
-        worldData[i] = 0.0f;
+      } else if (i >= aR2 + lR && i < aR2 + lR2) {
+        worldData[i] = xDot;
       }
     }
 
@@ -160,7 +162,7 @@ public class NetworkIO {
       range = inputRanges[i];
       data = worldData[i];
       if (range.Contains(data)) {
-        input[inNeuronIds[i]] = 40.0 * range.Normalize(data);
+        input[inNeuronIds[i]] = 40.0; // * range.Normalize(data);
       }
     }
 

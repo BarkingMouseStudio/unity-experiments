@@ -52,7 +52,7 @@ namespace NEAT {
     public void TestNetworkIO_Send() {
       var genotype = Genotype.FromPrototype(protoGenotype);
       var network = NetworkIO.FromGenotype(genotype);
-      network.Send(30.0f, 3.0f);
+      network.Send(90.0f, 30.0f, 3.0f, 1.0f);
     }
   }
 }

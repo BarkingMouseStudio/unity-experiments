@@ -55,11 +55,11 @@ public class ControllerBehaviour : MonoBehaviour {
     }
 
     var thetaLower = AngleHelper.GetAngle(lower.rotation);
-    // var thetaDotLower = AngleHelper.GetAngle(lower.angularVelocity);
+    var thetaDotLower = AngleHelper.GetAngle(lower.angularVelocity);
     var x = wheel.transform.localPosition.x;
-    // var xDot = wheel.velocity.magnitude;
+    var xDot = wheel.velocity.magnitude;
 
-    float speed = networkIO.Send(thetaLower, x);
+    float speed = networkIO.Send(thetaLower, thetaDotLower, x, xDot);
 
     // Update motor speed
     SetMotorSpeed(speed);

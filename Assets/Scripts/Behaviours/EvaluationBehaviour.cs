@@ -23,10 +23,8 @@ public class EvaluationBehaviour : MonoBehaviour {
   public Orientations orientation;
 
   static readonly float[] angles = new float[]{
-    150f,
-    165f,
-    195f,
-    210f,
+    135f,
+    225f,
   };
 
   Transform cart;
@@ -109,7 +107,7 @@ public class EvaluationBehaviour : MonoBehaviour {
   }
 
   void Complete() {
-    // wheel.isKinematic = true; // Freeze the wheel
+    wheel.isKinematic = true; // Freeze the wheel
     isComplete = true;
     endTime = Time.time;
   }

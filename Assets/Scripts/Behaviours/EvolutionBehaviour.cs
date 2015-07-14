@@ -101,13 +101,13 @@ public class EvolutionBehaviour : MonoBehaviour {
     var innovations = new NEAT.InnovationCollection();
 
     var mutations = new NEAT.MutationCollection(
-      // new NEAT.AddNeuronMutator(0.2f, innovations),
-      new NEAT.AddSynapseMutator(0.5f, innovations)
-      // new NEAT.PerturbNeuronMutator(0.25f, 0.5f),
-      // new NEAT.PerturbSynapseMutator(0.25f, 0.5f),
-      // new NEAT.ReplaceNeuronMutator(0.15f),
-      // new NEAT.ReplaceSynapseMutator(0.15f),
-      // new NEAT.ToggleSynapseMutator(0.15f)
+      new NEAT.AddNeuronMutator(0.35f, innovations),
+      new NEAT.AddSynapseMutator(0.35f, innovations),
+      new NEAT.PerturbNeuronMutator(0.25f, 0.5f),
+      new NEAT.PerturbSynapseMutator(0.25f, 0.5f),
+      new NEAT.ReplaceNeuronMutator(0.15f),
+      new NEAT.ReplaceSynapseMutator(0.15f),
+      new NEAT.ToggleSynapseMutator(0.15f)
     );
 
     var eliteSelector = new NEAT.EliteSelector();
@@ -148,21 +148,19 @@ public class EvolutionBehaviour : MonoBehaviour {
 
       species = speciation.Speciate(species, phenotypes.ToArray());
 
-      foreach (var sp in species) {
-        Debug.LogFormat("[{0}] Species Size: {1}, Mean Fitness: {2}",
-          generation, sp.Count, sp.MeanFitness);
-      }
-
       var adjusted = phenotypes.OrderBy(pt => pt.AdjustedFitness).First();
       Debug.LogFormat("[{0}] Best Adjusted Fitness: {1}, Best Adjusted Duration: {2}s ({3}, {4})",
         generation, adjusted.Fitness, adjusted.Duration,
         adjusted.Genotype.NeuronCount,
         adjusted.Genotype.SynapseCount);
 
-      Debug.LogFormat("[{0}] Species: {1} (Threshold: {2})",
+      Debug.LogFormat("[{0}] Species Count: {1} (Threshold: {2})",
         generation, species.Length, speciation.DistanceThreshold);
 
       foreach (var sp in species) {
+        // Debug.LogFormat("[{0}] Species Id: {1}, Species Size: {2}, Mean Fitness: {3}",
+        //   generation, sp.SpeciesId, sp.Count, sp.MeanFitness);
+
         speciesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}",
           generation, sp.SpeciesId, sp.Count, sp.MeanFitness));
 
@@ -187,12 +185,12 @@ public class EvolutionBehaviour : MonoBehaviour {
       var mutationResults = mutations.Mutate(offspring);
       Debug.LogFormat("[{0}] Mutations: Added Neurons: {1}, Added Synapses: {2}, Perturbed Neurons: {3}, Perturbed Synapses: {4}, Replaced Neurons: {5}, Replaced Synapses: {6}",
         generation,
-        (float)mutationResults.addedNeurons / (float)populationSize,
-        (float)mutationResults.addedSynapses / (float)populationSize,
-        (float)mutationResults.perturbedNeurons / (float)populationSize,
-        (float)mutationResults.perturbedSynapses / (float)populationSize,
-        (float)mutationResults.replacedNeurons / (float)populationSize,
-        (float)mutationResults.replacedSynapses / (float)populationSize);
+        mutationResults.addedNeurons,
+        mutationResults.addedSynapses,
+        mutationResults.perturbedNeurons,
+        mutationResults.perturbedSynapses,
+        mutationResults.replacedNeurons,
+        mutationResults.replacedSynapses);
 
       genotypes = elites.Concat(offspring).ToArray();
       Assert.AreEqual(genotypes.Length, populationSize,
