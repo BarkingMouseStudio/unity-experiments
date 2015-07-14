@@ -15,10 +15,6 @@ public struct Range {
     return val >= start && val < end;
   }
 
-  public double Normalize(double val) {
-    return NumberHelper.Normalize(val, start, end);
-  }
-
   public static Range Of(double start, double end) {
     return new Range(start, end);
   }
