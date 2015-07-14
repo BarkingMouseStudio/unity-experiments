@@ -7,21 +7,15 @@ namespace NEAT {
 
   // In the add connection mutation, a single new connection gene is added
   // connecting two previously unconnected nodes.
-  public class AddSynapseMutator : Mutator {
+  public class AddSynapseMutator : IMutator {
 
     InnovationCollection innovations;
-    float p;
 
-    public AddSynapseMutator(float p, InnovationCollection innovations) {
+    public AddSynapseMutator(InnovationCollection innovations) {
       this.innovations = innovations;
-      this.p = p;
     }
 
-    public override void MutateGenotype(Genotype genotype, MutationResults results) {
-      if (Random.value > p) {
-        return;
-      }
-
+    public void Mutate(Genotype genotype, MutationResults results) {
       var neuronGeneA = genotype.NeuronGenes[Random.Range(0, genotype.NeuronCount)];
 
       var candidates = new List<NeuronGene>(genotype.NeuronGenes);

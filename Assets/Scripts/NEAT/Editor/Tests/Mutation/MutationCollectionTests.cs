@@ -33,28 +33,17 @@ namespace NEAT {
 
     [Test]
     public void TestMutationCollection() {
-      var genotypes = Enumerable.Range(0, 3).Select(_ =>
+      var genotypes = Enumerable.Range(0, 100).Select(_ =>
         Genotype.FromPrototype(protoGenotype)).ToArray();
 
-      var mutationCollection = new MutationCollection(
-        new NEAT.AddNeuronMutator(1.0f, innovations),
-        new NEAT.AddSynapseMutator(1.0f, innovations),
-        new NEAT.PerturbNeuronMutator(1.0f, 0.5f),
-        new NEAT.PerturbSynapseMutator(1.0f, 0.5f),
-        new NEAT.ReplaceNeuronMutator(1.0f),
-        new NEAT.ReplaceSynapseMutator(1.0f),
-        new NEAT.ToggleSynapseMutator(1.0f)
-      );
+      var mutations = new NEAT.MutationCollection();
+      mutations.Add(0.75f, new NEAT.AddNeuronMutator(innovations));
+      mutations.Add(0.25f, new NEAT.AddSynapseMutator(innovations));
 
-      var results = mutationCollection.Mutate(genotypes);
+      var results = mutations.Mutate(genotypes);
 
-      Assert.AreEqual(3, results.addedNeurons);
-      Assert.AreEqual(6, results.addedSynapses);
-      Assert.AreEqual(12, results.perturbedNeurons);
-      Assert.AreEqual(15, results.perturbedSynapses);
-      Assert.AreEqual(12, results.replacedNeurons);
-      Assert.AreEqual(15, results.replacedSynapses);
-      Assert.AreEqual(15, results.toggledSynapses);
+      Assert.AreEqual(75, results.addedNeurons, 75 * 0.15f);
+      Assert.AreEqual(175, results.addedSynapses, 175 * 0.15f);
     }
   }
 }

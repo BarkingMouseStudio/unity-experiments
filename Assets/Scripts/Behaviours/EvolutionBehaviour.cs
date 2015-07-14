@@ -13,7 +13,7 @@ using System.IO;
 public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
-  private readonly int batchSize = 50;
+  private readonly int batchSize = 100;
 
   static NEAT.Genotype[][] CreateBatches(NEAT.Genotype[] genotypes, int batchSize) {
     return genotypes.Select((gt, i) => {
@@ -100,15 +100,15 @@ public class EvolutionBehaviour : MonoBehaviour {
     var populationSize = 500;
     var innovations = new NEAT.InnovationCollection();
 
-    var mutations = new NEAT.MutationCollection(
-      new NEAT.AddNeuronMutator(0.1f, innovations),
-      new NEAT.AddSynapseMutator(0.1f, innovations),
-      new NEAT.PerturbNeuronMutator(0.5f, 0.5f),
-      new NEAT.PerturbSynapseMutator(0.5f, 0.5f),
-      new NEAT.ReplaceNeuronMutator(0.25f),
-      new NEAT.ReplaceSynapseMutator(0.25f),
-      new NEAT.ToggleSynapseMutator(0.25f)
-    );
+    var mutations = new NEAT.MutationCollection();
+    mutations.Add(0.05f, new NEAT.AddNeuronMutator(innovations));
+    mutations.Add(0.05f, new NEAT.AddSynapseMutator(innovations));
+    mutations.Add(0.15f, new NEAT.PerturbNeuronMutator(0.15f, 0.25f));
+    mutations.Add(0.15f, new NEAT.PerturbSynapseMutator(0.15f, 0.25f));
+    mutations.Add(0.15f, new NEAT.ToggleSynapseMutator(0.15f));
+    mutations.Add(0.10f, new NEAT.ReplaceNeuronMutator(0.15f));
+    mutations.Add(0.10f, new NEAT.ReplaceSynapseMutator(0.15f));
+    mutations.Add(0.25f, new NEAT.NoopMutator());
 
     var eliteSelector = new NEAT.EliteSelector();
 

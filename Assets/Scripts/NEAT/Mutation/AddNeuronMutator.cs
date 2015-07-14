@@ -8,23 +8,17 @@ namespace NEAT {
   // In the add node mutation, an existing connection is split and the new
   // node placed where the old connection used to be. The old connection is
   // disabled and two new connections are added to the genome.
-  public class AddNeuronMutator : Mutator {
+  public class AddNeuronMutator : IMutator {
 
     InnovationCollection innovations;
-    float p;
 
-    public AddNeuronMutator(float p, InnovationCollection innovations) {
+    public AddNeuronMutator(InnovationCollection innovations) {
       this.innovations = innovations;
-      this.p = p;
     }
 
-    public override void MutateGenotype(Genotype genotype, MutationResults results) {
+    public void Mutate(Genotype genotype, MutationResults results) {
       // We require a synapse to split
       if (genotype.SynapseCount == 0) {
-        return;
-      }
-      
-      if (Random.value > p) {
         return;
       }
 

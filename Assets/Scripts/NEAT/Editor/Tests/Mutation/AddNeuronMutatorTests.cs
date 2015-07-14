@@ -33,11 +33,11 @@ namespace NEAT {
 
     [Test]
     public void TestAddNeuronMutator() {
-      var mutator = new AddNeuronMutator(1.0f, innovations);
+      var mutator = new AddNeuronMutator(innovations);
 
       var mutatedGenotype = new Genotype(genotype);
       var mutationResults = new MutationResults();
-      mutator.MutateGenotype(mutatedGenotype, mutationResults);
+      mutator.Mutate(mutatedGenotype, mutationResults);
 
       Assert.That(mutationResults.addedNeurons == 1);
       Assert.That(mutationResults.addedSynapses == 2);

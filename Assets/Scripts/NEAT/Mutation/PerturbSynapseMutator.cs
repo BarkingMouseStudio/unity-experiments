@@ -5,20 +5,19 @@ using System.Linq;
 
 namespace NEAT {
 
-  public class PerturbSynapseMutator : Mutator {
+  public class PerturbSynapseMutator : IMutator {
 
-    float p;
     float mutationScale;
+    float p;
 
     public PerturbSynapseMutator(float p, float mutationScale) {
-      this.p = p;
       this.mutationScale = mutationScale;
+      this.p = p;
     }
 
-    public override void MutateGenotype(Genotype genotype, MutationResults results) {
-      var p2 = Mathf.Pow(p, 2.0f);
+    public void Mutate(Genotype genotype, MutationResults results) {
       for (int i = 0; i < genotype.SynapseCount; i++) {
-        if (Random.value < p2) {
+        if (Random.value < p) {
           var synapseGene = genotype.SynapseGenes[i];
           synapseGene.weight = Mathf.Clamp01(RandomHelper.NextCauchy(synapseGene.weight, mutationScale));
           genotype.SynapseGenes[i] = synapseGene;

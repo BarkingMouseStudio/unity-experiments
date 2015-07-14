@@ -36,7 +36,7 @@ namespace NEAT {
 
       var mutatedGenotype = new Genotype(genotype);
       var mutationResults = new MutationResults();
-      mutator.MutateGenotype(mutatedGenotype, mutationResults);
+      mutator.Mutate(mutatedGenotype, mutationResults);
 
       Assert.AreEqual(mutationResults.toggledSynapses, 3);
 

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace NEAT {
 
-  public class ReplaceSynapseMutator : Mutator {
+  public class ReplaceSynapseMutator : IMutator {
 
     float p;
 
@@ -13,10 +13,9 @@ namespace NEAT {
       this.p = p;
     }
 
-    public override void MutateGenotype(Genotype genotype, MutationResults results) {
-      var p2 = Mathf.Pow(p, 2.0f);
+    public void Mutate(Genotype genotype, MutationResults results) {
       for (int i = 0; i < genotype.SynapseCount; i++) {
-        if (Random.value < p2) {
+        if (Random.value < p) {
           var synapseGene = genotype.SynapseGenes[i];
           synapseGene.weight = Random.value;
           genotype.SynapseGenes[i] = synapseGene;
