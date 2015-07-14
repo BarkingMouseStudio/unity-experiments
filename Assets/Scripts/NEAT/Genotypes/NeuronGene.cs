@@ -55,7 +55,7 @@ namespace NEAT {
     }
 
     public override string ToString() {
-      return innovationId.ToString();
+      return string.Format("<NeuronGene:{0}>", innovationId);
     }
 
     public IDictionary<string, object> ToJSON() {
