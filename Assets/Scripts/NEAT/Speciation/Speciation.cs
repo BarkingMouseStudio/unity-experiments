@@ -41,7 +41,8 @@ namespace NEAT {
 
         foreach (var specie in speciesListNext) {
           // Check if the phenotype belong to this species
-          if (distanceMetric.MeasureDistance(phenotype.Genotype, specie.Representative, distanceThreshold)) {
+          var distance = distanceMetric.MeasureDistance(phenotype.Genotype, specie.Representative);
+          if (distance <= distanceThreshold) {
             specie.Add(phenotype);
             foundSpecies = true;
             break;
@@ -67,16 +68,22 @@ namespace NEAT {
 
       // Prune empty species
       var dead = speciesListNext.Where(sp => sp.Count == 0);
-      var specieNext = speciesListNext.Except(dead).ToArray();
+      var speciesNext = speciesListNext.Except(dead);
 
       // Adjust each species' phenotypes' fitness
-      foreach (var specie in specieNext) {
+      foreach (var specie in speciesNext) {
+        var multiplier = 1.0f + ((float)specie.Count / (float)phenotypes.Length);
+        Assert.IsTrue(multiplier >= 1.0f,
+          "Must penalize phenotypes of large species");
+
         foreach (var phenotype in specie) {
-          phenotype.AdjustedFitness = phenotype.Fitness / specie.Count;
+          phenotype.AdjustedFitness = phenotype.Fitness * multiplier;
+          Assert.IsTrue(phenotype.AdjustedFitness >= phenotype.Fitness,
+            "Must penalize phenotypes of large species");
         }
       }
 
-      return specieNext;
+      return speciesNext.OrderBy(sp => sp.MeanFitness).ToArray();
     }
   }
 }

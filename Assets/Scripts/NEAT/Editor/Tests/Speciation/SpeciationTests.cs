@@ -41,7 +41,7 @@ namespace NEAT {
       var speciation = new NEAT.Speciation(10, 50.0f, 0.2f, distanceMetric);
       var species = speciation.Speciate(new NEAT.Specie[0], phenotypes);
 
-      Assert.AreEqual(15, species.Length, 3);
+      Assert.AreEqual(15, species.Length, 4);
       Assert.AreEqual(60.0f, speciation.DistanceThreshold);
     }
   }

@@ -23,14 +23,10 @@ public class EvaluationBehaviour : MonoBehaviour {
   public Orientations orientation;
 
   static readonly float[] angles = new float[]{
-    135f,
     150f,
     165f,
-    175f,
-    185f,
     195f,
     210f,
-    225f,
   };
 
   Transform cart;
@@ -113,7 +109,7 @@ public class EvaluationBehaviour : MonoBehaviour {
   }
 
   void Complete() {
-    wheel.isKinematic = true; // Freeze the wheel
+    // wheel.isKinematic = true; // Freeze the wheel
     isComplete = true;
     endTime = Time.time;
   }
@@ -123,12 +119,12 @@ public class EvaluationBehaviour : MonoBehaviour {
       return;
     }
 
-    if ((wheel.transform.position.y - startPosition.y) < -2.0f) {
+    if (wheel.transform.position.y - startPosition.y < -2.0f) {
       Complete();
       return;
     }
 
-    if ((handle.position.y - startPosition.y) < 0.0f) {
+    if (handle.position.y - startPosition.y < 0.0f) {
       Complete();
       return;
     }

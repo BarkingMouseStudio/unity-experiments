@@ -71,8 +71,6 @@ public class NetworkIO {
   readonly float[] worldData;
   double[] output;
 
-  float lastUpdate = 0.0f;
-
   // Responsible for relaying the genotype structure to the neural network.
   public static NetworkIO FromGenotype(NEAT.Genotype genotype) {
     var neuronGenes = genotype.NeuronGenes.ToList();
@@ -120,7 +118,6 @@ public class NetworkIO {
   public NetworkIO(Neural.Network network) {
     this.network = network;
     this.neuronCount = (int)network.NeuronCount;
-    this.lastUpdate = Time.time;
 
     this.input = new double[this.neuronCount];
     this.output = new double[this.neuronCount];
@@ -132,6 +129,14 @@ public class NetworkIO {
     // var aR2 = aR * 2;
     var lR = linearRanges.Length;
     // var lR2 = lR * 2;
+
+    for (int i = 0; i < input.Length; i++) {
+      input[i] = 0.0f;
+    }
+
+    for (int i = 0; i < output.Length; i++) {
+      output[i] = 0.0f;
+    }
 
     // Project world data
     for (int i = 0; i < worldData.Length; i++) {
@@ -148,14 +153,6 @@ public class NetworkIO {
       }
     }
 
-    for (int i = 0; i < input.Length; i++) {
-      input[i] = 0.0f;
-    }
-
-    for (int i = 0; i < output.Length; i++) {
-      output[i] = 0.0f;
-    }
-
     // Filter world data by ranges
     Range range;
     float data;
@@ -167,11 +164,8 @@ public class NetworkIO {
       }
     }
 
-    var now = Time.time;
-    var ticks = (ulong)Mathf.FloorToInt((now - lastUpdate) * 1000.0f);
-    lastUpdate = now;
-
     // Receive output
+    var ticks = (ulong)(Time.fixedDeltaTime * 1000.0f);
     network.Tick(ticks, input, ref output);
 
     // Read out neuron V for speed

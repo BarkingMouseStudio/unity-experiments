@@ -101,13 +101,13 @@ public class EvolutionBehaviour : MonoBehaviour {
     var innovations = new NEAT.InnovationCollection();
 
     var mutations = new NEAT.MutationCollection(
-      new NEAT.AddNeuronMutator(0.3f, innovations),
-      new NEAT.AddSynapseMutator(0.3f, innovations),
-      new NEAT.PerturbNeuronMutator(0.35f, 0.5f),
-      new NEAT.PerturbSynapseMutator(0.35f, 0.5f),
-      new NEAT.ReplaceNeuronMutator(0.25f),
-      new NEAT.ReplaceSynapseMutator(0.25f),
-      new NEAT.ToggleSynapseMutator(0.25f)
+      // new NEAT.AddNeuronMutator(0.2f, innovations),
+      new NEAT.AddSynapseMutator(0.5f, innovations)
+      // new NEAT.PerturbNeuronMutator(0.25f, 0.5f),
+      // new NEAT.PerturbSynapseMutator(0.25f, 0.5f),
+      // new NEAT.ReplaceNeuronMutator(0.15f),
+      // new NEAT.ReplaceSynapseMutator(0.15f),
+      // new NEAT.ToggleSynapseMutator(0.15f)
     );
 
     var eliteSelector = new NEAT.EliteSelector();
@@ -116,7 +116,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     var offspringSelector = new NEAT.OffspringSelector(crossover);
 
     var distanceMetric = new NEAT.DistanceMetric(3.0f, 3.0f, 2.0f);
-    var speciation = new NEAT.Speciation(10, 30.0f, 0.2f, distanceMetric);
+    var speciation = new NEAT.Speciation(10, 6.0f, 0.1f, distanceMetric);
 
     var neuronGenes = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
       .Select(i => NEAT.NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
@@ -134,18 +134,37 @@ public class EvolutionBehaviour : MonoBehaviour {
       var phenotypes = new List<NEAT.Phenotype>(genotypes.Length);
       yield return StartCoroutine(EvaluatePopulation(genotypes, phenotypes));
 
+      var longest = phenotypes.OrderByDescending(pt => pt.Duration).First();
+      Debug.LogFormat("[{0}] Longest Fitness: {1}, Longest Duration: {2}s ({3}, {4})",
+        generation, longest.Fitness, longest.Duration,
+        longest.Genotype.NeuronCount,
+        longest.Genotype.SynapseCount);
+
       var best = phenotypes.OrderBy(pt => pt.Fitness).First();
-      Debug.LogFormat("[{0}] Best Fitness: {2}, Best Duration: {1}s ({3}, {4})",
-        generation, best.Duration, best.Fitness,
+      Debug.LogFormat("[{0}] Best Fitness: {1}, Best Duration: {2}s ({3}, {4})",
+        generation, best.Fitness, best.Duration,
         best.Genotype.NeuronCount,
         best.Genotype.SynapseCount);
 
       species = speciation.Speciate(species, phenotypes.ToArray());
 
-      Debug.LogFormat("\tSpecies: {0} (Threshold: {1})", species.Length, speciation.DistanceThreshold);
+      foreach (var sp in species) {
+        Debug.LogFormat("[{0}] Species Size: {1}, Mean Fitness: {2}",
+          generation, sp.Count, sp.MeanFitness);
+      }
+
+      var adjusted = phenotypes.OrderBy(pt => pt.AdjustedFitness).First();
+      Debug.LogFormat("[{0}] Best Adjusted Fitness: {1}, Best Adjusted Duration: {2}s ({3}, {4})",
+        generation, adjusted.Fitness, adjusted.Duration,
+        adjusted.Genotype.NeuronCount,
+        adjusted.Genotype.SynapseCount);
+
+      Debug.LogFormat("[{0}] Species: {1} (Threshold: {2})",
+        generation, species.Length, speciation.DistanceThreshold);
 
       foreach (var sp in species) {
-        speciesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}", generation, sp.SpeciesId, sp.Count, sp.MeanFitness));
+        speciesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}",
+          generation, sp.SpeciesId, sp.Count, sp.MeanFitness));
 
         var spBest = sp.First();
         eliteFitnessLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}",
@@ -166,7 +185,8 @@ public class EvolutionBehaviour : MonoBehaviour {
         "Must produce the correct number of offspring");
 
       var mutationResults = mutations.Mutate(offspring);
-      Debug.LogFormat("\tMutations: Added Neurons: {0}, Added Synapses: {1}, Perturbed Neurons: {2}, Perturbed Synapses: {3}, Replaced Neurons: {4}, Replaced Synapses: {5}",
+      Debug.LogFormat("[{0}] Mutations: Added Neurons: {1}, Added Synapses: {2}, Perturbed Neurons: {3}, Perturbed Synapses: {4}, Replaced Neurons: {5}, Replaced Synapses: {6}",
+        generation,
         (float)mutationResults.addedNeurons / (float)populationSize,
         (float)mutationResults.addedSynapses / (float)populationSize,
         (float)mutationResults.perturbedNeurons / (float)populationSize,

@@ -59,10 +59,7 @@ public class ControllerBehaviour : MonoBehaviour {
     var x = wheel.transform.localPosition.x;
     // var xDot = wheel.velocity.magnitude;
 
-    float speed = 0.0f;
-    if (networkIO != null) {
-      speed = networkIO.Send(thetaLower, x);
-    }
+    float speed = networkIO.Send(thetaLower, x);
 
     // Update motor speed
     SetMotorSpeed(speed);
