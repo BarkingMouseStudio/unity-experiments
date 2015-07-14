@@ -22,17 +22,20 @@ namespace NEAT {
     private IEnumerable<Genotype> GetOffspring(Specie specie, int totalOffspringCount, float sumMeanFitness) {
       int speciesOffspringCount = Mathf.CeilToInt((specie.MeanFitness / sumMeanFitness) * (float)totalOffspringCount);
 
-      // Shuffle the species
-      specie.Shuffle();
+      var shuffled = specie.ToArray();
 
       return Enumerable.Range(0, speciesOffspringCount).Select(_ => {
         Phenotype parent1 = specie[Random.Range(0, specie.Count)];
         Phenotype parent2 = null;
 
+        // We shuffle the species so that parent selection is randomized
+        shuffled.Shuffle();
+
         // Search for a distinct second parent
-        foreach (var candidate in specie) {
+        foreach (var candidate in shuffled) {
           if (candidate != parent1) {
             parent2 = candidate;
+            break;
           }
         }
 
