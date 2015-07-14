@@ -108,6 +108,7 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   void Complete() {
     wheel.isKinematic = true; // Freeze the wheel
+    lower.isKinematic = true;
     isComplete = true;
     endTime = Time.time;
   }
