@@ -13,7 +13,7 @@ using System.IO;
 public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
-  private readonly int batchSize = 100;
+  private readonly int batchSize = 50;
 
   static NEAT.Genotype[][] CreateBatches(NEAT.Genotype[] genotypes, int batchSize) {
     return genotypes.Select((gt, i) => {
@@ -101,13 +101,13 @@ public class EvolutionBehaviour : MonoBehaviour {
     var innovations = new NEAT.InnovationCollection();
 
     var mutations = new NEAT.MutationCollection(
-      new NEAT.AddNeuronMutator(0.35f, innovations),
-      new NEAT.AddSynapseMutator(0.35f, innovations),
-      new NEAT.PerturbNeuronMutator(0.25f, 0.5f),
-      new NEAT.PerturbSynapseMutator(0.25f, 0.5f),
-      new NEAT.ReplaceNeuronMutator(0.15f),
-      new NEAT.ReplaceSynapseMutator(0.15f),
-      new NEAT.ToggleSynapseMutator(0.15f)
+      new NEAT.AddNeuronMutator(0.1f, innovations),
+      new NEAT.AddSynapseMutator(0.1f, innovations),
+      new NEAT.PerturbNeuronMutator(0.5f, 0.5f),
+      new NEAT.PerturbSynapseMutator(0.5f, 0.5f),
+      new NEAT.ReplaceNeuronMutator(0.25f),
+      new NEAT.ReplaceSynapseMutator(0.25f),
+      new NEAT.ToggleSynapseMutator(0.25f)
     );
 
     var eliteSelector = new NEAT.EliteSelector();
@@ -116,7 +116,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     var offspringSelector = new NEAT.OffspringSelector(crossover);
 
     var distanceMetric = new NEAT.DistanceMetric(3.0f, 3.0f, 2.0f);
-    var speciation = new NEAT.Speciation(10, 6.0f, 0.1f, distanceMetric);
+    var speciation = new NEAT.Speciation(10, 12.0f, 0.1f, distanceMetric);
 
     var neuronGenes = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
       .Select(i => NEAT.NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
