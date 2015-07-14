@@ -15,6 +15,10 @@ public static class IEnumerableExtensions {
     }
   }
 
+  public static string Stringify<T>(this IEnumerable<T> source) {
+    return string.Join(",", source.Select(v => v.ToString()).ToArray());
+  }
+
   public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> source, int N) {
     return source.Take(Math.Max(0, source.Count() - N));
   }
