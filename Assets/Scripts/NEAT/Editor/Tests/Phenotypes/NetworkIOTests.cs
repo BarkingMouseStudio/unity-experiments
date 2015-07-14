@@ -32,8 +32,8 @@ namespace NEAT {
       var genotype = Genotype.FromPrototype(protoGenotype);
 
       var mutators = new IMutator[]{
-        new AddNeuronMutator(1.0f, innovations),
-        new AddSynapseMutator(1.0f, innovations),
+        new AddNeuronMutator(innovations),
+        new AddSynapseMutator(innovations),
       };
 
       // Ensure that the network remains valid after a number of
@@ -42,7 +42,7 @@ namespace NEAT {
       for (int i = 0; i < generationCount; i++) {
         var results = new MutationResults();
         foreach (var mutator in mutators) {
-          mutator.MutateGenotype(genotype, results);
+          mutator.Mutate(genotype, results);
         }
         NetworkIO.FromGenotype(genotype);
       }
