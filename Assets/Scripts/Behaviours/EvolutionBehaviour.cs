@@ -13,7 +13,7 @@ using System.IO;
 public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
-  private readonly int batchSize = 100;
+  private readonly int batchSize = 50;
 
   static NEAT.Genotype[][] CreateBatches(NEAT.Genotype[] genotypes, int batchSize) {
     return genotypes.Select((gt, i) => {
@@ -97,18 +97,20 @@ public class EvolutionBehaviour : MonoBehaviour {
     eliteFitnessLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/.logs/elite_fitness.csv"));
     speciesLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/.logs/species.csv"));
 
-    var populationSize = 500;
+    var populationSize = 150;
     var innovations = new NEAT.InnovationCollection();
 
     var mutations = new NEAT.MutationCollection();
-    mutations.Add(0.05f, new NEAT.AddNeuronMutator(innovations));
-    mutations.Add(0.05f, new NEAT.AddSynapseMutator(innovations));
-    mutations.Add(0.15f, new NEAT.PerturbNeuronMutator(0.15f, 0.25f));
-    mutations.Add(0.15f, new NEAT.PerturbSynapseMutator(0.15f, 0.25f));
-    mutations.Add(0.15f, new NEAT.ToggleSynapseMutator(0.15f));
-    mutations.Add(0.10f, new NEAT.ReplaceNeuronMutator(0.15f));
-    mutations.Add(0.10f, new NEAT.ReplaceSynapseMutator(0.15f));
-    mutations.Add(0.25f, new NEAT.NoopMutator());
+    mutations.Add(0.01f, new NEAT.AddNeuronMutator(innovations)); // 0.1%
+    mutations.Add(0.05f, new NEAT.AddSynapseMutator(innovations)); // 1%
+    mutations.Add(0.20f, new NEAT.PerturbNeuronMutator(0.05f, 0.25f)); // 98% vvv
+    mutations.Add(0.20f, new NEAT.PerturbSynapseMutator(0.05f, 0.25f));
+    mutations.Add(0.20f, new NEAT.ToggleSynapseMutator(0.05f));
+    mutations.Add(0.10f, new NEAT.ReplaceNeuronMutator(0.05f));
+    mutations.Add(0.10f, new NEAT.ReplaceSynapseMutator(0.05f));
+    // TODO: mutations.Add(0.10f, new NEAT.PruneSynapseMutator(0.15f)); // 0.1%
+    // TODO: Pruning mutator: deletes disabled synapses, removes orphaned neurons
+    mutations.Add(0.14f, new NEAT.NoopMutator());
 
     var eliteSelector = new NEAT.EliteSelector();
 
@@ -117,6 +119,9 @@ public class EvolutionBehaviour : MonoBehaviour {
 
     var distanceMetric = new NEAT.DistanceMetric(3.0f, 3.0f, 2.0f);
     var speciation = new NEAT.Speciation(10, 12.0f, 0.1f, distanceMetric);
+
+    var neuronGeneList = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
+      .Select(i => NEAT.NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)));
 
     var neuronGenes = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
       .Select(i => NEAT.NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
@@ -146,6 +151,12 @@ public class EvolutionBehaviour : MonoBehaviour {
         best.Genotype.NeuronCount,
         best.Genotype.SynapseCount);
 
+      eliteFitnessLog.WriteLine(string.Format("{0}, {1}, {2}",
+        generation, best.Fitness, best.Duration));
+      elitesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}",
+        generation, best.Fitness, best.Duration,
+        JSON.Serialize(best.Genotype.ToJSON())));
+
       species = speciation.Speciate(species, phenotypes.ToArray());
 
       var adjusted = phenotypes.OrderBy(pt => pt.AdjustedFitness).First();
@@ -163,14 +174,6 @@ public class EvolutionBehaviour : MonoBehaviour {
 
         speciesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}",
           generation, sp.SpeciesId, sp.Count, sp.MeanFitness));
-
-        var spBest = sp.First();
-        eliteFitnessLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}",
-          generation, sp.SpeciesId, spBest.Fitness, spBest.AdjustedFitness,
-          spBest.Duration));
-        elitesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}, {4}, {5}",
-          generation, sp.SpeciesId, spBest.Fitness, spBest.AdjustedFitness,
-          spBest.Duration, JSON.Serialize(spBest.Genotype.ToJSON())));
       }
 
       var elites = eliteSelector.Select(species, species.Length);
@@ -183,14 +186,15 @@ public class EvolutionBehaviour : MonoBehaviour {
         "Must produce the correct number of offspring");
 
       var mutationResults = mutations.Mutate(offspring);
-      Debug.LogFormat("[{0}] Mutations: Added Neurons: {1}, Added Synapses: {2}, Perturbed Neurons: {3}, Perturbed Synapses: {4}, Replaced Neurons: {5}, Replaced Synapses: {6}",
+      Debug.LogFormat("[{0}] Mutations: Added Neurons: {1}, Added Synapses: {2}, Perturbed Neurons: {3}, Perturbed Synapses: {4}, Toggled Synapses: {7}, Replaced Neurons: {5}, Replaced Synapses: {6}",
         generation,
         mutationResults.addedNeurons,
         mutationResults.addedSynapses,
         mutationResults.perturbedNeurons,
         mutationResults.perturbedSynapses,
         mutationResults.replacedNeurons,
-        mutationResults.replacedSynapses);
+        mutationResults.replacedSynapses,
+        mutationResults.toggledSynapses);
 
       genotypes = elites.Concat(offspring).ToArray();
       Assert.AreEqual(genotypes.Length, populationSize,
