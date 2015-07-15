@@ -24,6 +24,7 @@ namespace NEAT {
 
       var synapseIndex = Random.Range(0, genotype.SynapseCount);
       var synapseGene = genotype.SynapseGenes[synapseIndex];
+      synapseGene.isEnabled = false;
 
       var innovationId = innovations.GetNeuronInnovationId(
         synapseGene.fromNeuronId,
@@ -38,21 +39,20 @@ namespace NEAT {
       genotype.NeuronGenes = neuronGenes.ToArray();
 
       var synapseGenes = new List<SynapseGene>(genotype.SynapseGenes);
+      synapseGenes[synapseIndex] = synapseGene;
 
       var synapseGene1 = new SynapseGene(innovationId + 0,
         synapseGene.fromNeuronId,
         neuronGene.InnovationId,
-        true, 0.5f);
-
+        true, 1.0f);
       synapseGenes.Add(synapseGene1);
-      genotype.SynapseGenes = synapseGenes.ToArray();
 
       var synapseGene2 = new SynapseGene(innovationId + 1,
         neuronGene.InnovationId,
         synapseGene.toNeuronId,
-        true, 0.5f);
-
+        true, synapseGene.weight);
       synapseGenes.Add(synapseGene2);
+
       genotype.SynapseGenes = synapseGenes.ToArray();
 
       results.addedNeurons += 1;
