@@ -26,8 +26,8 @@ public class NetworkIO {
   static readonly ulong[] inNeuronIds;
   static readonly ulong[] outNeuronIds;
 
-  static readonly int inNeuronCount;
-  static readonly int outNeuronCount;
+  public static readonly int inNeuronCount;
+  public static readonly int outNeuronCount;
 
   public static int InitialNeuronCount {
     get {
@@ -50,7 +50,7 @@ public class NetworkIO {
       .Select(i => (ulong)(inNeuronCount + i))
       .ToArray();
 
-    List<Range> inputRanges = new List<Range>(
+    var inputRanges = new List<Range>(
       angularRanges.Length * 2 +
       linearRanges.Length * 2
     );
@@ -173,12 +173,10 @@ public class NetworkIO {
     Array.Clear(worldData, 0, worldData.Length);
 
     PopulateWorldData(worldData, thetaLower, thetaDotLower, x, xDot);
-
     MapInput(input, worldData);
 
     // Receive output
     network.Tick(20ul, input, ref output); // TODO: fixedDeltaTime?
-
     return MapOutput(output);
   }
 }
