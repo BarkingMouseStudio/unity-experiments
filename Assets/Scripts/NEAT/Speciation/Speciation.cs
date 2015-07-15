@@ -79,7 +79,9 @@ namespace NEAT {
         foreach (var phenotype in specie) {
           phenotype.AdjustedFitness = phenotype.Fitness * multiplier;
           Assert.IsTrue(phenotype.AdjustedFitness >= phenotype.Fitness,
-            "Must penalize phenotypes of large species");
+            string.Format("Must penalize phenotypes of large species.\n" +
+            "Adjusted Fitness: {0}, Fitness: {1}, Species Size: {2}, Multiplier: {3}",
+            phenotype.AdjustedFitness, phenotype.Fitness, specie.Count, multiplier));
         }
       }
 
