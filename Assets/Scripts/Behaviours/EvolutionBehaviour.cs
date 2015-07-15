@@ -120,9 +120,6 @@ public class EvolutionBehaviour : MonoBehaviour {
     var distanceMetric = new NEAT.DistanceMetric(3.0f, 3.0f, 2.0f);
     var speciation = new NEAT.Speciation(10, 12.0f, 0.1f, distanceMetric);
 
-    var neuronGeneList = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
-      .Select(i => NEAT.NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)));
-
     var neuronGenes = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
       .Select(i => NEAT.NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
       .ToArray();
