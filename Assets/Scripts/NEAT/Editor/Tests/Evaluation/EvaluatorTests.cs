@@ -15,7 +15,7 @@ namespace NEAT {
       var evaluatorLong = new Evaluator();
       var evaluatorShort = new Evaluator();
 
-      for (int i = 0; i < 200; i++) {
+      for (int i = 0; i < 1000; i++) {
         evaluatorLong.Update(90.0f, 30.0f, 3.0f, 1.0f);
       }
 
@@ -27,27 +27,37 @@ namespace NEAT {
     }
 
     [Test]
+    public void TestEvaluatorInitial() {
+      var evaluator = new Evaluator();
+      Assert.AreEqual(1.0f, evaluator.NormalizedFitnessDuration);
+      Assert.AreEqual(1.0f, evaluator.NormalizedFitnessHistory);
+      Assert.AreEqual(1.0f, evaluator.Fitness);
+    }
+
+    [Test]
     public void TestEvaluatorBest() {
       var evaluator = new Evaluator();
-      Assert.AreEqual(1.0f, evaluator.Fitness);
 
-      for (int i = 0; i < 500; i++) {
+      for (int i = 0; i < 1000; i++) {
         evaluator.Update(0.0f, 0.0f, 0.0f, 1.0f);
       }
 
+      Assert.AreEqual(0.0f, evaluator.NormalizedFitnessDuration);
+      Assert.AreEqual(0.0f, evaluator.NormalizedFitnessHistory);
       Assert.AreEqual(0.0f, evaluator.Fitness);
     }
 
     [Test]
     public void TestEvaluatorWorst() {
       var evaluator = new Evaluator();
-      Assert.AreEqual(1.0f, evaluator.Fitness);
 
       for (int i = 0; i < 100; i++) {
-        evaluator.Update(180.0f, 180.0f, 6.0f, 6.0f);
+        evaluator.Update(180.0f, 180.0f, 6.0f, 7.0f);
       }
 
-      Assert.AreEqual(0.94f, evaluator.Fitness, 0.1f);
+      Assert.AreEqual(0.9f, evaluator.NormalizedFitnessDuration);
+      Assert.AreEqual(1.0f, evaluator.NormalizedFitnessHistory);
+      Assert.AreEqual(0.99f, evaluator.Fitness, 0.01f);
     }
   }
 }
