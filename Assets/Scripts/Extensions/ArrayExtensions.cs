@@ -17,4 +17,10 @@ public static class ArrayExtensions {
     arr[i] = arr[j];
     arr[j] = temp;
   }
+
+  public static void Fill<T>(this T[] arr, T val) {
+    for (int i = 0; i < arr.Length; i++) {
+      arr[i] = val;
+    }
+  }
 }
