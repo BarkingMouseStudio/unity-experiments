@@ -22,10 +22,10 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   public Orientations orientation;
 
-  static readonly float[] angles = new float[]{
-    135f,
-    225f,
-  };
+  // static readonly float[] angles = new float[]{
+  //   135f,
+  //   225f,
+  // };
 
   Transform cart;
   Transform handle;
@@ -99,7 +99,7 @@ public class EvaluationBehaviour : MonoBehaviour {
   void SetRotation() {
     float angle = 0.0f;
     if (orientation == Orientations.Random) {
-      angle = angles[UnityEngine.Random.Range(0, angles.Length)];
+      angle = 195f; // angles[UnityEngine.Random.Range(0, angles.Length)];
     } else {
       angle = (float)orientation;
     }
