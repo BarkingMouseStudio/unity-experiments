@@ -16,10 +16,10 @@ namespace NEAT {
     public void Init() {
       var neuronGenes = Enumerable.Range(0, 3)
         .Select(i => new NeuronGene(i))
-        .ToArray();
+        .ToGeneList();
       var synapseGenes = Enumerable.Range(0, 3)
         .Select(i => new SynapseGene(i, 0, 1, true, 0.5f))
-        .ToArray();
+        .ToGeneList();
       genotype = new Genotype(neuronGenes, synapseGenes);
     }
 

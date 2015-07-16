@@ -21,12 +21,12 @@ namespace NEAT {
       var neuronGenes = Enumerable.Range(0, 3).Select(i => {
         var inId = innovations.GetInitialNeuronInnovationId(i);
         return new NeuronGene(inId);
-      }).ToArray();
+      }).ToGeneList();
 
       var synapseGenes = Enumerable.Range(0, 3).Select(i => {
-        var inId = innovations.GetSynapseInnovationId(-1, 1);
-        return new SynapseGene(inId, -1, 1, true);
-      }).ToArray();
+        var inId = innovations.GetSynapseInnovationId(i, i + 1);
+        return new SynapseGene(inId, i, i + 1, true);
+      }).ToGeneList();
 
       genotype = new Genotype(neuronGenes, synapseGenes);
     }
@@ -39,19 +39,19 @@ namespace NEAT {
       var mutationResults = new MutationResults();
       mutator.Mutate(mutatedGenotype, mutationResults);
 
-      Assert.That(mutationResults.addedNeurons == 1);
-      Assert.That(mutationResults.addedSynapses == 2);
+      Assert.AreEqual(1, mutationResults.addedNeurons);
+      Assert.AreEqual(2, mutationResults.addedSynapses);
 
       // Compare gene counts
-      Assert.AreEqual(mutatedGenotype.NeuronCount - genotype.NeuronCount, 1);
-      Assert.AreEqual(mutatedGenotype.SynapseCount - genotype.SynapseCount, 2);
+      Assert.AreEqual(1, mutatedGenotype.NeuronCount - genotype.NeuronCount);
+      Assert.AreEqual(2, mutatedGenotype.SynapseCount - genotype.SynapseCount);
 
       // Compare innovation ids
-      var aN = new []{0, 1, 2, 4};
+      var aN = new []{0, 1, 2, 6};
       var bN = mutatedGenotype.NeuronGenes.Select(g => g.InnovationId);
       Assert.That(aN.SequenceEqual(bN));
 
-      var aS = new []{3, 3, 3, 4, 5};
+      var aS = new []{3, 4, 5, 6, 7};
       var bS = mutatedGenotype.SynapseGenes.Select(g => g.InnovationId);
       Assert.That(aS.SequenceEqual(bS));
     }

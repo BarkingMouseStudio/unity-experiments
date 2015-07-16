@@ -7,22 +7,22 @@ namespace NEAT {
 
   public class Genotype {
 
-    private NeuronGene[] neuronGenes;
-    private SynapseGene[] synapseGenes;
+    private GeneList<NeuronGene> neuronGenes;
+    private GeneList<SynapseGene> synapseGenes;
 
     public int NeuronCount {
       get {
-        return neuronGenes.Length;
+        return neuronGenes.Count;
       }
     }
 
     public int SynapseCount {
       get {
-        return synapseGenes.Length;
+        return synapseGenes.Count;
       }
     }
 
-    public NeuronGene[] NeuronGenes {
+    public GeneList<NeuronGene> NeuronGenes {
       get {
         return neuronGenes;
       }
@@ -31,7 +31,7 @@ namespace NEAT {
       }
     }
 
-    public SynapseGene[] SynapseGenes {
+    public GeneList<SynapseGene> SynapseGenes {
       get {
         return synapseGenes;
       }
@@ -43,14 +43,14 @@ namespace NEAT {
     public static Genotype FromPrototype(Genotype protoGenotype) {
       var neuronGenes = protoGenotype.NeuronGenes
         .Select(g => NeuronGene.FromPrototype(g))
-        .ToArray();
+        .ToGeneList();
       var synapseGenes = protoGenotype.SynapseGenes
         .Select(g => SynapseGene.FromPrototype(g))
-        .ToArray();
+        .ToGeneList();
       return new Genotype(neuronGenes, synapseGenes);
     }
 
-    public Genotype(NeuronGene[] neuronGenes, SynapseGene[] synapseGenes) {
+    public Genotype(GeneList<NeuronGene> neuronGenes, GeneList<SynapseGene> synapseGenes) {
       this.neuronGenes = neuronGenes;
       this.synapseGenes = synapseGenes;
     }
@@ -58,18 +58,18 @@ namespace NEAT {
     public Genotype(Genotype other) {
       this.neuronGenes = other.NeuronGenes
         .Select(g => new NeuronGene(g))
-        .ToArray();
+        .ToGeneList();
       this.synapseGenes = other.SynapseGenes
         .Select(g => new SynapseGene(g))
-        .ToArray();
+        .ToGeneList();
     }
 
     public bool ContainsInnovation(Innovation innov) {
       switch (innov.type) {
         case InnovationType.Neuron:
-          return neuronGenes.Any(g => g.InnovationId == innov.innovationId);
+          return neuronGenes.Contains(innov.innovationId);
         case InnovationType.Synapse:
-          return synapseGenes.Any(g => g.InnovationId == innov.innovationId);
+          return synapseGenes.Contains(innov.innovationId);
         default:
           return false;
       }
@@ -84,10 +84,12 @@ namespace NEAT {
 
     public static Genotype FromJSON(object obj) {
       var data = (Dictionary<string, object>)obj;
-      var neuronGenes = ((List<object>)data["neurons"]).Select(g =>
-        NeuronGene.FromJSON(g)).ToArray();
-      var synapseGenes = ((List<object>)data["synapses"]).Select(g =>
-        SynapseGene.FromJSON(g)).ToArray();
+      var neuronGenes = ((List<object>)data["neurons"])
+        .Select(g => NeuronGene.FromJSON(g))
+        .ToGeneList();
+      var synapseGenes = ((List<object>)data["synapses"])
+        .Select(g => SynapseGene.FromJSON(g))
+        .ToGeneList();
       return new Genotype(neuronGenes, synapseGenes);
     }
   }

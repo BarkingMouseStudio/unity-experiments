@@ -19,12 +19,12 @@ namespace NEAT {
       var neuronGenes = Enumerable.Range(0, 3).Select(i => {
         var inId = innovations.GetInitialNeuronInnovationId(i);
         return new NeuronGene(inId);
-      }).ToArray();
+      }).ToGeneList();
 
       var synapseGenes = Enumerable.Range(0, 3).Select(i => {
         var inId = innovations.GetSynapseInnovationId(i, i + 1);
         return new SynapseGene(inId, i, i + 1, true);
-      }).ToArray();
+      }).ToGeneList();
 
       var protoGenotype = new Genotype(neuronGenes, synapseGenes);
 

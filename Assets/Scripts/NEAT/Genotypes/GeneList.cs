@@ -5,13 +5,16 @@ using System.Linq;
 
 namespace NEAT {
 
-  public class GeneList<T> : ICollection<T>, IEnumerable<T>, IEnumerable where T : IHistoricalGene {
+  public class GeneList<TGene> : ICollection<TGene>, IEnumerable<TGene>, IEnumerable where TGene : IHistoricalGene {
 
-    private readonly SortedList<int, T> genes;
+    private readonly SortedList<int, TGene> genes;
 
-    public T this[int i] {
+    public TGene this[int innovationId] {
       get {
-        return genes.Values[i];
+        return genes[innovationId];
+      }
+      set {
+        genes[innovationId] = value;
       }
     }
 
@@ -23,39 +26,59 @@ namespace NEAT {
 
     public bool IsReadOnly {
       get {
-        return ((ICollection<KeyValuePair<int, T>>)genes).IsReadOnly;
+        return ((ICollection<KeyValuePair<int, TGene>>)genes).IsReadOnly;
+      }
+    }
+
+    public IList<int> InnovationIds {
+      get {
+        return genes.Keys;
+      }
+    }
+
+    public IList<TGene> Genes {
+      get {
+        return genes.Values;
       }
     }
 
     public GeneList() {
-      genes = new SortedList<int, T>();
+      genes = new SortedList<int, TGene>();
     }
 
     public GeneList(int capacity) {
-      genes = new SortedList<int, T>(capacity);
+      genes = new SortedList<int, TGene>(capacity);
     }
 
-    public GeneList(GeneList<T> other) {
-      genes = new SortedList<int, T>(other.ToDictionary(g => g.InnovationId));
+    public GeneList(GeneList<TGene> other) {
+      genes = new SortedList<int, TGene>(other.ToDictionary(g => g.InnovationId));
     }
 
-    public GeneList(IEnumerable<T> seq) {
-      genes = new SortedList<int, T>(seq.ToDictionary(g => g.InnovationId));
+    public GeneList(IEnumerable<TGene> seq) {
+      genes = new SortedList<int, TGene>(seq.ToDictionary(g => g.InnovationId));
+    }
+
+    public TGene ElementAt(int index) {
+      return genes.Values[index];
     }
 
     public int IndexOf(int innovationId) {
       return genes.IndexOfKey(innovationId);
     }
 
-    public int IndexOf(T gene) {
+    public int IndexOf(TGene gene) {
       return genes.IndexOfValue(gene);
     }
 
-    public void Add(T gene) {
+    public void Add(TGene gene) {
       genes.Add(gene.InnovationId, gene);
     }
 
-    public bool Remove(T gene) {
+    public bool Remove(int innovationId) {
+      return genes.Remove(innovationId);
+    }
+
+    public bool Remove(TGene gene) {
       return genes.Remove(gene.InnovationId);
     }
 
@@ -67,11 +90,11 @@ namespace NEAT {
       return genes.ContainsKey(innovationId);
     }
 
-    public bool Contains(T gene) {
+    public bool Contains(TGene gene) {
       return genes.ContainsValue(gene);
     }
 
-    public void CopyTo(T[] arr, int i) {
+    public void CopyTo(TGene[] arr, int i) {
       genes.Values.CopyTo(arr, i);
     }
 
@@ -83,7 +106,7 @@ namespace NEAT {
       return genes.Values.GetEnumerator();
     }
 
-    public IEnumerator<T> GetEnumerator() {
+    public IEnumerator<TGene> GetEnumerator() {
       return genes.Values.GetEnumerator();
     }
   }

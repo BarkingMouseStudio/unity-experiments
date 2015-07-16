@@ -22,24 +22,31 @@ namespace NEAT {
         return;
       }
 
+      // Pick a synapse at random
       var synapseIndex = Random.Range(0, genotype.SynapseCount);
-      var synapseGene = genotype.SynapseGenes[synapseIndex];
-      synapseGene.isEnabled = false;
+      var synapseGene = genotype.SynapseGenes.ElementAt(synapseIndex);
 
+      // Generate an innovation id for the operation
       var innovationId = innovations.GetNeuronInnovationId(
         synapseGene.fromNeuronId,
         synapseGene.toNeuronId,
         synapseGene.InnovationId
       );
 
+      // If the genotype already contains the innovation id, bail
+      if (genotype.SynapseGenes.Contains(innovationId)) {
+        return;
+      }
+
       var neuronGene = NeuronGene.Random(innovationId);
 
-      var neuronGenes = new List<NeuronGene>(genotype.NeuronGenes);
+      var neuronGenes = new GeneList<NeuronGene>(genotype.NeuronGenes);
       neuronGenes.Add(neuronGene);
-      genotype.NeuronGenes = neuronGenes.ToArray();
+      genotype.NeuronGenes = neuronGenes;
 
-      var synapseGenes = new List<SynapseGene>(genotype.SynapseGenes);
-      synapseGenes[synapseIndex] = synapseGene;
+      var synapseGenes = new GeneList<SynapseGene>(genotype.SynapseGenes);
+      synapseGene.isEnabled = false;
+      synapseGenes[synapseGene.InnovationId] = synapseGene;
 
       var synapseGene1 = new SynapseGene(innovationId + 0,
         synapseGene.fromNeuronId,
@@ -53,7 +60,7 @@ namespace NEAT {
         true, synapseGene.weight);
       synapseGenes.Add(synapseGene2);
 
-      genotype.SynapseGenes = synapseGenes.ToArray();
+      genotype.SynapseGenes = synapseGenes;
 
       results.addedNeurons += 1;
       results.addedSynapses += 2;

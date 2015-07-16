@@ -14,14 +14,15 @@ namespace NEAT {
     }
 
     public void Mutate(Genotype genotype, MutationResults results) {
-      for (int i = 0; i < genotype.NeuronCount; i++) {
+      var innovationIds = genotype.NeuronGenes.InnovationIds;
+      for (int i = 0; i < innovationIds.Count; i++) {
         if (Random.value < p) {
-          var neuronGene = genotype.NeuronGenes[i];
+          var neuronGene = genotype.NeuronGenes[innovationIds[i]];
           neuronGene.a = Random.value;
           neuronGene.b = Random.value;
           neuronGene.c = Random.value;
           neuronGene.d = Random.value;
-          genotype.NeuronGenes[i] = neuronGene;
+          genotype.NeuronGenes[neuronGene.InnovationId] = neuronGene;
           results.replacedNeurons++;
         }
       }

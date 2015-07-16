@@ -64,8 +64,8 @@ namespace NEAT {
         var neuronGeneB = new NeuronGene(b);
         var synapseGeneA = new SynapseGene(sA, a, b, true);
         var synapseGeneB = new SynapseGene(sB, b, c, true);
-        var neuronGenes = new []{neuronGeneA, neuronGeneB};
-        var synapseGenes = new []{synapseGeneA, synapseGeneB};
+        var neuronGenes = new []{neuronGeneA, neuronGeneB}.ToGeneList();
+        var synapseGenes = new []{synapseGeneA, synapseGeneB}.ToGeneList();
         return new Genotype(neuronGenes, synapseGenes);
       }).ToList();
 

@@ -16,11 +16,12 @@ namespace NEAT {
     }
 
     public void Mutate(Genotype genotype, MutationResults results) {
-      for (int i = 0; i < genotype.SynapseCount; i++) {
+      var innovationIds = genotype.SynapseGenes.InnovationIds;
+      for (int i = 0; i < innovationIds.Count; i++) {
         if (Random.value < p) {
-          var synapseGene = genotype.SynapseGenes[i];
+          var synapseGene = genotype.SynapseGenes[innovationIds[i]];
           synapseGene.weight = Mathf.Clamp01(RandomHelper.NextCauchy(synapseGene.weight, mutationScale));
-          genotype.SynapseGenes[i] = synapseGene;
+          genotype.SynapseGenes[synapseGene.InnovationId] = synapseGene;
           results.perturbedSynapses++;
         }
       }

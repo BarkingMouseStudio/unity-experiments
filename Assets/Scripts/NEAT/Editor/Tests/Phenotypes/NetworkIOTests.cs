@@ -21,10 +21,13 @@ namespace NEAT {
       innovations = new InnovationCollection();
 
       var neuronGenes = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
-        .Select(i => new NeuronGene(innovations.GetInitialNeuronInnovationId(i)))
-        .ToArray();
+        .Select(i => {
+          var innovationId = innovations.GetInitialNeuronInnovationId(i);
+          return new NeuronGene(innovationId);
+        })
+        .ToGeneList();
 
-      protoGenotype = new Genotype(neuronGenes, new SynapseGene[0]);
+      protoGenotype = new Genotype(neuronGenes, new GeneList<SynapseGene>(0));
     }
 
     [Test]

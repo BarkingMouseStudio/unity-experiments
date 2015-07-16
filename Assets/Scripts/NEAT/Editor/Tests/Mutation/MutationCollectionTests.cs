@@ -21,12 +21,12 @@ namespace NEAT {
       var neuronGenes = Enumerable.Range(0, 3).Select(i => {
         var inId = innovations.GetInitialNeuronInnovationId(i);
         return new NeuronGene(inId);
-      }).ToArray();
+      }).ToGeneList();
 
       var synapseGenes = Enumerable.Range(0, 3).Select(i => {
-        var inId = innovations.GetSynapseInnovationId(-1, 1);
-        return new SynapseGene(inId, -1, 1, true);
-      }).ToArray();
+        var inId = innovations.GetSynapseInnovationId(i, i + 1);
+        return new SynapseGene(inId, i, i + 1, true);
+      }).ToGeneList();
 
       protoGenotype = new Genotype(neuronGenes, synapseGenes);
     }
@@ -43,7 +43,7 @@ namespace NEAT {
       var results = mutations.Mutate(genotypes);
 
       Assert.AreEqual(75, results.addedNeurons, 75 * 0.15f);
-      Assert.AreEqual(175, results.addedSynapses, 175 * 0.15f);
+      Assert.AreEqual(175, results.addedSynapses, 175 * 0.25f);
     }
   }
 }

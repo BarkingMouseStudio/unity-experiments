@@ -8,8 +8,8 @@ namespace NEAT {
 
   public class MultipointCrossover : ICrossover {
 
-    static T[] CrossoverGenes<T>(T[] a, T[] b, float fitnessA, float fitnessB) where T : IHistoricalGene {
-      var newGenes = new List<T>(System.Math.Max(a.Length, b.Length));
+    static GeneList<T> CrossoverGenes<T>(GeneList<T> a, GeneList<T> b, float fitnessA, float fitnessB) where T : IHistoricalGene {
+      var newGenes = new GeneList<T>(System.Math.Max(a.Count, b.Count));
 
       foreach (var t in new GeneEnumerable<T>(a, b)) {
         switch (t.First) {
@@ -27,31 +27,7 @@ namespace NEAT {
         }
       }
 
-      var sorted = IsSorted(newGenes);
-      Assert.IsTrue(sorted, "Gene innovations must occur in ascending order");
-      if (!sorted) {
-        Debug.LogFormat("a: {0}", a.Stringify());
-        Debug.LogFormat("b: {0}", b.Stringify());
-        Debug.LogFormat("offspring: {0}", newGenes.Stringify());
-      }
-
-      return newGenes.ToArray();
-    }
-
-    static bool IsSorted<T>(List<T> genes) where T : IHistoricalGene {
-      int count = genes.Count;
-      if (count == 0) {
-        return true;
-      }
-
-      int prev = genes[0].InnovationId;
-      for (int i = 1; i < count; i++) {
-        if (genes[i].InnovationId <= prev) {
-          return false;
-        }
-      }
-
-      return true;
+      return newGenes;
     }
 
     public Genotype Crossover(Phenotype a, Phenotype b) {
