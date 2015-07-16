@@ -14,7 +14,7 @@ using NEAT;
 public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
-  private readonly int batchSize = 50;
+  private readonly int batchSize = 100;
 
   static Genotype[][] CreateBatches(Genotype[] genotypes, int batchSize) {
     return genotypes.Select((gt, i) => {
@@ -98,17 +98,17 @@ public class EvolutionBehaviour : MonoBehaviour {
     eliteFitnessLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/.logs/elite_fitness.csv"));
     speciesLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/.logs/species.csv"));
 
-    var populationSize = 150;
+    var populationSize = 200;
     var innovations = new InnovationCollection();
 
     var mutations = new MutationCollection();
     mutations.Add(0.001f, new AddNeuronMutator(innovations)); // 0.1%
     mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
-    mutations.Add(0.18f, new PerturbNeuronMutator(0.05f, 0.25f)); // 98% vvv
-    mutations.Add(0.18f, new PerturbSynapseMutator(0.05f, 0.25f));
-    mutations.Add(0.18f, new ToggleSynapseMutator(0.05f));
-    mutations.Add(0.18f, new ReplaceNeuronMutator(0.05f));
-    mutations.Add(0.18f, new ReplaceSynapseMutator(0.05f));
+    mutations.Add(0.18f, new PerturbNeuronMutator(0.15f, 0.5f)); // 98% vvv
+    mutations.Add(0.18f, new PerturbSynapseMutator(0.15f, 0.5f));
+    mutations.Add(0.18f, new ToggleSynapseMutator(0.15f));
+    mutations.Add(0.18f, new ReplaceNeuronMutator(0.15f));
+    mutations.Add(0.18f, new ReplaceSynapseMutator(0.15f));
     // TODO: mutations.Add(0.10f, new PruneSynapseMutator(0.15f)); // 0.1%
     // TODO: Pruning mutator: deletes disabled synapses, removes orphaned neurons
     mutations.Add(0.089f, new NoopMutator());
