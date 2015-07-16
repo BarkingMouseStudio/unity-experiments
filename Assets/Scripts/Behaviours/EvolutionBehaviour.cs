@@ -1,12 +1,13 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEditor;
+using PathologicalGames;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using PathologicalGames;
 using System.IO;
+using NEAT;
 
 // Responsible for spawning evaluation prefabs, waiting for their completion and
 // passing the phenotypes back to the EA.
@@ -15,7 +16,7 @@ public class EvolutionBehaviour : MonoBehaviour {
   public Transform prefab;
   private readonly int batchSize = 50;
 
-  static NEAT.Genotype[][] CreateBatches(NEAT.Genotype[] genotypes, int batchSize) {
+  static Genotype[][] CreateBatches(Genotype[] genotypes, int batchSize) {
     return genotypes.Select((gt, i) => {
       return new {
         Batch = Mathf.FloorToInt(i / batchSize),
@@ -28,7 +29,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     }).ToArray();
   }
 
-  IEnumerator EvaluateBatch(int batchIndex, NEAT.Genotype[] batch, List<NEAT.Phenotype> phenotypes) {
+  IEnumerator EvaluateBatch(int batchIndex, Genotype[] batch, List<Phenotype> phenotypes) {
     IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
 
     var layout = new TransformLayout(28.0f, 18.0f, batchSize, Mathf.FloorToInt(Mathf.Sqrt(batchSize)));
@@ -51,7 +52,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     }
 
     var batchPhenotypes = evaluations.Select(ev =>
-      new NEAT.Phenotype(ev.Genotype, ev.Fitness, ev.Now, ev.Angle));
+      new Phenotype(ev.Genotype, ev.Fitness, ev.Now, ev.Angle));
 
     // Accumulate fitnesses into array
     phenotypes.AddRange(batchPhenotypes);
@@ -68,7 +69,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     }
   }
 
-  IEnumerator EvaluateBatches(NEAT.Genotype[][] batches, List<NEAT.Phenotype> phenotypes) {
+  IEnumerator EvaluateBatches(Genotype[][] batches, List<Phenotype> phenotypes) {
     int batchIndex = 0;
     foreach (var batch in batches) {
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, phenotypes));
@@ -76,7 +77,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     }
   }
 
-  IEnumerator EvaluatePopulation(NEAT.Genotype[] genotypes, List<NEAT.Phenotype> phenotypes) {
+  IEnumerator EvaluatePopulation(Genotype[] genotypes, List<Phenotype> phenotypes) {
     // Create batches from the population
     var batches = CreateBatches(genotypes, batchSize);
     yield return StartCoroutine(EvaluateBatches(batches, phenotypes));
@@ -98,42 +99,42 @@ public class EvolutionBehaviour : MonoBehaviour {
     speciesLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/.logs/species.csv"));
 
     var populationSize = 150;
-    var innovations = new NEAT.InnovationCollection();
+    var innovations = new InnovationCollection();
 
-    var mutations = new NEAT.MutationCollection();
-    mutations.Add(0.01f, new NEAT.AddNeuronMutator(innovations)); // 0.1%
-    mutations.Add(0.05f, new NEAT.AddSynapseMutator(innovations)); // 1%
-    mutations.Add(0.20f, new NEAT.PerturbNeuronMutator(0.05f, 0.25f)); // 98% vvv
-    mutations.Add(0.20f, new NEAT.PerturbSynapseMutator(0.05f, 0.25f));
-    mutations.Add(0.20f, new NEAT.ToggleSynapseMutator(0.05f));
-    mutations.Add(0.10f, new NEAT.ReplaceNeuronMutator(0.05f));
-    mutations.Add(0.10f, new NEAT.ReplaceSynapseMutator(0.05f));
-    // TODO: mutations.Add(0.10f, new NEAT.PruneSynapseMutator(0.15f)); // 0.1%
+    var mutations = new MutationCollection();
+    mutations.Add(0.001f, new AddNeuronMutator(innovations)); // 0.1%
+    mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
+    mutations.Add(0.18f, new PerturbNeuronMutator(0.05f, 0.25f)); // 98% vvv
+    mutations.Add(0.18f, new PerturbSynapseMutator(0.05f, 0.25f));
+    mutations.Add(0.18f, new ToggleSynapseMutator(0.05f));
+    mutations.Add(0.18f, new ReplaceNeuronMutator(0.05f));
+    mutations.Add(0.18f, new ReplaceSynapseMutator(0.05f));
+    // TODO: mutations.Add(0.10f, new PruneSynapseMutator(0.15f)); // 0.1%
     // TODO: Pruning mutator: deletes disabled synapses, removes orphaned neurons
-    mutations.Add(0.14f, new NEAT.NoopMutator());
+    mutations.Add(0.089f, new NoopMutator());
 
-    var eliteSelector = new NEAT.EliteSelector();
+    var eliteSelector = new EliteSelector();
 
-    var crossover = new NEAT.MultipointCrossover();
-    var offspringSelector = new NEAT.OffspringSelector(crossover);
+    var crossover = new MultipointCrossover();
+    var offspringSelector = new OffspringSelector(crossover);
 
-    var distanceMetric = new NEAT.DistanceMetric(3.0f, 3.0f, 2.0f);
-    var speciation = new NEAT.Speciation(10, 12.0f, 0.1f, distanceMetric);
+    var distanceMetric = new DistanceMetric(3.0f, 3.0f, 2.0f);
+    var speciation = new Speciation(10, 12.0f, 0.1f, distanceMetric);
 
     var neuronGenes = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
-      .Select(i => NEAT.NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
-      .ToArray();
-    var synapseGenes = new NEAT.SynapseGene[0];
-    var protoGenotype = new NEAT.Genotype(neuronGenes, synapseGenes);
+      .Select(i => NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
+      .ToGeneList();
+    var synapseGenes = new GeneList<SynapseGene>();
+    var protoGenotype = new Genotype(neuronGenes, synapseGenes);
 
-    var genotypes = new NEAT.GenotypeStream(protoGenotype)
+    var genotypes = new GenotypeStream(protoGenotype)
       .Take(populationSize).ToArray();
 
-    var species = new NEAT.Specie[0];
+    var species = new Specie[0];
     var generation = 0;
 
     while (true) {
-      var phenotypes = new List<NEAT.Phenotype>(genotypes.Length);
+      var phenotypes = new List<Phenotype>(genotypes.Length);
       yield return StartCoroutine(EvaluatePopulation(genotypes, phenotypes));
 
       var longest = phenotypes.OrderByDescending(pt => pt.Duration).First();
