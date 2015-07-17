@@ -55,7 +55,8 @@ public class EvaluationBehaviour : MonoBehaviour {
   }
 
   public void BeginTrial(Orientations orientation, float startTime) {
-    startTime = Time.time;
+    this.startTime = startTime;
+
     SetRotation(orientation);
     Phenotype.BeginTrial(orientation, startTime);
   }
