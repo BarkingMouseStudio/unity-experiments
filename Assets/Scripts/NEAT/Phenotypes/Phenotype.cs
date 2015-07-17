@@ -30,6 +30,8 @@ namespace NEAT {
           var average = trials.Aggregate(0.0f,
             (sum, t) => sum + t.Fitness,
             (sum) => sum / trials.Count);
+
+          // TODO: This may not work:
           var stdevAverage = trials.Aggregate(0.0f,
             (stdev, t) => stdev + Mathf.Abs(t.Fitness - average),
             (stdev) => stdev / trials.Count);
