@@ -121,27 +121,27 @@ public class EvolutionBehaviour : MonoBehaviour {
 
       var longest = phenotypes.OrderByDescending(pt => pt.AverageDuration).First();
       Debug.LogFormat("[{0}] Longest Fitness: {1}, Longest Duration: {2}s ({3}, {4})",
-        generation, longest.AverageFitness, longest.AverageDuration,
+        generation, longest.Fitness, longest.AverageDuration,
         longest.Genotype.NeuronCount,
         longest.Genotype.SynapseCount);
 
-      var best = phenotypes.OrderBy(pt => pt.AverageFitness).First();
+      var best = phenotypes.OrderBy(pt => pt.Fitness).First();
       Debug.LogFormat("[{0}] Best Fitness: {1}, Best Duration: {2}s ({3}, {4})",
-        generation, best.AverageFitness, best.AverageDuration,
+        generation, best.Fitness, best.AverageDuration,
         best.Genotype.NeuronCount,
         best.Genotype.SynapseCount);
 
       eliteFitnessLog.WriteLine(string.Format("{0}, {1}, {2}",
-        generation, best.AverageFitness, best.AverageDuration));
+        generation, best.Fitness, best.AverageDuration));
       elitesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}",
-        generation, best.AverageFitness, best.AverageDuration,
+        generation, best.Fitness, best.AverageDuration,
         JSON.Serialize(best.Genotype.ToJSON())));
 
       species = speciation.Speciate(species, phenotypes.ToArray());
 
       var adjusted = phenotypes.OrderBy(pt => pt.AdjustedFitness).First();
       Debug.LogFormat("[{0}] Best Adjusted Fitness: {1}, Best Adjusted Duration: {2}s ({3}, {4})",
-        generation, adjusted.AverageFitness, adjusted.AverageDuration,
+        generation, adjusted.Fitness, adjusted.AverageDuration,
         adjusted.Genotype.NeuronCount,
         adjusted.Genotype.SynapseCount);
 

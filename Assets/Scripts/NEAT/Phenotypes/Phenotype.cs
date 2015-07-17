@@ -24,21 +24,51 @@ namespace NEAT {
       }
     }
 
+    public float BestFitness {
+      get {
+        return trials.Min(t => t.Fitness);
+      }
+    }
+
+    public float WorstFitness {
+      get {
+        return trials.Max(t => t.Fitness);
+      }
+    }
+
     public float AverageFitness {
       get {
-        if (trials.Count > 0) {
-          var average = trials.Aggregate(0.0f,
-            (sum, t) => sum + t.Fitness,
-            (sum) => sum / trials.Count);
+        return trials.Aggregate(0.0f,
+          (sum, t) => sum + t.Fitness,
+          (sum) => sum / trials.Count);
+      }
+    }
 
-          // TODO: This may not work:
-          var stdevAverage = trials.Aggregate(0.0f,
-            (stdev, t) => stdev + Mathf.Abs(t.Fitness - average),
-            (stdev) => stdev / trials.Count);
-          return average + stdevAverage;
+    public float Fitness {
+      get {
+        if (trials.Count > 0) {
+          // fitness: 0.3, 0.7
+          // avg: 0.5
+          // std: 0.2 (penalty)
+          // fit: 0.7
+          var average = AverageFitness;
+          var stdev = GetStdDevFitness(average);
+          return average + stdev;
         } else {
           return 1.0f;
         }
+      }
+    }
+
+    public float BestDuration {
+      get {
+        return trials.Max(t => t.Duration);
+      }
+    }
+
+    public float WorstDuration {
+      get {
+        return trials.Min(t => t.Duration);
       }
     }
 
@@ -58,6 +88,12 @@ namespace NEAT {
 
     public Phenotype(Genotype genotype) {
       this.genotype = genotype;
+    }
+
+    public float GetStdDevFitness(float average) {
+      return trials.Aggregate(0.0f,
+        (stdev, t) => stdev + Mathf.Abs(t.Fitness - average),
+        (stdev) => stdev / trials.Count);
     }
 
     public Trial BeginTrial(Orientations orientation, float startTime) {
