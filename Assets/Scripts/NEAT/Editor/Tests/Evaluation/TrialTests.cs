@@ -16,11 +16,11 @@ namespace NEAT {
       var trialShort = new Trial(Orientations.Upright, 0.0f);
 
       for (int i = 0; i < 1000; i++) {
-        trialLong.Update(90.0f, 30.0f, 3.0f, 1.0f);
+        trialLong.Update(90.0f, 30.0f, 90.0f, 30.0f, 3.0f, 1.0f);
       }
 
       for (int i = 0; i < 100; i++) {
-        trialShort.Update(90.0f, 30.0f, 3.0f, 1.0f);
+        trialShort.Update(90.0f, 30.0f, 90.0f, 30.0f, 3.0f, 1.0f);
       }
 
       Assert.That(trialLong.Fitness < trialShort.Fitness);
@@ -39,7 +39,7 @@ namespace NEAT {
       var trial = new Trial(Orientations.Upright, 0.0f);
 
       for (int i = 0; i < 1000; i++) {
-        trial.Update(0.0f, 0.0f, 0.0f, 1.0f);
+        trial.Update(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
       }
 
       Assert.AreEqual(0.0f, trial.NormalizedFitnessDuration);
@@ -52,7 +52,7 @@ namespace NEAT {
       var trial = new Trial(Orientations.Upright, 0.0f);
 
       for (int i = 0; i < 100; i++) {
-        trial.Update(180.0f, 180.0f, 6.0f, 7.0f);
+        trial.Update(180.0f, 180.0f, 180.0f, 180.0f, 6.0f, 7.0f);
       }
 
       Assert.AreEqual(0.9f, trial.NormalizedFitnessDuration);

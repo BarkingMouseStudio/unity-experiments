@@ -11,6 +11,7 @@ public class EvaluationBehaviour : MonoBehaviour {
   Transform cart;
   Transform handle;
   Rigidbody2D lower;
+  Rigidbody2D upper;
   Rigidbody2D wheel;
 
   Vector3 startPosition;
@@ -27,8 +28,9 @@ public class EvaluationBehaviour : MonoBehaviour {
 
 	void Awake() {
     cart = transform.Find("Cart");
-    handle = transform.Find("Cart/Lower/Handle");
+    handle = transform.Find("Cart/Upper/Handle");
     lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
+    upper = transform.Find("Cart/Upper").GetComponent<Rigidbody2D>();
     wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
 
     SetRotation(orientation);
@@ -69,6 +71,11 @@ public class EvaluationBehaviour : MonoBehaviour {
   }
 
 	void FixedUpdate() {
+    if (Phenotype == null) {
+      Debug.LogWarning("Phenotype is null");
+      return;
+    }
+
     if (isComplete) {
       return;
     }
@@ -92,9 +99,13 @@ public class EvaluationBehaviour : MonoBehaviour {
 
     var thetaLower = AngleHelper.GetAngle(lower.rotation);
     var thetaDotLower = AngleHelper.GetAngle(lower.angularVelocity);
+    var thetaUpper = AngleHelper.GetAngle(upper.rotation);
+    var thetaDotUpper = AngleHelper.GetAngle(upper.angularVelocity);
     var x = wheel.transform.localPosition.x;
     var xDot = wheel.velocity.magnitude;
 
-    Phenotype.UpdateTrial(thetaLower, thetaDotLower, x, xDot);
+    Phenotype.UpdateTrial(thetaLower, thetaDotLower,
+      thetaUpper, thetaDotUpper,
+      x, xDot);
 	}
 }

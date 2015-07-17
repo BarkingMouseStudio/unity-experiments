@@ -21,12 +21,14 @@ public class ControllerBehaviour : MonoBehaviour {
   }
 
   WheelJoint2D wheelJoint;
+  Rigidbody2D upper;
   Rigidbody2D lower;
   Rigidbody2D wheel;
 
   EvaluationBehaviour evaluation;
 
   void Awake() {
+    upper = transform.Find("Cart/Upper").GetComponent<Rigidbody2D>();
     lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
     wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
     wheelJoint = wheel.transform.GetComponentInChildren<WheelJoint2D>();
@@ -56,10 +58,17 @@ public class ControllerBehaviour : MonoBehaviour {
 
     var thetaLower = AngleHelper.GetAngle(lower.rotation);
     var thetaDotLower = AngleHelper.GetAngle(lower.angularVelocity);
+    var thetaUpper = AngleHelper.GetAngle(upper.rotation);
+    var thetaDotUpper = AngleHelper.GetAngle(upper.angularVelocity);
     var x = wheel.transform.localPosition.x;
     var xDot = wheel.velocity.magnitude;
 
-    float speed = networkIO.Send(thetaLower, thetaDotLower, x, xDot);
+    float speed = 0.0f;
+    if (networkIO != null) {
+      speed = networkIO.Send(thetaLower, thetaDotLower,
+        thetaUpper, thetaDotUpper,
+        x, xDot);
+    }
 
     // Update motor speed
     SetMotorSpeed(speed);

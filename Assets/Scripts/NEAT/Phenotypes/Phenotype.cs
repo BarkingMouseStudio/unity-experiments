@@ -102,8 +102,8 @@ namespace NEAT {
       return CurrentTrial;
     }
 
-    public void UpdateTrial(float thetaLower, float thetaDotLower, float x, float xDot) {
-      CurrentTrial.Update(thetaLower, thetaDotLower, x, xDot);
+    public void UpdateTrial(float thetaLower, float thetaDotLower, float thetaUpper, float thetaDotUpper, float x, float xDot) {
+      CurrentTrial.Update(thetaLower, thetaDotLower, thetaUpper, thetaDotUpper, x, xDot);
     }
 
     public void EndTrial(float endTime) {

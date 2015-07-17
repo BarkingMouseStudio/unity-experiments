@@ -36,7 +36,7 @@ public class NetworkIO {
   }
 
   static NetworkIO() {
-    inNeuronCount = (NetworkIO.angularRanges.Length * 1) +
+    inNeuronCount = (NetworkIO.angularRanges.Length * 2) +
       (NetworkIO.linearRanges.Length * 1);
     outNeuronCount = NetworkIO.speeds.Length;
 
@@ -51,11 +51,12 @@ public class NetworkIO {
       .ToArray();
 
     var inputRanges = new List<Range>(
-      angularRanges.Length * 1 +
+      angularRanges.Length * 2 +
       linearRanges.Length * 1
     );
     inputRanges.AddRange(angularRanges); // theta lower
     // inputRanges.AddRange(angularRanges); // theta dot lower
+    inputRanges.AddRange(angularRanges); // theta upper
     inputRanges.AddRange(linearRanges); // x
     // inputRanges.AddRange(linearRanges); // x dot
     NetworkIO.inputRanges = inputRanges.ToArray();
@@ -125,9 +126,9 @@ public class NetworkIO {
     this.worldData = new float[inNeuronCount];
   }
 
-  public static void PopulateWorldData(float[] worldData, float thetaLower, float thetaDotLower, float x, float xDot) {
+  public static void PopulateWorldData(float[] worldData, float thetaLower, float thetaDotLower, float thetaUpper, float thetaDotUpper, float x, float xDot) {
     var aR = angularRanges.Length;
-    // var aR2 = aR * 2;
+    var aR2 = aR * 2;
     var lR = linearRanges.Length;
     // var lR2 = lR * 2;
 
@@ -135,9 +136,11 @@ public class NetworkIO {
     for (int i = 0; i < worldData.Length; i++) {
       if (i < aR) {
         worldData[i] = thetaLower;
+      } else if (i >= aR && i < aR2) {
+        worldData[i] = thetaUpper;
       // } else if (i >= aR && i < aR2) {
       //   worldData[i] = thetaDotLower;
-      } else if (i >= aR && i < aR + lR) { // } else if (i >= aR2 && i < aR2 + lR) {
+      } else if (i >= aR2 && i < aR2 + lR) { // } else if (i >= aR2 && i < aR2 + lR) {
         worldData[i] = x;
       // } else if (i >= aR2 + lR && i < aR2 + lR2) {
       //   worldData[i] = xDot;
@@ -167,12 +170,12 @@ public class NetworkIO {
     return speed;
   }
 
-  public float Send(float thetaLower, float thetaDotLower, float x, float xDot) {
+  public float Send(float thetaLower, float thetaDotLower, float thetaUpper, float thetaDotUpper, float x, float xDot) {
     Array.Clear(input, 0, input.Length);
     Array.Clear(output, 0, output.Length);
     Array.Clear(worldData, 0, worldData.Length);
 
-    PopulateWorldData(worldData, thetaLower, thetaDotLower, x, xDot);
+    PopulateWorldData(worldData, thetaLower, thetaDotLower, thetaUpper, thetaDotUpper, x, xDot);
     MapInput(input, worldData);
 
     // Receive output

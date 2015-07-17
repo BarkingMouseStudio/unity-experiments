@@ -70,14 +70,16 @@ public class Trial {
     }
   }
 
-	public void Update(float thetaLower, float thetaDotLower, float x, float xDot) {
+	public void Update(float thetaLower, float thetaDotLower, float thetaUpper, float thetaDotUpper, float x, float xDot) {
     var fitness =
       Mathf.Abs(thetaLower) * 1.0f +
       Mathf.Abs(thetaDotLower) * 1.0f +
+      Mathf.Abs(thetaUpper) * 1.0f +
+      Mathf.Abs(thetaDotUpper) * 1.0f +
       Mathf.Abs(x) * 30.0f +
       Mathf.Abs(xDot - 1.0f) * 30.0f;
 
-    fitnessHistory[fitnessHistoryIndex] = fitness / (180.0f * 4.0f);
+    fitnessHistory[fitnessHistoryIndex] = fitness / (180.0f * 6.0f);
     fitnessHistoryIndex++;
     fitnessHistoryIndex %= fitnessHistory.Length;
 
