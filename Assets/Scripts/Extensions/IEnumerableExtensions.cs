@@ -1,9 +1,23 @@
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 public static class IEnumerableExtensions {
+
+  public static T[][] Batch<T>(this IEnumerable<T> source, int batchSize) {
+    return source.Select((item, i) => {
+      return new {
+        Batch = Mathf.FloorToInt(i / batchSize),
+        Item = item,
+      };
+    }).GroupBy(obj => {
+      return obj.Batch;
+    }).Select(grp => {
+      return grp.Select(g => g.Item).ToArray();
+    }).ToArray();
+  }
 
   public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second, Func<TFirst, TSecond, TResult> func) {
     using (var a = first.GetEnumerator()) {

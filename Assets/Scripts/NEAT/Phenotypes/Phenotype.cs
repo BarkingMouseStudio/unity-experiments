@@ -1,14 +1,22 @@
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NEAT {
 
   public class Phenotype {
 
+    private readonly List<Trial> trials = new List<Trial>(1);
     private readonly Genotype genotype;
-    private readonly float fitness;
-    private readonly float duration;
-    private readonly float orientation;
+
+    public int TrialCount {
+      get {
+        return trials.Count;
+      }
+    }
+
+    public Trial CurrentTrial { get; protected set; }
 
     public Genotype Genotype {
       get {
@@ -16,31 +24,52 @@ namespace NEAT {
       }
     }
 
-    public float Fitness {
+    public float AverageFitness {
       get {
-        return fitness;
+        if (trials.Count > 0) {
+          var average = trials.Aggregate(0.0f,
+            (sum, t) => sum + t.Fitness,
+            (sum) => sum / trials.Count);
+          var stdevAverage = trials.Aggregate(0.0f,
+            (stdev, t) => stdev + Mathf.Abs(t.Fitness - average),
+            (stdev) => stdev / trials.Count);
+          return average + stdevAverage;
+        } else {
+          return 1.0f;
+        }
       }
     }
 
-    public float Duration {
+    public float AverageDuration {
       get {
-        return duration;
-      }
-    }
-
-    public float Orientation {
-      get {
-        return orientation;
+        if (trials.Count > 0) {
+          return trials.Aggregate(0.0f,
+            (sum, t) => sum + t.Duration,
+            (sum) => sum / trials.Count);
+        } else {
+          return 0.0f;
+        }
       }
     }
 
     public float AdjustedFitness { get; set; }
 
-    public Phenotype(Genotype genotype, float fitness, float duration, float orientation) {
+    public Phenotype(Genotype genotype) {
       this.genotype = genotype;
-      this.fitness = fitness;
-      this.duration = duration;
-      this.orientation = orientation;
+    }
+
+    public Trial BeginTrial(Orientations orientation, float startTime) {
+      CurrentTrial = new Trial(orientation, startTime);
+      trials.Add(CurrentTrial);
+      return CurrentTrial;
+    }
+
+    public void UpdateTrial(float thetaLower, float thetaDotLower, float x, float xDot) {
+      CurrentTrial.Update(thetaLower, thetaDotLower, x, xDot);
+    }
+
+    public void EndTrial(float endTime) {
+      CurrentTrial.End(endTime);
     }
   }
 }

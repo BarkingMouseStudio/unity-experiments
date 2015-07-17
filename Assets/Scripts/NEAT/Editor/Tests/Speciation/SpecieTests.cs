@@ -35,15 +35,15 @@ namespace NEAT {
 
       for (int i = 0; i < 100; i++) {
         var gt = Genotype.FromPrototype(protoGenotype);
-        var pt = new Phenotype(gt, Random.value * 100.0f, 10.0f, 180.0f);
+        var pt = new Phenotype(gt);
         specie.Add(pt);
       }
 
       foreach (var pt in specie) {
-        pt.AdjustedFitness = pt.Fitness / specie.Count;
+        pt.AdjustedFitness = pt.AverageFitness / specie.Count;
       }
 
-      Assert.AreEqual(0.5f, specie.MeanFitness, 0.1f);
+      Assert.AreEqual(0.001f, specie.MeanFitness, 0.1f);
       Assert.AreEqual(100, specie.Count);
     }
   }

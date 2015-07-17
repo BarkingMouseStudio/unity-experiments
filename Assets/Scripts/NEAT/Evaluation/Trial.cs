@@ -3,7 +3,7 @@ using System.Collections;
 using System.Linq;
 
 // Responsible for measuring fitness.
-public class Evaluator {
+public class Trial {
 
   // Evaluation fitness
   const int minFitnessUpdateCount = 100;
@@ -12,12 +12,31 @@ public class Evaluator {
   const float fitnessDurationWeight = 0.1f;
   const float fitnessHistoryWeight = 0.9f;
 
-  int fitnessHistoryIndex = 0;
-  int fitnessUpdateCount = 0;
-  float[] fitnessHistory = new float[fitnessHistoryLength];
+  private readonly Orientations orientation;
 
-  public Evaluator() {
-    fitnessHistory.Fill(1.0f);
+  private readonly float startTime;
+  private float endTime;
+
+  private readonly float[] fitnessHistory = new float[fitnessHistoryLength];
+  private int fitnessHistoryIndex = 0;
+  private int fitnessUpdateCount = 0;
+
+  public Trial(Orientations orientation, float startTime) {
+    this.orientation = orientation;
+    this.startTime = startTime;
+    this.fitnessHistory.Fill(1.0f);
+  }
+
+  public Orientations Orientation {
+    get {
+      return orientation;
+    }
+  }
+
+  public float Duration {
+    get {
+      return endTime - startTime;
+    }
   }
 
   public float[] FitnessHistory {
@@ -64,4 +83,8 @@ public class Evaluator {
 
     fitnessUpdateCount++;
 	}
+
+  public void End(float endTime) {
+    this.endTime = endTime;
+  }
 }

@@ -23,8 +23,8 @@ namespace NEAT {
       var genotypeA = new Genotype(neuronGenesA, new GeneList<SynapseGene>(0));
       var genotypeB = new Genotype(neuronGenesB, new GeneList<SynapseGene>(0));
 
-      var phenotypeA = new Phenotype(genotypeA, 0.5f, 1.0f, 180.0f);
-      var phenotypeB = new Phenotype(genotypeB, 0.5f, 1.0f, 180.0f);
+      var phenotypeA = new Phenotype(genotypeA);
+      var phenotypeB = new Phenotype(genotypeB);
 
       var crossover = new MultipointCrossover();
       var offspring = crossover.Crossover(phenotypeA, phenotypeB);

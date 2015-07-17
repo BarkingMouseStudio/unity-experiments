@@ -6,42 +6,17 @@ using System.Linq;
 // Responsible for initializing the test and measuring fitness.
 public class EvaluationBehaviour : MonoBehaviour {
 
-  public enum Orientations {
-    Upright = 180,
-    SoftLeft = 185,
-    SoftRight = 175,
-    MediumLeft = 195,
-    MediumRight = 165,
-    HardLeft = 210,
-    HardRight = 150,
-    VeryHardLeft = 225,
-    VeryHardRight = 135,
-    Downward = 0,
-    Random = -1,
-  }
-
   public Orientations orientation;
-
-  // static readonly float[] angles = new float[]{
-  //   135f,
-  //   225f,
-  // };
 
   Transform cart;
   Transform handle;
   Rigidbody2D lower;
   Rigidbody2D wheel;
 
-  // TODO: Attach Evalutor (EvaluationInfo) to Phenotype
-  Evaluator evaluator;
-
-  float startTime;
-  float endTime;
-
   Vector3 startPosition;
+  float startTime;
 
-  // TODO: Use Phenotype (not Genotype)
-  public NEAT.Genotype Genotype { get; set; }
+  public NEAT.Phenotype Phenotype { get; set; }
 
   private bool isComplete = false;
   public bool IsComplete {
@@ -50,67 +25,46 @@ public class EvaluationBehaviour : MonoBehaviour {
     }
   }
 
-  public float Now {
-    get {
-      return endTime - startTime;
-    }
-  }
-
-  public float Fitness {
-    get {
-      return evaluator.Fitness;
-    }
-  }
-
-  public float Angle {
-    get {
-      return (float)orientation;
-    }
-  }
-
-  void Init() {
-    SetRotation();
-
-    startPosition = transform.position;
-
-    // TODO: Move time, angle and fitness accessors to Evaluator (=> EvaluationInfo)
-    evaluator = new Evaluator();
-    startTime = Time.time;
-  }
-
 	void Awake() {
     cart = transform.Find("Cart");
     handle = transform.Find("Cart/Lower/Handle");
     lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
     wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
 
-    Init();
+    SetRotation(orientation);
+    startPosition = transform.position;
 	}
 
   void OnSpawned() {
-    Init();
+    startPosition = transform.position;
   }
 
 	void OnDespawned() {
-    // Reset status
+    wheel.isKinematic = false;
+    lower.isKinematic = false;
     isComplete = false;
 	}
 
-  void SetRotation() {
-    float angle = 0.0f;
+  void SetRotation(Orientations orientation) {
     if (orientation == Orientations.Random) {
-      angle = 195f; // angles[UnityEngine.Random.Range(0, angles.Length)];
+      cart.localRotation = Quaternion.Euler(0f, 0f,
+        UnityEngine.Random.value > 0.5f ? 210f : 150f);
     } else {
-      angle = (float)orientation;
+      cart.localRotation = Quaternion.Euler(0f, 0f, (float)orientation);
     }
-    cart.localRotation = Quaternion.Euler(0f, 0f, angle);
   }
 
-  void Complete() {
-    wheel.isKinematic = true; // Freeze the wheel
+  public void BeginTrial(Orientations orientation, float startTime) {
+    startTime = Time.time;
+    SetRotation(orientation);
+    Phenotype.BeginTrial(orientation, startTime);
+  }
+
+  void EndTrial() {
+    wheel.isKinematic = true;
     lower.isKinematic = true;
     isComplete = true;
-    endTime = Time.time;
+    Phenotype.EndTrial(Time.time);
   }
 
 	void FixedUpdate() {
@@ -118,13 +72,20 @@ public class EvaluationBehaviour : MonoBehaviour {
       return;
     }
 
+    // Consider 30 seconds to be solved
+    if (Time.time - startTime > 30.0f) {
+      EndTrial();
+    }
+
+    // End if it fell off the edge
     if (wheel.transform.position.y - startPosition.y < -2.0f) {
-      Complete();
+      EndTrial();
       return;
     }
 
+    // End if it fell over
     if (handle.position.y - startPosition.y < 0.0f) {
-      Complete();
+      EndTrial();
       return;
     }
 
@@ -133,6 +94,6 @@ public class EvaluationBehaviour : MonoBehaviour {
     var x = wheel.transform.localPosition.x;
     var xDot = wheel.velocity.magnitude;
 
-    evaluator.Update(thetaLower, thetaDotLower, x, xDot);
+    Phenotype.UpdateTrial(thetaLower, thetaDotLower, x, xDot);
 	}
 }

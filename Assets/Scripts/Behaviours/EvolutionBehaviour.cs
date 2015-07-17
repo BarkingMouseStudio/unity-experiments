@@ -16,32 +16,20 @@ public class EvolutionBehaviour : MonoBehaviour {
   public Transform prefab;
   private readonly int batchSize = 100;
 
-  static Genotype[][] CreateBatches(Genotype[] genotypes, int batchSize) {
-    return genotypes.Select((gt, i) => {
-      return new {
-        Batch = Mathf.FloorToInt(i / batchSize),
-        Genotype = gt,
-      };
-    }).GroupBy((gt) => {
-      return gt.Batch;
-    }).Select((grp) => {
-      return grp.Select(g => g.Genotype).ToArray();
-    }).ToArray();
-  }
-
-  IEnumerator EvaluateBatch(int batchIndex, Genotype[] batch, List<Phenotype> phenotypes) {
+  IEnumerator EvaluateBatch(int batchIndex, Phenotype[] batch, Orientations orientation) {
     IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
 
     var layout = new TransformLayout(28.0f, 18.0f, batchSize, Mathf.FloorToInt(Mathf.Sqrt(batchSize)));
 
-    foreach (var genotype in batch) {
+    foreach (var phenotype in batch) {
       var t = PoolManager.Pools["Evaluations"].Spawn(prefab, layout.NextPosition(), Quaternion.identity, transform);
 
       var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
-      controllerBehaviour.Network = NetworkIO.FromGenotype(genotype);
+      controllerBehaviour.Network = NetworkIO.FromGenotype(phenotype.Genotype);
 
       var evaluationBehaviour = t.GetComponent<EvaluationBehaviour>();
-      evaluationBehaviour.Genotype = genotype;
+      evaluationBehaviour.Phenotype = phenotype;
+      evaluationBehaviour.BeginTrial(orientation, Time.time);
 
       evaluations.Add(evaluationBehaviour);
     }
@@ -50,12 +38,6 @@ public class EvolutionBehaviour : MonoBehaviour {
     while (evaluations.Any(ev => !ev.IsComplete)) {
       yield return new WaitForFixedUpdate();
     }
-
-    var batchPhenotypes = evaluations.Select(ev =>
-      new Phenotype(ev.Genotype, ev.Fitness, ev.Now, ev.Angle));
-
-    // Accumulate fitnesses into array
-    phenotypes.AddRange(batchPhenotypes);
 
     // Cleanup
     List<Transform> children = new List<Transform>(transform.childCount);
@@ -69,18 +51,17 @@ public class EvolutionBehaviour : MonoBehaviour {
     }
   }
 
-  IEnumerator EvaluateBatches(Genotype[][] batches, List<Phenotype> phenotypes) {
+  IEnumerator EvaluateBatches(Phenotype[][] batches) {
     int batchIndex = 0;
     foreach (var batch in batches) {
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, phenotypes));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
       batchIndex++;
     }
   }
 
-  IEnumerator EvaluatePopulation(Genotype[] genotypes, List<Phenotype> phenotypes) {
-    // Create batches from the population
-    var batches = CreateBatches(genotypes, batchSize);
-    yield return StartCoroutine(EvaluateBatches(batches, phenotypes));
+  IEnumerator EvaluatePopulation(List<Phenotype> phenotypes) {
+    yield return StartCoroutine(EvaluateBatches(phenotypes.Batch(batchSize)));
   }
 
   StreamWriter elitesLog;
@@ -103,7 +84,7 @@ public class EvolutionBehaviour : MonoBehaviour {
 
     var mutations = new MutationCollection();
     mutations.Add(0.001f, new AddNeuronMutator(innovations)); // 0.1%
-    mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
+    mutations.Add(0.02f, new AddSynapseMutator(innovations)); // 1%
     mutations.Add(0.18f, new PerturbNeuronMutator(0.15f, 0.5f)); // 98% vvv
     mutations.Add(0.18f, new PerturbSynapseMutator(0.15f, 0.5f));
     mutations.Add(0.18f, new ToggleSynapseMutator(0.15f));
@@ -111,7 +92,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     mutations.Add(0.18f, new ReplaceSynapseMutator(0.15f));
     // TODO: mutations.Add(0.10f, new PruneSynapseMutator(0.15f)); // 0.1%
     // TODO: Pruning mutator: deletes disabled synapses, removes orphaned neurons
-    mutations.Add(0.089f, new NoopMutator());
+    mutations.Add(0.079f, new NoopMutator());
 
     var eliteSelector = new EliteSelector();
 
@@ -119,7 +100,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     var offspringSelector = new OffspringSelector(crossover);
 
     var distanceMetric = new DistanceMetric(3.0f, 3.0f, 2.0f);
-    var speciation = new Speciation(10, 12.0f, 0.1f, distanceMetric);
+    var speciation = new Speciation(10, 6.0f, 0.1f, distanceMetric);
 
     var neuronGenes = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
       .Select(i => NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
@@ -134,32 +115,32 @@ public class EvolutionBehaviour : MonoBehaviour {
     var generation = 0;
 
     while (true) {
-      var phenotypes = new List<Phenotype>(genotypes.Length);
-      yield return StartCoroutine(EvaluatePopulation(genotypes, phenotypes));
+      var phenotypes = genotypes.Select(gt => new Phenotype(gt)).ToList();
+      yield return StartCoroutine(EvaluatePopulation(phenotypes));
 
-      var longest = phenotypes.OrderByDescending(pt => pt.Duration).First();
+      var longest = phenotypes.OrderByDescending(pt => pt.AverageDuration).First();
       Debug.LogFormat("[{0}] Longest Fitness: {1}, Longest Duration: {2}s ({3}, {4})",
-        generation, longest.Fitness, longest.Duration,
+        generation, longest.AverageFitness, longest.AverageDuration,
         longest.Genotype.NeuronCount,
         longest.Genotype.SynapseCount);
 
-      var best = phenotypes.OrderBy(pt => pt.Fitness).First();
+      var best = phenotypes.OrderBy(pt => pt.AverageFitness).First();
       Debug.LogFormat("[{0}] Best Fitness: {1}, Best Duration: {2}s ({3}, {4})",
-        generation, best.Fitness, best.Duration,
+        generation, best.AverageFitness, best.AverageDuration,
         best.Genotype.NeuronCount,
         best.Genotype.SynapseCount);
 
       eliteFitnessLog.WriteLine(string.Format("{0}, {1}, {2}",
-        generation, best.Fitness, best.Duration));
+        generation, best.AverageFitness, best.AverageDuration));
       elitesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}",
-        generation, best.Fitness, best.Duration,
+        generation, best.AverageFitness, best.AverageDuration,
         JSON.Serialize(best.Genotype.ToJSON())));
 
       species = speciation.Speciate(species, phenotypes.ToArray());
 
       var adjusted = phenotypes.OrderBy(pt => pt.AdjustedFitness).First();
       Debug.LogFormat("[{0}] Best Adjusted Fitness: {1}, Best Adjusted Duration: {2}s ({3}, {4})",
-        generation, adjusted.Fitness, adjusted.Duration,
+        generation, adjusted.AverageFitness, adjusted.AverageDuration,
         adjusted.Genotype.NeuronCount,
         adjusted.Genotype.SynapseCount);
 

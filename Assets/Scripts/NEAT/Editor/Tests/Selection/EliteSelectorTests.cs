@@ -30,7 +30,7 @@ namespace NEAT {
 
       var phenotypes = Enumerable.Range(0, 100).Select(_ => {
         var gt = Genotype.FromPrototype(protoGenotype);
-        var pt = new Phenotype(gt, Random.value * 100.0f, 10.0f, 180.0f);
+        var pt = new Phenotype(gt);
         return pt;
       }).ToArray();
 
