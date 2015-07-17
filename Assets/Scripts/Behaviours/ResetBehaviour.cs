@@ -11,8 +11,6 @@ public class ResetBehaviour : MonoBehaviour {
     public Quaternion rotation;
     public Vector3 scale;
     public List<State> states;
-    public Rigidbody2D rigidbody;
-    public bool isKinematic;
   }
 
   List<State> states = new List<State>(1);
@@ -26,19 +24,12 @@ public class ResetBehaviour : MonoBehaviour {
 	}
 
   void SaveState(Transform transform, List<State> states) {
-    Rigidbody2D rigidbody = transform.GetComponent<Rigidbody2D>();
-    bool isKinematic = false;
-    if (rigidbody != null) {
-      isKinematic = rigidbody.isKinematic;
-    }
     var state = new State{
       transform = transform,
       position = transform.localPosition,
       rotation = transform.localRotation,
       scale = transform.localScale,
       states = new List<State>(transform.childCount),
-      rigidbody = rigidbody,
-      isKinematic = isKinematic,
     };
     states.Add(state);
 
@@ -52,12 +43,6 @@ public class ResetBehaviour : MonoBehaviour {
       state.transform.localPosition = state.position;
       state.transform.localRotation = state.rotation;
       state.transform.localScale = state.scale;
-
-      if (state.rigidbody != null) {
-        state.rigidbody.velocity = Vector2.zero;
-        state.rigidbody.angularVelocity = 0;
-        state.rigidbody.isKinematic = state.isKinematic;
-      }
 
       RestoreState(state.states);
     }
