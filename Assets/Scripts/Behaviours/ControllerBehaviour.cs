@@ -65,7 +65,8 @@ public class ControllerBehaviour : MonoBehaviour {
 
     float speed = 0.0f;
     if (networkIO != null) {
-      speed = networkIO.Send(thetaLower, thetaDotLower,
+      speed = networkIO.Send(
+        thetaLower, thetaDotLower,
         thetaUpper, thetaDotUpper,
         x, xDot);
     }
