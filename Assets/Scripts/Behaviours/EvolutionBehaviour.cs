@@ -54,8 +54,8 @@ public class EvolutionBehaviour : MonoBehaviour {
   IEnumerator EvaluateBatches(Phenotype[][] batches) {
     int batchIndex = 0;
     foreach (var batch in batches) {
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumLeft));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumRight));
       batchIndex++;
     }
   }
@@ -83,8 +83,9 @@ public class EvolutionBehaviour : MonoBehaviour {
     var innovations = new InnovationCollection();
 
     var mutations = new MutationCollection();
-    mutations.Add(0.001f, new AddNeuronMutator(innovations)); // 0.1%
+    mutations.Add(0.005f, new AddNeuronMutator(innovations)); // 0.1%
     mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
+    mutations.Add(0.02f, new ConnectSensorMutator(innovations)); // 2%
     mutations.Add(0.18f, new PerturbNeuronMutator(0.15f, 0.5f)); // 98% vvv
     mutations.Add(0.18f, new PerturbSynapseMutator(0.15f, 0.5f));
     mutations.Add(0.18f, new ToggleSynapseMutator(0.15f));
@@ -93,7 +94,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     // TODO: Modes
     // TODO: mutations.Add(0.10f, new PruneSynapseMutator(0.15f)); // 0.1%
     // TODO: Pruning mutator: deletes disabled synapses, removes orphaned neurons
-    mutations.Add(0.089f, new NoopMutator());
+    mutations.Add(0.065f, new NoopMutator());
 
     var eliteSelector = new EliteSelector();
 
@@ -119,29 +120,29 @@ public class EvolutionBehaviour : MonoBehaviour {
       var phenotypes = genotypes.Select(gt => new Phenotype(gt)).ToList();
       yield return StartCoroutine(EvaluatePopulation(phenotypes));
 
-      var longest = phenotypes.OrderByDescending(pt => pt.AverageDuration).First();
+      var longest = phenotypes.OrderByDescending(pt => pt.BestDuration).First();
       Debug.LogFormat("[{0}] Longest Fitness: {1}, Longest Duration: {2}s ({3}, {4})",
-        generation, longest.Fitness, longest.AverageDuration,
+        generation, longest.Fitness, longest.BestDuration,
         longest.Genotype.NeuronCount,
         longest.Genotype.SynapseCount);
 
       var best = phenotypes.OrderBy(pt => pt.Fitness).First();
       Debug.LogFormat("[{0}] Best Fitness: {1}, Best Duration: {2}s ({3}, {4})",
-        generation, best.Fitness, best.AverageDuration,
+        generation, best.Fitness, best.BestDuration,
         best.Genotype.NeuronCount,
         best.Genotype.SynapseCount);
 
       eliteFitnessLog.WriteLine(string.Format("{0}, {1}, {2}",
-        generation, best.Fitness, best.AverageDuration));
+        generation, best.Fitness, best.BestDuration));
       elitesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}",
-        generation, best.Fitness, best.AverageDuration,
+        generation, best.Fitness, best.BestDuration,
         JSON.Serialize(best.Genotype.ToJSON())));
 
       species = speciation.Speciate(species, phenotypes.ToArray());
 
       var adjusted = phenotypes.OrderBy(pt => pt.AdjustedFitness).First();
       Debug.LogFormat("[{0}] Best Adjusted Fitness: {1}, Best Adjusted Duration: {2}s ({3}, {4})",
-        generation, adjusted.Fitness, adjusted.AverageDuration,
+        generation, adjusted.Fitness, adjusted.BestDuration,
         adjusted.Genotype.NeuronCount,
         adjusted.Genotype.SynapseCount);
 
@@ -149,9 +150,6 @@ public class EvolutionBehaviour : MonoBehaviour {
         generation, species.Length, speciation.DistanceThreshold);
 
       foreach (var sp in species) {
-        // Debug.LogFormat("[{0}] Species Id: {1}, Species Size: {2}, Mean Fitness: {3}",
-        //   generation, sp.SpeciesId, sp.Count, sp.MeanFitness);
-
         speciesLog.WriteLine(string.Format("{0}, {1}, {2}, {3}",
           generation, sp.SpeciesId, sp.Count, sp.MeanFitness));
       }
@@ -181,6 +179,10 @@ public class EvolutionBehaviour : MonoBehaviour {
         "Population size must remain constant");
 
       generation++;
+
+      // Flush these so we can preview results while it runs
+      eliteFitnessLog.Flush();
+      speciesLog.Flush();
     }
   }
 }
