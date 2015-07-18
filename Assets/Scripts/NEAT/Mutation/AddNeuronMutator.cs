@@ -51,7 +51,7 @@ namespace NEAT {
       var synapseGene1 = new SynapseGene(innovationId + 0,
         synapseGene.fromNeuronId,
         neuronGene.InnovationId,
-        true, 1.0f);
+        true, synapseGene.weight);
       synapseGenes.Add(synapseGene1);
 
       var synapseGene2 = new SynapseGene(innovationId + 1,
