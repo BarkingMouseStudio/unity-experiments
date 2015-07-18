@@ -43,14 +43,16 @@ public class EvaluationBehaviour : MonoBehaviour {
 
 	void OnDespawned() {
     wheel.isKinematic = false;
+    upper.isKinematic = false;
     lower.isKinematic = false;
     isComplete = false;
 	}
 
   void SetRotation(Orientations orientation) {
     if (orientation == Orientations.Random) {
+      var orientations = Enum.GetValues(typeof(Orientations));
       cart.localRotation = Quaternion.Euler(0f, 0f,
-        UnityEngine.Random.value > 0.5f ? 210f : 150f);
+        (float)(Orientations)orientations.GetValue(UnityEngine.Random.Range(0, orientations.Length)));
     } else {
       cart.localRotation = Quaternion.Euler(0f, 0f, (float)orientation);
     }
@@ -65,17 +67,16 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   void EndTrial() {
     wheel.isKinematic = true;
+    upper.isKinematic = true;
     lower.isKinematic = true;
     isComplete = true;
-    Phenotype.EndTrial(Time.time);
+
+    if (Phenotype != null) {
+      Phenotype.EndTrial(Time.time);
+    }
   }
 
 	void FixedUpdate() {
-    if (Phenotype == null) {
-      Debug.LogWarning("Phenotype is null");
-      return;
-    }
-
     if (isComplete) {
       return;
     }
@@ -91,12 +92,6 @@ public class EvaluationBehaviour : MonoBehaviour {
       return;
     }
 
-    // End if it fell over
-    if (handle.position.y - startPosition.y < 0.0f) {
-      EndTrial();
-      return;
-    }
-
     var thetaLower = AngleHelper.GetAngle(lower.rotation);
     var thetaDotLower = AngleHelper.GetAngle(lower.angularVelocity);
     var thetaUpper = AngleHelper.GetAngle(upper.rotation);
@@ -104,8 +99,17 @@ public class EvaluationBehaviour : MonoBehaviour {
     var x = wheel.transform.localPosition.x;
     var xDot = wheel.velocity.magnitude;
 
-    Phenotype.UpdateTrial(thetaLower, thetaDotLower,
-      thetaUpper, thetaDotUpper,
-      x, xDot);
+    // End if it fell over
+    if (NumberHelper.Between(thetaLower, -190.0f, -170.0f) ||
+        NumberHelper.Between(thetaUpper, -190.0f, -170.0f)) {
+      EndTrial();
+      return;
+    }
+
+    if (Phenotype != null) {
+      Phenotype.UpdateTrial(thetaLower, thetaDotLower,
+        thetaUpper, thetaDotUpper,
+        x, xDot);
+    }
 	}
 }
