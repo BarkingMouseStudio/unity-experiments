@@ -57,13 +57,17 @@ public class NetworkIO {
     inputRanges.AddRange(angularRanges); // theta lower
     // inputRanges.AddRange(angularRanges); // theta dot lower
     inputRanges.AddRange(angularRanges); // theta upper
+    // inputRanges.AddRange(angularRanges); // theta dot upper
     inputRanges.AddRange(linearRanges); // x
     // inputRanges.AddRange(linearRanges); // x dot
     NetworkIO.inputRanges = inputRanges.ToArray();
 
-    Assert.AreEqual(inputRanges.Count, inNeuronCount);
-    Assert.AreEqual(inNeuronIds.Length, inNeuronCount);
-    Assert.AreEqual(outNeuronIds.Length, outNeuronCount);
+    Assert.AreEqual(inputRanges.Count, inNeuronCount,
+      "Must produce correct number of input ranges");
+    Assert.AreEqual(inNeuronIds.Length, inNeuronCount,
+      "Must produce correct number of input neuron ids");
+    Assert.AreEqual(outNeuronIds.Length, outNeuronCount,
+      "Must produce correct number of output neuron ids");
   }
 
   readonly Neural.Network network;
@@ -129,6 +133,8 @@ public class NetworkIO {
   public static void PopulateWorldData(float[] worldData, float thetaLower, float thetaDotLower, float thetaUpper, float thetaDotUpper, float x, float xDot) {
     var aR = angularRanges.Length;
     var aR2 = aR * 2;
+    // var aR3 = aR * 3;
+    // var aR4 = aR * 4;
     var lR = linearRanges.Length;
     // var lR2 = lR * 2;
 
@@ -136,13 +142,15 @@ public class NetworkIO {
     for (int i = 0; i < worldData.Length; i++) {
       if (i < aR) {
         worldData[i] = thetaLower;
-      } else if (i >= aR && i < aR2) {
-        worldData[i] = thetaUpper;
       // } else if (i >= aR && i < aR2) {
       //   worldData[i] = thetaDotLower;
-      } else if (i >= aR2 && i < aR2 + lR) { // } else if (i >= aR2 && i < aR2 + lR) {
+      } else if (i >= aR && i < aR2) {
+        worldData[i] = thetaUpper;
+      // } else if (i >= aR3 && i < aR4) {
+      //   worldData[i] = thetaDotUpper;
+      } else if (i >= aR2 && i < aR2 + lR) {
         worldData[i] = x;
-      // } else if (i >= aR2 + lR && i < aR2 + lR2) {
+      // } else if (i >= aR4 + lR && i < aR4 + lR2) {
       //   worldData[i] = xDot;
       }
     }
