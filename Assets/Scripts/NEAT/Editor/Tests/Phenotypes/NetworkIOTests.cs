@@ -63,7 +63,8 @@ namespace NEAT {
     public void TestNetworkIO_PopulateWorldData() {
       var worldData = new float[NetworkIO.inNeuronCount];
       NetworkIO.PopulateWorldData(worldData, 1.0f, 2.0f, 1.0f, 2.0f, 3.0f, 4.0f);
-      Assert.AreEqual("1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,3,3,3,3,3",
+      // Debug.LogFormat("World Data: {0}", worldData.Stringify());
+      Assert.AreEqual("1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4",
         worldData.Stringify());
     }
 
@@ -71,10 +72,11 @@ namespace NEAT {
     public void TestNetworkIO_MapInput() {
       var worldData = new float[NetworkIO.inNeuronCount];
       var input = new double[NetworkIO.InitialNeuronCount];
-      NetworkIO.PopulateWorldData(worldData, 1.0f, 2.0f, 1.0f, 2.0f, 3.0f, 4.0f);
+      NetworkIO.PopulateWorldData(worldData, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 
       NetworkIO.MapInput(input, worldData);
-      Assert.AreEqual("0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+      // Debug.LogFormat("Input: {0}", input.Stringify());
+      Assert.AreEqual("0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,30,0,0,0,0,0,30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
         input.Stringify());
     }
 
@@ -84,8 +86,9 @@ namespace NEAT {
       output.Fill(30.0f);
 
       var speed = NetworkIO.MapOutput(output);
+      // Debug.LogFormat("Output: {0}", output.Stringify());
       Assert.AreEqual(0.0f, speed); // Speeds cancel eachother out
-      Assert.AreEqual("30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30",
+      Assert.AreEqual("30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30",
         output.Stringify());
     }
   }
