@@ -40,6 +40,12 @@ namespace NEAT {
       }
     }
 
+    public int Complexity {
+      get {
+        return neuronGenes.Count + synapseGenes.Count;
+      }
+    }
+
     public static Genotype FromPrototype(Genotype protoGenotype) {
       var neuronGenes = protoGenotype.NeuronGenes
         .Select(g => NeuronGene.FromPrototype(g))
