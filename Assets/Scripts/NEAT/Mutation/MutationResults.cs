@@ -9,5 +9,8 @@ namespace NEAT {
     public int perturbedNeurons;
     public int perturbedSynapses;
     public int toggledSynapses;
+
+    public int orphanedNeurons;
+    public int prunedSynapses;
   }
 }
