@@ -10,7 +10,7 @@ namespace NEAT {
 
     public Genotype[] Select(Specie[] species, int eliteCount) {
       var elites = species.Select(sp =>
-        sp.OrderBy(pt => pt.Fitness).First().Genotype).ToArray();
+        sp.OrderBy(pt => pt.AdjustedFitness).First().Genotype).ToArray();
       Assert.AreEqual(elites.Length, eliteCount,
         "Must return the expected number of elites");
       return elites;
