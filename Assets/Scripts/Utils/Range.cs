@@ -15,6 +15,10 @@ public struct Range {
     return val >= start && val < end;
   }
 
+  public override string ToString() {
+    return string.Format("[{0}:{1}]", start, end);
+  }
+
   public static Range Of(double start, double end) {
     return new Range(start, end);
   }
@@ -33,5 +37,13 @@ public struct Range {
       ranges.AddRange(Range.From(interval));
     }
     return ranges.ToArray();
+  }
+
+  public static double[] Intervals(double start, double end, double interval) {
+    var intervals = new List<double>();
+    for (var curr = start; curr <= end; curr += interval) {
+      intervals.Add(curr);
+    }
+    return intervals.ToArray();
   }
 }
