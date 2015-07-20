@@ -49,5 +49,13 @@ namespace NEAT {
       var comparer = new GenotypeEqualityComparer();
       Assert.That(comparer.Equals(genotype, deserializedGenotype));
     }
+
+    [Test]
+    public void TestGenotype_RoundTripJSON() {
+      var json = "{\"neurons\":[{\"innovation\":0,\"a\":0.5,\"b\":0.5,\"c\":0.5,\"d\":0.5},{\"innovation\":1,\"a\":0.5,\"b\":0.5,\"c\":0.5,\"d\":0.5},{\"innovation\":2,\"a\":0.5,\"b\":0.5,\"c\":0.5,\"d\":0.5}],\"synapses\":[{\"innovation\":0,\"weight\":0.5,\"from\":0,\"to\":1,\"enabled\":true},{\"innovation\":1,\"weight\":0.5,\"from\":0,\"to\":1,\"enabled\":true},{\"innovation\":2,\"weight\":0.5,\"from\":0,\"to\":1,\"enabled\":true}]}";
+      var deserializedGenotype = Genotype.FromJSON(JSON.Deserialize(json));
+      var serializedGenotype = JSON.Serialize(deserializedGenotype.ToJSON());
+      Assert.AreEqual(json, serializedGenotype, "JSON can convert round-trip");
+    }
   }
 }
