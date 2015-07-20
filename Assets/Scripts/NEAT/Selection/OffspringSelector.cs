@@ -31,12 +31,9 @@ namespace NEAT {
           return new Genotype(parent1.Genotype);
         }
 
-        while (true) {
-          var parent2 = specie[Random.Range(0, specie.Count)];
-          if (parent2 != parent1) {
-            return crossover.Crossover(parent1, parent2);
-          }
-        }
+        // Tournament selection
+        var parent2 = specie.Sample(2).OrderBy(pt => pt.Fitness).First();
+        return crossover.Crossover(parent1, parent2);
       });
     }
 
@@ -51,7 +48,7 @@ namespace NEAT {
         .Take(offspringCount)
         .ToArray();
 
-      Assert.AreEqual(offspring.Length, offspringCount,
+      Assert.AreEqual(offspringCount, offspring.Length,
         "Must return the expected number of offspring");
 
       return offspring;
