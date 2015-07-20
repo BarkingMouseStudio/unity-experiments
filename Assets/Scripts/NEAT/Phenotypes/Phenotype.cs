@@ -36,7 +36,7 @@ namespace NEAT {
       }
     }
 
-    public float AverageFitness {
+    public float MeanFitness {
       get {
         return trials.Aggregate(0.0f,
           (sum, t) => sum + t.Fitness,
@@ -51,9 +51,9 @@ namespace NEAT {
           // avg: 0.5
           // std: 0.2 (penalty)
           // fit: 0.7
-          var average = AverageFitness;
-          var stdev = GetStdDevFitness(average);
-          return average + stdev;
+          var mean = MeanFitness;
+          var stdev = GetStdDevFitness(mean);
+          return mean + stdev;
         } else {
           return 1.0f;
         }
@@ -72,7 +72,7 @@ namespace NEAT {
       }
     }
 
-    public float AverageDuration {
+    public float MeanDuration {
       get {
         if (trials.Count > 0) {
           return trials.Aggregate(0.0f,
@@ -90,9 +90,9 @@ namespace NEAT {
       this.genotype = genotype;
     }
 
-    public float GetStdDevFitness(float average) {
+    public float GetStdDevFitness(float mean) {
       return trials.Aggregate(0.0f,
-        (stdev, t) => stdev + Mathf.Abs(t.Fitness - average),
+        (stdev, t) => stdev + Mathf.Abs(t.Fitness - mean),
         (stdev) => stdev / trials.Count);
     }
 
