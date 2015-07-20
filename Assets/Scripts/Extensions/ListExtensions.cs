@@ -17,6 +17,12 @@ public static class IListExtensions {
     list[i] = list[j];
     list[j] = temp;
   }
+
+  public static IEnumerable<T> Sample<T>(this IList<T> list, int N) {
+    var shuffled = new List<T>(list);
+    shuffled.Shuffle();
+    return shuffled.Take(N);
+  }
 }
 
 public static class ListExtensions {
@@ -31,5 +37,11 @@ public static class ListExtensions {
     var temp = list[i];
     list[i] = list[j];
     list[j] = temp;
+  }
+
+  public static IEnumerable<T> Sample<T>(this List<T> list, int N) {
+    var shuffled = new List<T>(list);
+    shuffled.Shuffle();
+    return shuffled.Take(N);
   }
 }
