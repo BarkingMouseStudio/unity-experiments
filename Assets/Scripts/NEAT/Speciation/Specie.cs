@@ -31,16 +31,6 @@ namespace NEAT {
       }
     }
 
-    public float TopMeanFitness {
-      get {
-        return this.OrderBy(pt => pt.Fitness)
-          .Take(Mathf.RoundToInt(0.2f * Count))
-          .Aggregate(0.0f,
-            (sum, pt) => sum + pt.Fitness,
-            (sum) => sum / (float)this.Count);
-      }
-    }
-
     public float MeanFitness {
       get {
         return this.Aggregate(0.0f,
