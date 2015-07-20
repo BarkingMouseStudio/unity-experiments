@@ -14,13 +14,15 @@ namespace NEAT {
     public void Add(float p, IMutator mutator) {
       mutators.Add(new KeyValuePair<float, IMutator>(p, mutator));
 
-      Assert.IsTrue(mutators.Sum(m => m.Key) <= 1.0f,
-        "Sum of mutation probabilities should be less than or equal to 1.0");
+      var sum = mutators.Sum(m => m.Key);
+      Assert.IsTrue(sum <= 1.001f,
+        string.Format("Sum of mutation probabilities should be less than or equal to 1.0 but were {0:R}", sum));
     }
 
     public MutationResults Mutate(Genotype[] genotypes) {
-      Assert.AreApproximatelyEqual(1.0f, mutators.Sum(m => m.Key),
-        "Sum of mutation probabilities should equal 1.0");
+      var sum = mutators.Sum(m => m.Key);
+      Assert.AreApproximatelyEqual(1.0f, sum,
+        string.Format("Sum of mutation probabilities should equal 1.0 but were {0:R}", sum));
 
       var orderedMutators = mutators.OrderBy(m => m.Key);
 
