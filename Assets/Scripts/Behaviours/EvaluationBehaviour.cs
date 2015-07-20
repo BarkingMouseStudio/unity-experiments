@@ -9,7 +9,6 @@ public class EvaluationBehaviour : MonoBehaviour {
   public Orientations orientation;
 
   Transform cart;
-  Transform handle;
   Rigidbody2D lower;
   Rigidbody2D upper;
   Rigidbody2D wheel;
@@ -28,14 +27,15 @@ public class EvaluationBehaviour : MonoBehaviour {
 
 	void Awake() {
     cart = transform.Find("Cart");
-    handle = transform.Find("Cart/Upper/Handle");
     lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
     upper = transform.Find("Cart/Upper").GetComponent<Rigidbody2D>();
     wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
+	}
 
+  void Start() {
     SetRotation(orientation);
     startPosition = transform.position;
-	}
+  }
 
   void OnSpawned() {
     startPosition = transform.position;
@@ -100,8 +100,7 @@ public class EvaluationBehaviour : MonoBehaviour {
     var xDot = wheel.velocity.magnitude;
 
     // End if it fell over
-    if (NumberHelper.Between(thetaLower, -190.0f, -170.0f) ||
-        NumberHelper.Between(thetaUpper, -190.0f, -170.0f)) {
+    if (NumberHelper.Between(thetaLower, -190.0f, -170.0f)) {
       EndTrial();
       return;
     }
