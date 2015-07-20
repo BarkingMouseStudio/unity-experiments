@@ -9,11 +9,15 @@ using UnityEngine.Assertions;
 public class NetworkIO {
 
   static readonly Range[] angularRanges = Range.From(new double[]{
-    -180.0, -90.0, -45.0, -15.0, -5.0, -1.0, 0.0, 1.0, 5.0, 15.0, 45.0, 90.0, 180.0,
+    -180.0, -90.0, -75.0, -60.0, -45.0, -30.0, -15.0, -5.0, -1.0,
+    0.0,
+    1.0, 5.0, 15.0, 30.0, 45.0, 60.0, 75.0, 90.0, 180.0,
   });
 
   static readonly Range[] linearRanges = Range.From(new double[]{
-    -6.0, -3.0, -1.0, 0.0, 1.0, 3.0, 6.0,
+    -6.0, -5.0, -4.0, -3.0, -2.0f, -1.0,
+    0.0,
+    1.0, 2.0, 3.0, 4.0, 5.0, 6.0,
   });
 
   static readonly double[] speeds = new double[]{
