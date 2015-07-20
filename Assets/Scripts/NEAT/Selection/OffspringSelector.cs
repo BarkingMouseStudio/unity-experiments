@@ -14,13 +14,13 @@ namespace NEAT {
       this.crossover = crossover;
     }
 
-    private static float GetSumMeanFitness(Specie[] species) {
+    private static float GetSumMeanAdjustedFitness(Specie[] species) {
       return species.Aggregate(0.0f,
-        (sum, sp) => sum + sp.MeanFitness);
+        (sum, sp) => sum + sp.MeanAdjustedFitness);
     }
 
-    private IEnumerable<Genotype> GetOffspring(Specie specie, int totalOffspringCount, float sumMeanFitness) {
-      int speciesOffspringCount = Mathf.CeilToInt((specie.MeanFitness / sumMeanFitness) * (float)totalOffspringCount);
+    private IEnumerable<Genotype> GetOffspring(Specie specie, int totalOffspringCount, float sumMeanAdjustedFitness) {
+      int speciesOffspringCount = Mathf.CeilToInt((specie.MeanAdjustedFitness / sumMeanAdjustedFitness) * (float)totalOffspringCount);
 
       return Enumerable.Range(0, speciesOffspringCount).Select(_ => {
         Phenotype parent1 = specie[Random.Range(0, specie.Count)];
@@ -32,19 +32,19 @@ namespace NEAT {
         }
 
         // Tournament selection
-        var parent2 = specie.Sample(2).OrderBy(pt => pt.Fitness).First();
+        var parent2 = specie.Sample(2).OrderBy(pt => pt.AdjustedFitness).First();
         return crossover.Crossover(parent1, parent2);
       });
     }
 
     public Genotype[] Select(Specie[] species, int offspringCount) {
-      var sumMeanFitness = GetSumMeanFitness(species);
+      var sumMeanAdjustedFitness = GetSumMeanAdjustedFitness(species);
 
       // Order by best performing => worst performing
       // Produce eager offspring (with `ceil`)
       // Take the needed amount
-      var offspring = species.OrderBy(s => s.MeanFitness)
-        .SelectMany(s => GetOffspring(s, offspringCount, sumMeanFitness))
+      var offspring = species.OrderBy(s => s.MeanAdjustedFitness)
+        .SelectMany(s => GetOffspring(s, offspringCount, sumMeanAdjustedFitness))
         .Take(offspringCount)
         .ToArray();
 
