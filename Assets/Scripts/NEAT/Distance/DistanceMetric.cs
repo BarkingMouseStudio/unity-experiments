@@ -76,10 +76,10 @@ namespace NEAT {
         }
       }
 
-      return ((excessCoeff * neuronExcess) / (float)neuronCount) +
-             ((excessCoeff * synapseExcess) / (float)synapseCount) +
-             ((disjointCoeff * neuronDisjoint) / (float)neuronCount) +
-             ((disjointCoeff * synapseDisjoint) / (float)synapseCount) +
+      return (excessCoeff * neuronExcess) +
+             (excessCoeff * synapseExcess) +
+             (disjointCoeff * neuronDisjoint) +
+             (disjointCoeff * synapseDisjoint) +
              ((mutationCoeff * neuronDiff) / (float)neuronCount) +
              ((mutationCoeff * synapseDiff) / (float)synapseCount);
     }
