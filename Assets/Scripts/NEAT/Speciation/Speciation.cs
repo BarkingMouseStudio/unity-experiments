@@ -61,9 +61,9 @@ namespace NEAT {
 
       // Adjust threshold to accomodate the correct number of species
       if (speciesListNext.Count < desiredSpeciesCount) { // Too few
-        distanceThreshold -= distanceThreshold * distanceThresholdAdjustment; // Decrease threshold
+        distanceThreshold -= distanceThresholdAdjustment; // Decrease threshold
       } else if (speciesListNext.Count > desiredSpeciesCount) { // To many
-        distanceThreshold += distanceThreshold * distanceThresholdAdjustment; // Increase threshold
+        distanceThreshold += distanceThresholdAdjustment; // Increase threshold
       }
 
       // Prune empty species
