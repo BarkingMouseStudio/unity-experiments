@@ -74,7 +74,7 @@ namespace NEAT {
       var innovationId = (int)(long)data["innovation"];
       var fromNeuronId = (int)(long)data["from"];
       var toNeuronId = (int)(long)data["to"];
-      var weight = (float)System.Convert.ToDouble(data["weight"]);
+      var weight = System.Convert.ToSingle(data["weight"]);
       var isEnabled = (bool)data["enabled"];
       return new SynapseGene(innovationId, fromNeuronId, toNeuronId, isEnabled, weight);
     }

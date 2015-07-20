@@ -71,10 +71,10 @@ namespace NEAT {
     public static NeuronGene FromJSON(object obj) {
       var data = (Dictionary<string, object>)obj;
       var innovationId = (int)(long)data["innovation"];
-      var a = (float)(double)data["a"];
-      var b = (float)(double)data["b"];
-      var c = (float)(double)data["c"];
-      var d = (float)(double)data["d"];
+      var a = System.Convert.ToSingle(data["a"]);
+      var b = System.Convert.ToSingle(data["b"]);
+      var c = System.Convert.ToSingle(data["c"]);
+      var d = System.Convert.ToSingle(data["d"]);
       return new NeuronGene(innovationId, a, b, c, d);
     }
   }
