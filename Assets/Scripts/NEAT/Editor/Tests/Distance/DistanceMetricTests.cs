@@ -48,7 +48,7 @@ namespace NEAT {
       Assert.AreEqual(0.0f, distanceAB);
 
       var distanceAC = distanceMetric.MeasureDistance(genotypeA, genotypeC);
-      Assert.AreEqual(1f / 3f, distanceAC);
+      Assert.AreEqual(1f, distanceAC);
     }
 
     [Test]
@@ -59,7 +59,7 @@ namespace NEAT {
       Assert.AreEqual(0.0f, distanceAB);
 
       var distanceAC = distanceMetric.MeasureDistance(genotypeA, genotypeC);
-      Assert.AreEqual(1f / 3f, distanceAC);
+      Assert.AreEqual(1f, distanceAC);
     }
 
     [Test]
