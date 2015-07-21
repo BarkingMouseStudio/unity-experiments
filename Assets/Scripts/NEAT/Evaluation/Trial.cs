@@ -77,7 +77,7 @@ public class Trial {
       Mathf.Abs(thetaUpper) * 1.0f +
       Mathf.Abs(thetaDotUpper) * 1.0f +
       Mathf.Abs(x) * 30.0f +
-      Mathf.Abs(xDot - 1.0f) * 30.0f;
+      Mathf.Abs(xDot) * 30.0f;
 
     fitnessHistory[fitnessHistoryIndex] = fitness / (180.0f * 6.0f);
     fitnessHistoryIndex++;
