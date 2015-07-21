@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +36,10 @@ public class ControllerBehaviour : MonoBehaviour {
     evaluation = GetComponent<EvaluationBehaviour>();
 
     if (json != null) {
-      var genotype = NEAT.Genotype.FromJSON(json.text);
+      var genotype = NEAT.Genotype.FromJSON(JSON.Deserialize(json.text));
+      Assert.AreEqual(JSON.Serialize(genotype.ToJSON()), json.text.Trim(),
+        "JSON should be compatible round-trip");
+
       networkIO = NetworkIO.FromGenotype(genotype);
     }
   }
