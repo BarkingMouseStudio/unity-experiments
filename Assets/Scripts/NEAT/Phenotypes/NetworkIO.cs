@@ -8,6 +8,19 @@ using UnityEngine.Assertions;
 // Responsible for marshalling input/output data to/from the neural network.
 public class NetworkIO {
 
+  // static readonly Range[] angularRanges = Range.From(
+  //   Range.Intervals(-180.0, 180.0, 45.0),
+  //   Range.Intervals(-180.0, 180.0, 15.0)
+  // );
+  //
+  // static readonly Range[] linearRanges = Range.From(
+  //   Range.Intervals(-6.0, 6.0, 1.0)
+  // );
+  //
+  // static readonly double[] speeds =
+  //   Range.Intervals(-5.0, 5.0, 1.0).Concat(
+  //   Range.Intervals(-20.0, 20.0, 5.0)).ToArray();
+
   static readonly Range[] angularRanges = Range.From(new double[]{
     -180.0, -90.0, -75.0, -60.0, -45.0, -30.0, -15.0, -5.0, -1.0,
     0.0,
@@ -177,6 +190,7 @@ public class NetworkIO {
     // Read out neuron V for speed
     float speed = 0.0f;
     for (int i = 0; i < outNeuronIds.Length; i++) {
+      // speed += (float)((output[outNeuronIds[i]] / 30.0) * Math.Pow(speeds[i], 2.0));
       speed += (float)((output[outNeuronIds[i]] / 30.0) * speeds[i]);
     }
     return speed;
@@ -191,7 +205,7 @@ public class NetworkIO {
     MapInput(input, worldData);
 
     // Receive output
-    network.Tick(20ul, input, ref output); // TODO: fixedDeltaTime?
+    network.Tick(20ul, input, ref output);
     return MapOutput(output);
   }
 }
