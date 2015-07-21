@@ -31,9 +31,16 @@ namespace NEAT {
           return new Genotype(parent1.Genotype);
         }
 
-        // Tournament selection
-        var parent2 = specie.Sample(2).OrderBy(pt => pt.AdjustedFitness).First();
-        return crossover.Crossover(parent1, parent2);
+        // // Tournament selection
+        // var parent2 = specie.Sample(2).OrderByDescending(pt => pt.AdjustedFitness).First();
+        // return crossover.Crossover(parent1, parent2);
+
+        while (true) {
+          var parent2 = specie[Random.Range(0, specie.Count)];
+          if (parent2 != parent1) {
+            return crossover.Crossover(parent1, parent2);
+          }
+        }
       });
     }
 
@@ -43,7 +50,7 @@ namespace NEAT {
       // Order by best performing => worst performing
       // Produce eager offspring (with `ceil`)
       // Take the needed amount
-      var offspring = species.OrderBy(s => s.MeanAdjustedFitness)
+      var offspring = species.OrderByDescending(s => s.MeanAdjustedFitness)
         .SelectMany(s => GetOffspring(s, offspringCount, sumMeanAdjustedFitness))
         .Take(offspringCount)
         .ToArray();
