@@ -154,16 +154,6 @@ public class EvolutionBehaviour : MonoBehaviour {
         (sum, pt) => sum + (float)pt.Fitness,
         (sum) => sum / (float)phenotypes.Count);
 
-      var meanAdjustedFitness = phenotypes.Aggregate(0.0f,
-        (sum, pt) => sum + (float)pt.AdjustedFitness,
-        (sum) => sum / (float)phenotypes.Count);
-
-      // standard deviation:
-      // take the square root of the average of the squared deviations of the values from their average value
-      var stdevAdjustedFitness = phenotypes.Aggregate(0.0f,
-        (sum, pt) => sum + Mathf.Pow(pt.AdjustedFitness - meanAdjustedFitness, 2.0f),
-        (sum) => Mathf.Sqrt(sum / (float)phenotypes.Count));
-
       var stdevFitness = phenotypes.Aggregate(0.0f,
         (sum, pt) => sum + Mathf.Pow(pt.Fitness - meanFitness, 2.0f),
         (sum) => Mathf.Sqrt(sum / (float)phenotypes.Count));
@@ -185,6 +175,34 @@ public class EvolutionBehaviour : MonoBehaviour {
         best.Genotype.NeuronCount,
         best.Genotype.SynapseCount);
 
+      elitesLog.WriteLine(string.Join(",", new string[]{
+        generation.ToString(),
+        best.Fitness.ToString(),
+        best.BestDuration.ToString(),
+        JSON.Serialize(best.Genotype.ToJSON()),
+      }));
+
+      species = speciation.Speciate(species, phenotypes.ToArray());
+
+      var adjusted = phenotypes.OrderByDescending(pt => pt.AdjustedFitness).First();
+      Debug.LogFormat("[{0}] Best Adjusted Fitness: {1} ({2}), Best Duration: {3}s ({4}, {5})",
+        generation, adjusted.AdjustedFitness, adjusted.Fitness, adjusted.BestDuration,
+        adjusted.Genotype.NeuronCount,
+        adjusted.Genotype.SynapseCount);
+
+      Debug.LogFormat("[{0}] Species Count: {1} (Threshold: {2})",
+        generation, species.Length, speciation.DistanceThreshold);
+
+      var meanAdjustedFitness = phenotypes.Aggregate(0.0f,
+        (sum, pt) => sum + (float)pt.AdjustedFitness,
+        (sum) => sum / (float)phenotypes.Count);
+
+      // standard deviation:
+      // take the square root of the average of the squared deviations of the values from their average value
+      var stdevAdjustedFitness = phenotypes.Aggregate(0.0f,
+        (sum, pt) => sum + Mathf.Pow(pt.AdjustedFitness - meanAdjustedFitness, 2.0f),
+        (sum) => Mathf.Sqrt(sum / (float)phenotypes.Count));
+
       generationLog.WriteLine(new []{
         generation,
         best.Fitness,
@@ -195,24 +213,6 @@ public class EvolutionBehaviour : MonoBehaviour {
         meanNeuronCount, stdevNeuronCount,
         meanSynapseCount, stdevSynapseCount
       }.Stringify());
-
-      elitesLog.WriteLine(string.Join(",", new string[]{
-        generation.ToString(),
-        best.Fitness.ToString(),
-        best.BestDuration.ToString(),
-        JSON.Serialize(best.Genotype.ToJSON()),
-      }));
-
-      species = speciation.Speciate(species, phenotypes.ToArray());
-
-      var adjusted = phenotypes.OrderBy(pt => pt.AdjustedFitness).First();
-      Debug.LogFormat("[{0}] Best Adjusted Fitness: {1}, Best Duration: {2}s ({3}, {4})",
-        generation, adjusted.Fitness, adjusted.BestDuration,
-        adjusted.Genotype.NeuronCount,
-        adjusted.Genotype.SynapseCount);
-
-      Debug.LogFormat("[{0}] Species Count: {1} (Threshold: {2})",
-        generation, species.Length, speciation.DistanceThreshold);
 
       foreach (var sp in species) {
         speciesLog.WriteLine(new []{
