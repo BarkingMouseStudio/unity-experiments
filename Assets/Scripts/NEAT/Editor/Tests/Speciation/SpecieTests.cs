@@ -43,7 +43,8 @@ namespace NEAT {
         pt.AdjustedFitness = pt.Fitness / specie.Count;
       }
 
-      Assert.AreEqual(0.001f, specie.MeanFitness, 0.1f);
+      Assert.AreEqual(1.0f, specie.MeanFitness, 0.001f);
+      Assert.AreEqual(0.01f, specie.MeanAdjustedFitness, 0.001f);
       Assert.AreEqual(100, specie.Count);
     }
   }
