@@ -100,7 +100,8 @@ public class EvaluationBehaviour : MonoBehaviour {
     var xDot = wheel.velocity.magnitude;
 
     // End if it fell over
-    if (NumberHelper.Between(thetaLower, -190.0f, -170.0f)) {
+    if (NumberHelper.Between(thetaLower, -190.0f, -170.0f) ||
+        NumberHelper.Between(thetaUpper, -190.0f, -170.0f)) {
       EndTrial();
       return;
     }
