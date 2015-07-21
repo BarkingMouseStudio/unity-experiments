@@ -72,20 +72,16 @@ namespace NEAT {
 
       // Adjust each species' phenotypes' fitness
       foreach (var specie in speciesNext) {
-        var multiplier = 1.0f + ((float)specie.Count / (float)phenotypes.Length);
-        Assert.IsTrue(multiplier >= 1.0f,
-          "Must penalize phenotypes of large species");
-
         foreach (var phenotype in specie) {
-          phenotype.AdjustedFitness = phenotype.Fitness * multiplier;
-          Assert.IsTrue(phenotype.AdjustedFitness >= phenotype.Fitness,
+          phenotype.AdjustedFitness = (1.0f - phenotype.Fitness) / (float)specie.Count;
+          Assert.IsTrue(phenotype.AdjustedFitness <= phenotype.Fitness,
             string.Format("Must penalize phenotypes of large species.\n" +
-            "Adjusted Fitness: {0}, Fitness: {1}, Species Size: {2}, Multiplier: {3}",
-            phenotype.AdjustedFitness, phenotype.Fitness, specie.Count, multiplier));
+            "Adjusted Fitness: {0}, Fitness: {1}, Species Size: {2}",
+            phenotype.AdjustedFitness, phenotype.Fitness, specie.Count));
         }
       }
 
-      return speciesNext.OrderBy(sp => sp.MeanFitness).ToArray();
+      return speciesNext.OrderByDescending(sp => sp.MeanAdjustedFitness).ToArray();
     }
   }
 }
