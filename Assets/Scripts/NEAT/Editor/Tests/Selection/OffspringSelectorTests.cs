@@ -37,6 +37,11 @@ namespace NEAT {
       var distanceMetric = new NEAT.DistanceMetric(0.0f, 0.0f, 35.0f);
       var speciation = new NEAT.Speciation(10, 50.0f, 0.2f, distanceMetric);
       species = speciation.Speciate(new NEAT.Specie[0], phenotypes);
+
+      // Override adjusted fitness
+      foreach (var pt in phenotypes) {
+        pt.AdjustedFitness = 0.5f;
+      }
     }
 
     [Test]
