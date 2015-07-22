@@ -10,6 +10,9 @@ namespace NEAT {
 
     private readonly int speciesId;
     private readonly Genotype representative;
+    private int age;
+    private int bestAge;
+    private float bestMeanAdjustedFitness;
 
     public int SpeciesId {
       get {
@@ -53,9 +56,40 @@ namespace NEAT {
       }
     }
 
-    public Specie(int speciesId, Genotype representative) : base() {
+    public int Age {
+      get {
+        return age;
+      }
+    }
+
+    public int BestAge {
+      get {
+        return bestAge;
+      }
+    }
+
+    public float BestMeanAdjustedFitness {
+      get {
+        return bestMeanAdjustedFitness;
+      }
+    }
+
+    public Specie(int speciesId, Genotype representative, int age, int bestAge, float bestMeanAdjustedFitness) : base() {
       this.speciesId = speciesId;
       this.representative = representative;
+      this.age = age;
+      this.bestAge = bestAge;
+      this.bestMeanAdjustedFitness = bestMeanAdjustedFitness;
+    }
+
+    public Genotype ProduceOffspring(ICrossover crossover) {
+      // Tournament selection
+      // (This should be equivalent or better than truncating lower percent.)
+      var parent1 = this[Random.Range(0, this.Count)];
+      var parent2 = this.Sample(2)
+        .OrderByDescending(pt => pt.AdjustedFitness)
+        .First();
+      return crossover.Crossover(parent1, parent2);
     }
   }
 }

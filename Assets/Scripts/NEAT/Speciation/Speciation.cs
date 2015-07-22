@@ -32,8 +32,15 @@ namespace NEAT {
 
     public Specie[] Speciate(Specie[] species, Phenotype[] phenotypes) {
       // Begin new species
-      var speciesListNext = species.Select(sp =>
-        new Specie(sp.SpeciesId, sp.Representative)).ToList();
+      var speciesListNext = species.Select(sp => {
+        if (sp.MeanAdjustedFitness >= sp.BestMeanAdjustedFitness) {
+          return new Specie(sp.SpeciesId, sp.Representative, sp.Age + 1,
+            sp.Age, sp.MeanAdjustedFitness);
+        } else {
+          return new Specie(sp.SpeciesId, sp.Representative, sp.Age + 1,
+            sp.BestAge, sp.BestMeanAdjustedFitness);
+        }
+      }).ToList();
 
       // Place genotypes
       foreach (var phenotype in phenotypes) {
@@ -51,7 +58,7 @@ namespace NEAT {
 
         // Create a new species for the phenotype if necessary
         if (!foundSpecies) {
-          var spNext = new Specie(nextSpeciesId, phenotype.Genotype);
+          var spNext = new Specie(nextSpeciesId, phenotype.Genotype, 0, 0, 0.0f);
           nextSpeciesId++;
 
           spNext.Add(phenotype);
@@ -73,15 +80,24 @@ namespace NEAT {
       // Adjust each species' phenotypes' fitness
       foreach (var specie in speciesNext) {
         foreach (var phenotype in specie) {
-          phenotype.AdjustedFitness = (1.0f - phenotype.Fitness) / (float)specie.Count;
-          Assert.IsTrue(phenotype.AdjustedFitness <= phenotype.Fitness,
-            string.Format("Must penalize phenotypes of large species.\n" +
-            "Adjusted Fitness: {0}, Fitness: {1}, Species Size: {2}",
-            phenotype.AdjustedFitness, phenotype.Fitness, specie.Count));
+          var adjustedFitness = phenotype.Fitness;
+
+          if (specie.Age - specie.BestAge >= 10) {
+            adjustedFitness *= 0.01f; // 1% penalty
+          }
+
+	        if (specie.Age <= 10) {
+            adjustedFitness *= 1.1f; // 10% bonus
+          }
+
+          adjustedFitness /= (float)specie.Count;
+
+          phenotype.AdjustedFitness = adjustedFitness;
         }
       }
 
-      return speciesNext.OrderByDescending(sp => sp.MeanAdjustedFitness).ToArray();
+      return speciesNext.OrderByDescending(sp => sp.MeanAdjustedFitness)
+        .ToArray();
     }
   }
 }
