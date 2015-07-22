@@ -40,4 +40,14 @@ public static class IEnumerableExtensions {
   public static IEnumerable<T> TakeLast<T>(this IEnumerable<T> source, int N) {
     return source.Skip(Math.Max(0, source.Count() - N));
   }
+
+  public static IEnumerable<T> Sample<T>(this IEnumerable<T> source, int N) {
+    var shuffled = new List<T>(source);
+    shuffled.Shuffle();
+    return shuffled.Take(N);
+  }
+
+  public static bool None<T>(this IEnumerable<T> source, Func<T, bool> predicate) {
+    return !source.Any(predicate);
+  }
 }
