@@ -19,26 +19,14 @@ namespace NEAT {
       var neuronIndexA = Random.Range(0, NetworkIO.inNeuronCount);
       var neuronGeneA = genotype.NeuronGenes.ElementAt(neuronIndexA);
 
-      var candidates = genotype.NeuronGenes.Skip(NetworkIO.inNeuronCount)
-        .Take(NetworkIO.outNeuronCount).ToList();
-      candidates.Shuffle();
-
-      NeuronGene neuronGeneB = default(NeuronGene);
-      bool foundNeuron = false;
-      for (var i = 0; i < candidates.Count; i++) {
-        neuronGeneB = candidates[i];
-
-        var exists = genotype.SynapseGenes.Any(s =>
+      var validNeurons = genotype.NeuronGenes
+        .Skip(NetworkIO.inNeuronCount)
+        .Take(NetworkIO.outNeuronCount)
+        .Where(neuronGeneB => genotype.SynapseGenes.None(s =>
           neuronGeneA.InnovationId == s.fromNeuronId &&
-          neuronGeneB.InnovationId == s.toNeuronId);
+          neuronGeneB.InnovationId == s.toNeuronId));
 
-        if (!exists) {
-          foundNeuron = true;
-          break;
-        }
-      }
-
-      if (foundNeuron) {
+      foreach (var neuronGeneB in validNeurons) {
         var synapseInnovationId = innovations.GetSynapseInnovationId(neuronGeneA.InnovationId, neuronGeneB.InnovationId);
         var synapseGene = SynapseGene.Random(synapseInnovationId, neuronGeneA.InnovationId, neuronGeneB.InnovationId, true);
 
