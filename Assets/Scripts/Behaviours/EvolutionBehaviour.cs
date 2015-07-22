@@ -14,7 +14,7 @@ using NEAT;
 public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
-  private readonly int batchSize = 100;
+  private readonly int batchSize = 50;
 
   IEnumerator EvaluateBatch(int batchIndex, Phenotype[] batch, Orientations orientation) {
     IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
@@ -82,29 +82,20 @@ public class EvolutionBehaviour : MonoBehaviour {
     generationLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/.logs/generations.csv"));
     speciesLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/.logs/species.csv"));
 
-    var populationSize = 300;
+    var populationSize = 150;
     var innovations = new InnovationCollection();
 
     var mutations = new MutationCollection();
     mutations.Add(0.001f, new AddNeuronMutator(innovations)); // 0.1%
-    // mutations.Add(0.001f, new PruneSynapseMutator(0.125f)); // 0.1%
     mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
-    mutations.Add(0.01f, new ConnectSensorMutator(innovations)); // 1%
-    mutations.Add(0.01f, new ToggleSynapseMutator(0.25f));
-    mutations.Add(0.30f, new PerturbNeuronMutator(0.5f, 0.25f)); // 98% vvv
-    mutations.Add(0.30f, new PerturbSynapseMutator(0.5f, 0.25f));
-    mutations.Add(0.10f, new ReplaceNeuronMutator(0.5f));
-    mutations.Add(0.10f, new ReplaceSynapseMutator(0.5f));
-    mutations.Add(0.169f, new NoopMutator());
-
-    // var simplicityMutations = new MutationCollection();
-    // simplicityMutations.Add(0.05f, new PruneSynapseMutator(0.25f)); // 0.1%
-    // simplicityMutations.Add(0.05f, new ToggleSynapseMutator(0.25f));
-    // simplicityMutations.Add(0.20f, new PerturbNeuronMutator(0.25f, 0.25f)); // 98% vvv
-    // simplicityMutations.Add(0.20f, new PerturbSynapseMutator(0.25f, 0.25f));
-    // simplicityMutations.Add(0.20f, new ReplaceNeuronMutator(0.25f));
-    // simplicityMutations.Add(0.20f, new ReplaceSynapseMutator(0.25f));
-    // simplicityMutations.Add(0.128f, new NoopMutator());
+    mutations.Add(0.01f, new PruneSynapseMutator(0.25f)); // 0.1%
+    mutations.Add(0.01f, new ToggleSynapseMutator(0.125f));
+    mutations.Add(0.05f, new ConnectSensorMutator(innovations, 0.125f)); // 1%
+    mutations.Add(0.20f, new PerturbNeuronMutator(0.5f, 0.25f)); // 98% vvv
+    mutations.Add(0.20f, new PerturbSynapseMutator(0.5f, 0.25f));
+    mutations.Add(0.20f, new ReplaceNeuronMutator(0.5f));
+    mutations.Add(0.20f, new ReplaceSynapseMutator(0.5f));
+    mutations.Add(0.159f, new NoopMutator());
 
     var eliteSelector = new EliteSelector();
 
@@ -136,7 +127,7 @@ public class EvolutionBehaviour : MonoBehaviour {
         longest.Genotype.NeuronCount,
         longest.Genotype.SynapseCount);
 
-      var best = phenotypes.OrderBy(pt => pt.Fitness).First();
+      var best = phenotypes.OrderByDescending(pt => pt.Fitness).First();
       Debug.LogFormat("[{0}] Fitness: {1}, Duration: {2}s ({3}, {4}) (Best)",
         generation, best.Fitness, best.BestDuration,
         best.Genotype.NeuronCount,
@@ -230,17 +221,14 @@ public class EvolutionBehaviour : MonoBehaviour {
         }
       }
 
-      var elites = eliteSelector.Select(species, species.Length);
-      Assert.AreEqual(elites.Length, species.Length,
-        "Must select elite from each species");
+      var eliteCount = species.Length;
+      var elites = eliteSelector.Select(species, eliteCount);
 
       var offspringCount = populationSize - elites.Length;
       var offspring = offspringSelector.Select(species, offspringCount);
-      Assert.AreEqual(offspring.Length, offspringCount,
-        "Must produce the correct number of offspring");
 
       var mutationResults = mutations.Mutate(offspring);
-      Debug.LogFormat("[{0}] Mutations: Added Neurons: {1}, Added Synapses: {2}, Perturbed Neurons: {3}, Perturbed Synapses: {4}, Toggled Synapses: {7}, Replaced Neurons: {5}, Replaced Synapses: {6}",
+      Debug.LogFormat("[{0}] Mutations: Added Neurons: {1}, Added Synapses: {2}, Perturbed Neurons: {3}, Perturbed Synapses: {4}, Replaced Neurons: {5}, Replaced Synapses: {6}, Toggled Synapses: {7}",
         generation,
         mutationResults.addedNeurons,
         mutationResults.addedSynapses,
@@ -248,7 +236,9 @@ public class EvolutionBehaviour : MonoBehaviour {
         mutationResults.perturbedSynapses,
         mutationResults.replacedNeurons,
         mutationResults.replacedSynapses,
-        mutationResults.toggledSynapses);
+        mutationResults.toggledSynapses,
+        mutationResults.prunedSynapses,
+        mutationResults.orphanedNeurons);
 
       genotypes = elites.Concat(offspring).ToArray();
       Assert.AreEqual(genotypes.Length, populationSize,
