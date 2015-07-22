@@ -45,19 +45,17 @@ namespace NEAT {
       genotype.NeuronGenes = neuronGenes;
 
       var synapseGenes = new GeneList<SynapseGene>(genotype.SynapseGenes);
-      synapseGene.isEnabled = false;
-      synapseGenes[synapseGene.InnovationId] = synapseGene;
 
       var synapseGene1 = new SynapseGene(innovationId + 0,
         synapseGene.fromNeuronId,
         neuronGene.InnovationId,
-        true, synapseGene.weight);
+        true, 0.5f);
       synapseGenes.Add(synapseGene1);
 
       var synapseGene2 = new SynapseGene(innovationId + 1,
         neuronGene.InnovationId,
         synapseGene.toNeuronId,
-        true, synapseGene.weight);
+        true, 0.5f);
       synapseGenes.Add(synapseGene2);
 
       genotype.SynapseGenes = synapseGenes;
