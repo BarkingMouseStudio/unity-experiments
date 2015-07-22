@@ -14,7 +14,7 @@ namespace NEAT {
       foreach (var t in new GeneEnumerable<T>(a, b)) {
         switch (t.First) {
           case HistoricalGeneTypes.Aligned: // Pick random aligned gene
-            newGenes.Add(Random.value < 0.5f ? a[t.Second] : b[t.Third]);
+            newGenes.Add(Random.value >= 0.5f ? a[t.Second] : b[t.Third]);
             break;
           case HistoricalGeneTypes.DisjointA:
           case HistoricalGeneTypes.ExcessA:
@@ -31,6 +31,10 @@ namespace NEAT {
     }
 
     public Genotype Crossover(Phenotype a, Phenotype b) {
+      if (a == b) {
+        return new Genotype(a.Genotype);
+      }
+
       var aGenotype = new Genotype(a.Genotype);
       var bGenotype = new Genotype(b.Genotype);
       var newNeuronGenes = CrossoverGenes<NeuronGene>(aGenotype.NeuronGenes, bGenotype.NeuronGenes, a.AdjustedFitness, b.AdjustedFitness);
