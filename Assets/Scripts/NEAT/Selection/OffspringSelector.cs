@@ -19,46 +19,35 @@ namespace NEAT {
         (sum, sp) => sum + sp.MeanAdjustedFitness);
     }
 
-    private IEnumerable<Genotype> GetOffspring(Specie specie, int totalOffspringCount, float sumMeanAdjustedFitness) {
-      int speciesOffspringCount = Mathf.CeilToInt((specie.MeanAdjustedFitness / sumMeanAdjustedFitness) * (float)totalOffspringCount);
-
-      return Enumerable.Range(0, speciesOffspringCount).Select(_ => {
-        Phenotype parent1 = specie[Random.Range(0, specie.Count)];
-
-        // If the species is too small to find a parent phenotype then
-        // just clone the first parent genotype.
-        if (specie.Count < 2) {
-          return new Genotype(parent1.Genotype);
-        }
-
-        // // Tournament selection
-        // var parent2 = specie.Sample(2).OrderByDescending(pt => pt.AdjustedFitness).First();
-        // return crossover.Crossover(parent1, parent2);
-
-        while (true) {
-          var parent2 = specie[Random.Range(0, specie.Count)];
-          if (parent2 != parent1) {
-            return crossover.Crossover(parent1, parent2);
-          }
-        }
-      });
+    private IEnumerable<Genotype> GetOffspring(Specie specie, int offspringCount, float sumMeanAdjustedFitness) {
+      var specieProportion = (specie.MeanAdjustedFitness / sumMeanAdjustedFitness) * (float)offspringCount;
+      var specieOffspringCount = Mathf.RoundToInt(specieProportion);
+      return Enumerable.Range(0, specieOffspringCount)
+        .Select(_ => specie.ProduceOffspring(crossover));
     }
 
     public Genotype[] Select(Specie[] species, int offspringCount) {
       var sumMeanAdjustedFitness = GetSumMeanAdjustedFitness(species);
 
-      // Order by best performing => worst performing
-      // Produce eager offspring (with `ceil`)
-      // Take the needed amount
-      var offspring = species.OrderByDescending(s => s.MeanAdjustedFitness)
-        .SelectMany(s => GetOffspring(s, offspringCount, sumMeanAdjustedFitness))
+      var orderedSpecies = species.OrderByDescending(sp => sp.MeanAdjustedFitness)
+        .ToList();
+
+      var offspring = orderedSpecies
+        .SelectMany(sp => GetOffspring(sp, offspringCount, sumMeanAdjustedFitness))
         .Take(offspringCount)
-        .ToArray();
+        .ToList();
 
-      Assert.AreEqual(offspringCount, offspring.Length,
-        "Must return the expected number of offspring");
+      // Fill gap by producing additional offspring from top performers
+      var additionalOffspring = orderedSpecies
+        .Take(offspringCount - offspring.Count)
+        .Select(sp => sp.ProduceOffspring(crossover))
+        .ToList();
+      offspring.AddRange(additionalOffspring);
 
-      return offspring;
+      var selectedOffspring = offspring.ToArray();
+      Assert.AreEqual(offspringCount, selectedOffspring.Length,
+        "Must select the correct number of offspring");
+      return selectedOffspring;
     }
   }
 }
