@@ -8,6 +8,7 @@ using UnityEngine.Assertions;
 // Responsible for marshalling input/output data to/from the neural network.
 public class NetworkIO {
 
+  // TODO: Ports: NetworkIO.ThetaUpperPort.Set(thetaUpper)
   static readonly Range[] angularRanges = Range.From(new double[]{
     -180.0, -150.0, -120.0, -90.0, -75.0, -60.0, -45.0, -30.0, -15.0, -5.0, -1.0,
     0.0,
