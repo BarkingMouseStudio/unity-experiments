@@ -31,7 +31,7 @@ namespace NEAT {
 
     [Test]
     public void TestSpecie() {
-      var specie = new Specie(13, protoGenotype);
+      var specie = new Specie(13, protoGenotype, 0, 0, 0.0f);
 
       for (int i = 0; i < 100; i++) {
         var gt = Genotype.FromPrototype(protoGenotype);
@@ -40,7 +40,7 @@ namespace NEAT {
       }
 
       foreach (var pt in specie) {
-        pt.AdjustedFitness = pt.Fitness / specie.Count;
+        pt.AdjustedFitness = pt.Fitness / (float)specie.Count;
       }
 
       Assert.AreEqual(1.0f, specie.MeanFitness, 0.001f);
