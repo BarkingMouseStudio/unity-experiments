@@ -5,10 +5,6 @@ using System.Linq;
 // Responsible for measuring fitness.
 public class Trial {
 
-  // Evaluation fitness
-  const int minFitnessUpdateCount = 100;
-  const int fitnessHistoryLength = 1000;
-
   const float fitnessDurationWeight = 0.1f;
   const float fitnessHistoryWeight = 0.9f;
 
@@ -17,14 +13,14 @@ public class Trial {
   private readonly float startTime;
   private float endTime;
 
-  private readonly float[] fitnessHistory = new float[fitnessHistoryLength];
+  private readonly float[] fitnessHistory = new float[100];
   private int fitnessHistoryIndex = 0;
   private int fitnessUpdateCount = 0;
 
   public Trial(Orientations orientation, float startTime) {
     this.orientation = orientation;
     this.startTime = startTime;
-    this.fitnessHistory.Fill(1.0f);
+    this.fitnessHistory.Fill(0.0f);
   }
 
   public Orientations Orientation {
@@ -47,25 +43,35 @@ public class Trial {
 
   public float NormalizedFitnessDuration {
     get {
-			return 1.0f - ((float)fitnessUpdateCount / (float)fitnessHistoryLength);
+      return ((float)fitnessUpdateCount) / 1000.0f;
     }
   }
 
   public float NormalizedFitnessHistory {
     get {
-      return fitnessHistory.Aggregate(0.0f,
+      if (fitnessUpdateCount < fitnessHistory.Length) {
+        return 0.0f;
+      }
+
+      var v = fitnessHistory.Aggregate(0.0f,
         (total, next) => total + next,
         (total) => total / fitnessHistory.Length);
+
+      if (v == 0.0f) {
+        return 0.0f;
+      }
+
+      return 0.75f / v;
     }
   }
 
   public float Fitness {
     get {
-      if (fitnessUpdateCount >= minFitnessUpdateCount) {
+      if (fitnessUpdateCount < fitnessHistory.Length) {
+        return 0.0f; // Worst case, didn't live long enough
+      } else {
         return (fitnessDurationWeight * NormalizedFitnessDuration) +
                (fitnessHistoryWeight * NormalizedFitnessHistory);
-      } else {
-        return 1.0f; // Worst case, didn't live long enough
       }
     }
   }
@@ -76,10 +82,10 @@ public class Trial {
       Mathf.Abs(thetaDotLower) * 1.0f +
       Mathf.Abs(thetaUpper) * 1.0f +
       Mathf.Abs(thetaDotUpper) * 1.0f +
-      Mathf.Abs(x) * 30.0f +
-      Mathf.Abs(xDot) * 30.0f;
+      Mathf.Abs(x) * 1.0f +
+      Mathf.Abs(xDot) * 1.0f;
 
-    fitnessHistory[fitnessHistoryIndex] = fitness / (180.0f * 6.0f);
+    fitnessHistory[fitnessHistoryIndex] = fitness;
     fitnessHistoryIndex++;
     fitnessHistoryIndex %= fitnessHistory.Length;
 
