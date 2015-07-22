@@ -16,26 +16,28 @@ namespace NEAT {
     public void Mutate(Genotype genotype, MutationResults results) {
       var prunedSynapses = genotype.SynapseGenes
         .Where(g => !g.isEnabled)
-        .Where(_ => Random.value < p);
+        .Where(_ => Random.value < p)
+        .ToList();
 
-      var synapseGenes = genotype.SynapseGenes.Except(prunedSynapses);
-      genotype.SynapseGenes = new GeneList<SynapseGene>(synapseGenes);
+      var synapseGenes = genotype.SynapseGenes.Except(prunedSynapses)
+        .ToGeneList();
+      genotype.SynapseGenes = synapseGenes;
 
       // An orphan is a neuron with no connecting synapses
       // For each neuron: check if any synapse connects to it
       // Exclude IO neurons
       var orphanedNeurons = genotype.NeuronGenes.Skip(NetworkIO.InitialNeuronCount)
-        .Where(n => {
-          var hasConnections = synapseGenes.Any(s =>
-            s.fromNeuronId == n.InnovationId ||
-            s.toNeuronId == n.InnovationId);
-          return !hasConnections;
-        });
-      var neuronGenes = genotype.NeuronGenes.Except(orphanedNeurons);
-      genotype.NeuronGenes = new GeneList<NeuronGene>(neuronGenes);
+        .Where(g =>
+          synapseGenes.None(s =>
+            s.fromNeuronId == g.InnovationId ||
+            s.toNeuronId == g.InnovationId)).ToList();
 
-      results.orphanedNeurons += orphanedNeurons.Count();
-      results.prunedSynapses += prunedSynapses.Count();
+      var neuronGenes = genotype.NeuronGenes.Except(orphanedNeurons)
+        .ToGeneList();
+      genotype.NeuronGenes = neuronGenes;
+
+      results.orphanedNeurons += orphanedNeurons.Count;
+      results.prunedSynapses += prunedSynapses.Count;
     }
   }
 }
