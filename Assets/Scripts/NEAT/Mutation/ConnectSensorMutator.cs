@@ -10,9 +10,11 @@ namespace NEAT {
   public class ConnectSensorMutator : IMutator {
 
     InnovationCollection innovations;
+    float p;
 
-    public ConnectSensorMutator(InnovationCollection innovations) {
+    public ConnectSensorMutator(InnovationCollection innovations, float p) {
       this.innovations = innovations;
+      this.p = p;
     }
 
     public void Mutate(Genotype genotype, MutationResults results) {
@@ -24,7 +26,8 @@ namespace NEAT {
         .Take(NetworkIO.outNeuronCount)
         .Where(neuronGeneB => genotype.SynapseGenes.None(s =>
           neuronGeneA.InnovationId == s.fromNeuronId &&
-          neuronGeneB.InnovationId == s.toNeuronId));
+          neuronGeneB.InnovationId == s.toNeuronId))
+        .Where(_ => Random.value < p);
 
       foreach (var neuronGeneB in validNeurons) {
         var synapseInnovationId = innovations.GetSynapseInnovationId(neuronGeneA.InnovationId, neuronGeneB.InnovationId);
