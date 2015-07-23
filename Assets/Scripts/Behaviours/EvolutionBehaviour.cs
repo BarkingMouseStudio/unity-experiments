@@ -13,15 +13,18 @@ using NEAT;
 public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
-  private readonly int batchSize = 50;
+  private readonly int batchSize = 100;
 
   IEnumerator EvaluateBatch(int batchIndex, Phenotype[] batch, Orientations orientation) {
     IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
 
-    var layout = new TransformLayout(28.0f, 18.0f, batchSize, Mathf.FloorToInt(Mathf.Sqrt(batchSize)));
+    var layout = new TransformLayout(28.0f, 18.0f, batchSize, Mathf.FloorToInt(Mathf.Sqrt(batchSize)))
+      .GetEnumerator();
 
     foreach (var phenotype in batch) {
-      var t = PoolManager.Pools["Evaluations"].Spawn(prefab, layout.NextPosition(), Quaternion.identity, transform);
+      layout.MoveNext();
+
+      var t = PoolManager.Pools["Evaluations"].Spawn(prefab, layout.Current, Quaternion.identity, transform);
 
       var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
       controllerBehaviour.Network = NetworkIO.FromGenotype(phenotype.Genotype);
@@ -53,8 +56,12 @@ public class EvolutionBehaviour : MonoBehaviour {
   IEnumerator EvaluateBatches(Phenotype[][] batches) {
     int batchIndex = 0;
     foreach (var batch in batches) {
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftLeft));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftRight));
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumLeft));
-      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumRight));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumRight));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
       batchIndex++;
     }
   }
@@ -81,7 +88,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     generationLog = File.CreateText("logs/generations.csv");
     speciesLog = File.CreateText("logs/species.csv");
 
-    var populationSize = 300;
+    var populationSize = 100;
     var innovations = new InnovationCollection();
 
     var mutations = new MutationCollection();
@@ -94,7 +101,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     mutations.Add(0.20f, new PerturbSynapseMutator(0.5f, 0.25f));
     mutations.Add(0.20f, new ReplaceNeuronMutator(0.5f));
     mutations.Add(0.20f, new ReplaceSynapseMutator(0.5f));
-    mutations.Add(0.159f, new NoopMutator()); // TODO: This should be simplier
+    mutations.Add(0.155f, new NoopMutator()); // TODO: This should be simplier
 
     var eliteSelector = new EliteSelector();
 
