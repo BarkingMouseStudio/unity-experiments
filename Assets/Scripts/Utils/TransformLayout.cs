@@ -1,6 +1,8 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
-public class TransformLayout {
+public class TransformLayout : IEnumerable<Vector3> {
 
   private readonly float horizontalSpacing;
   private readonly float verticalSpacing;
@@ -20,11 +22,16 @@ public class TransformLayout {
     this.offset = new Vector3(-width / 2, -height / 2, 0);
   }
 
-  public Vector3 NextPosition() {
-    var x = i % stride;
-    var y = Mathf.Floor(i / stride);
-    i++;
+  IEnumerator IEnumerable.GetEnumerator() {
+    return GetEnumerator();
+  }
 
-    return offset + new Vector3(x * horizontalSpacing, y * verticalSpacing, 0);
+  public IEnumerator<Vector3> GetEnumerator() {
+    while (true) {
+      var x = i % stride;
+      var y = Mathf.Floor(i / stride);
+      i++;
+      yield return offset + new Vector3(x * horizontalSpacing, y * verticalSpacing, 0);
+    }
   }
 }
