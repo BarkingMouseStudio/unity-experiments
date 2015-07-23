@@ -83,13 +83,13 @@ namespace NEAT {
           var adjustedFitness = phenotype.Fitness;
 
           var stagnation = specie.Age - specie.BestAge;
-          if (stagnation >= 10 && stagnation < 50) {
+          if (stagnation >= 10 && stagnation < 100) {
             // age: 10, penalty = 0.9x
             // age: 25, penalty = 0.75x
             // age: 50, penalty = 0.5x
             // age: 75, penalty = 0.25x
             // age: 90, penalty = 0.1x
-            adjustedFitness *= 1.0f - (stagnation / 50.0f); // Up to 100% penalty
+            adjustedFitness *= 1.0f - (stagnation / 100.0f); // Up to 100% penalty
           }
 
 	        if (specie.Age < 10) {
