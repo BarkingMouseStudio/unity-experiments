@@ -39,7 +39,7 @@ namespace NEAT {
 
       if (foundNeuron) {
         var synapseInnovationId = innovations.GetSynapseInnovationId(neuronGeneA.InnovationId, neuronGeneB.InnovationId);
-        var synapseGene = SynapseGene.Random(synapseInnovationId, neuronGeneA.InnovationId, neuronGeneB.InnovationId, true);
+        var synapseGene = new SynapseGene(synapseInnovationId, neuronGeneA.InnovationId, neuronGeneB.InnovationId, true);
 
         var synapseGenes = new GeneList<SynapseGene>(genotype.SynapseGenes);
         synapseGenes.Add(synapseGene);
