@@ -22,8 +22,12 @@ namespace NEAT {
     private IEnumerable<Genotype> GetOffspring(Specie specie, int offspringCount, float sumMeanAdjustedFitness) {
       var specieProportion = (specie.MeanAdjustedFitness / sumMeanAdjustedFitness) * (float)offspringCount;
       var specieOffspringCount = Mathf.RoundToInt(specieProportion);
-      return Enumerable.Range(0, specieOffspringCount)
-        .Select(_ => specie.ProduceOffspring(crossover));
+      if (specieOffspringCount > 0) {
+        return Enumerable.Range(0, specieOffspringCount)
+          .Select(_ => specie.ProduceOffspring(crossover));
+      } else {
+        return new List<Genotype>(0);
+      }
     }
 
     public Genotype[] Select(Specie[] species, int offspringCount) {
