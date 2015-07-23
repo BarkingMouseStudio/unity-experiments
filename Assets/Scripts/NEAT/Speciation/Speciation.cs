@@ -82,12 +82,23 @@ namespace NEAT {
         foreach (var phenotype in specie) {
           var adjustedFitness = phenotype.Fitness;
 
-          if (specie.Age - specie.BestAge >= 10) {
-            adjustedFitness *= 0.01f; // 1% penalty
+          var stagnation = specie.Age - specie.BestAge;
+          if (stagnation >= 10 && stagnation < 50) {
+            // age: 10, penalty = 0.9x
+            // age: 25, penalty = 0.75x
+            // age: 50, penalty = 0.5x
+            // age: 75, penalty = 0.25x
+            // age: 90, penalty = 0.1x
+            adjustedFitness *= 1.0f - (stagnation / 50.0f); // Up to 100% penalty
           }
 
-	        if (specie.Age <= 10) {
-            adjustedFitness *= 1.1f; // 10% bonus
+	        if (specie.Age < 10) {
+            // age: 0, reward = 2x
+            // age: 2, reward = 1.8x
+            // age: 5, reward = 1.5x
+            // age: 8, reward = 1.2x
+            // age: 10, reward = 1x
+            adjustedFitness *= 1.0f + (1.0f - (specie.Age / 10.0f)); // Up to 100% bonus
           }
 
           adjustedFitness /= (float)specie.Count;
