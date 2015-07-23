@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEditor;
 using PathologicalGames;
 using System;
 using System.Collections;
@@ -77,25 +76,25 @@ public class EvolutionBehaviour : MonoBehaviour {
   }
 
   IEnumerator Start() {
-    elitesLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/.logs/elites.csv"));
-    populationLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/.logs/populations.csv"));
-    generationLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/.logs/generations.csv"));
-    speciesLog = File.CreateText(AssetDatabase.GenerateUniqueAssetPath("Assets/.logs/species.csv"));
+    elitesLog = File.CreateText("logs/elites.csv");
+    populationLog = File.CreateText("logs/populations.csv");
+    generationLog = File.CreateText("logs/generations.csv");
+    speciesLog = File.CreateText("logs/species.csv");
 
-    var populationSize = 150;
+    var populationSize = 300;
     var innovations = new InnovationCollection();
 
     var mutations = new MutationCollection();
-    mutations.Add(0.001f, new AddNeuronMutator(innovations)); // 0.1%
+    mutations.Add(0.005f, new AddNeuronMutator(innovations)); // 0.1%
     mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
     mutations.Add(0.01f, new PruneSynapseMutator(0.25f)); // 0.1%
     mutations.Add(0.01f, new ToggleSynapseMutator(0.125f));
-    mutations.Add(0.02f, new ConnectSensorMutator(innovations, 0.125f)); // 1%
+    mutations.Add(0.01f, new ConnectSensorMutator(innovations, 0.125f)); // 1%
     mutations.Add(0.20f, new PerturbNeuronMutator(0.5f, 0.25f)); // 98% vvv
     mutations.Add(0.20f, new PerturbSynapseMutator(0.5f, 0.25f));
     mutations.Add(0.20f, new ReplaceNeuronMutator(0.5f));
     mutations.Add(0.20f, new ReplaceSynapseMutator(0.5f));
-    mutations.Add(0.159f, new NoopMutator());
+    mutations.Add(0.159f, new NoopMutator()); // TODO: This should be simplier
 
     var eliteSelector = new EliteSelector();
 
