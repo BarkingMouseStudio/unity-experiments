@@ -19,4 +19,18 @@ public static class NumberHelper {
   public static bool Between(double x, double min, double max) {
     return x > min && x < max;
   }
+
+  public static double Clamp(double x, double min, double max) {
+    if (x > max) {
+      return max;
+    } else if (x < min) {
+      return min;
+    } else {
+      return x;
+    }
+  }
+
+  public static double Clamp01(double x) {
+    return Clamp(x, 0.0, 1.0);
+  }
 }

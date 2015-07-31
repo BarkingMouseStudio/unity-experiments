@@ -11,15 +11,11 @@ public class ControllerBehaviour : MonoBehaviour {
 
   public TextAsset json;
 
-  private NetworkIO networkIO;
-  public NetworkIO Network {
-    get {
-      return networkIO;
-    }
-    set {
-      networkIO = value;
-    }
-  }
+  public NetworkPorts Network { get; set; }
+
+  float fastSpeed = 250.0f;
+  float mediumSpeed = 50.0f;
+  float slowSpeed = 15.0f;
 
   WheelJoint2D wheelJoint;
   Rigidbody2D upper;
@@ -39,14 +35,23 @@ public class ControllerBehaviour : MonoBehaviour {
       var genotype = NEAT.Genotype.FromJSON(JSON.Deserialize(json.text));
       Assert.AreEqual(JSON.Serialize(genotype.ToJSON()), json.text.Trim(),
         "JSON should be compatible round-trip");
+      Network = NetworkPorts.FromGenotype(genotype);
+    }
+  }
 
-      networkIO = NetworkIO.FromGenotype(genotype);
+  float speed = 0.0f;
+
+  public float Speed {
+    get {
+      return speed;
     }
   }
 
   void OnDespawned() {
+    speed = 0.0f;
+
     // Reset motor speed
-    SetMotorSpeed(0);
+    SetMotorSpeed(speed);
   }
 
   void SetMotorSpeed(float speed) {
@@ -60,19 +65,23 @@ public class ControllerBehaviour : MonoBehaviour {
       return;
     }
 
-    var thetaLower = AngleHelper.GetAngle(lower.rotation);
-    var thetaDotLower = AngleHelper.GetAngle(lower.angularVelocity);
-    var thetaUpper = AngleHelper.GetAngle(upper.rotation);
-    var thetaDotUpper = AngleHelper.GetAngle(upper.angularVelocity);
-    var x = wheel.transform.localPosition.x;
-    var xDot = wheel.velocity.magnitude;
+    speed = 0.0f;
 
-    float speed = 0.0f;
-    if (networkIO != null) {
-      speed = networkIO.Send(
-        thetaLower, thetaDotLower,
-        thetaUpper, thetaDotUpper,
-        x, xDot);
+    if (Network != null) {
+      Network.UpperTheta.Set(AngleHelper.GetAngle(upper.rotation));
+      Network.LowerTheta.Set(AngleHelper.GetAngle(lower.rotation));
+      Network.Position.Set(wheel.transform.localPosition.x);
+
+      Network.Tick();
+
+      speed += (float)Network.SlowForward.Rate * slowSpeed;
+      speed += (float)Network.MediumForward.Rate * mediumSpeed;
+      speed += (float)Network.FastForward.Rate * fastSpeed;
+      speed -= (float)Network.FastBackward.Rate * fastSpeed;
+      speed -= (float)Network.MediumBackward.Rate * mediumSpeed;
+      speed -= (float)Network.SlowBackward.Rate * slowSpeed;
+
+      speed = Mathf.Clamp(speed, -fastSpeed, +fastSpeed);
     }
 
     // Update motor speed

@@ -42,11 +42,15 @@ namespace NEAT {
         .ToList();
 
       // Fill gap by producing additional offspring from top performers
-      var additionalOffspring = orderedSpecies
-        .Take(offspringCount - offspring.Count)
-        .Select(sp => sp.ProduceOffspring(crossover))
-        .ToList();
-      offspring.AddRange(additionalOffspring);
+      var diff = offspringCount - offspring.Count;
+      if (diff > 0) {
+        var additionalOffspring = orderedSpecies
+          .Take(diff)
+          .Select(sp => sp.ProduceOffspring(crossover))
+          .ToList();
+        Debug.LogFormat("Producing {0} additional offspring", additionalOffspring.Count);
+        offspring.AddRange(additionalOffspring);
+      }
 
       var selectedOffspring = offspring.ToArray();
       Assert.AreEqual(offspringCount, selectedOffspring.Length,

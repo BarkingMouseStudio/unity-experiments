@@ -46,17 +46,7 @@ namespace NEAT {
 
     public float Fitness {
       get {
-        if (trials.Count > 0) {
-          // fitness: 0.3, 0.7
-          // avg: 0.5
-          // std: 0.2 (penalty)
-          // fit: 0.7
-          var mean = MeanFitness;
-          var stdev = GetStdDevFitness(mean);
-          return mean + stdev;
-        } else {
-          return 1.0f;
-        }
+        return MeanFitness;
       }
     }
 

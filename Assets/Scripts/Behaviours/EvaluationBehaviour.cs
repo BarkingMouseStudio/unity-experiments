@@ -7,11 +7,11 @@ using System.Linq;
 public class EvaluationBehaviour : MonoBehaviour {
 
   public Orientations orientation;
+  public Rigidbody2D wheel;
 
   Transform cart;
   Rigidbody2D lower;
   Rigidbody2D upper;
-  Rigidbody2D wheel;
 
   Vector3 startPosition;
   float startTime;

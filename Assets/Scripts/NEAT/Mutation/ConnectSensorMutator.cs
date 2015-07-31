@@ -18,12 +18,12 @@ namespace NEAT {
     }
 
     public void Mutate(Genotype genotype, MutationResults results) {
-      var neuronIndexA = Random.Range(0, NetworkIO.inNeuronCount);
+      var neuronIndexA = Random.Range(0, NetworkPorts.inputNeuronCount);
       var neuronGeneA = genotype.NeuronGenes.ElementAt(neuronIndexA);
 
       var validNeurons = genotype.NeuronGenes
-        .Skip(NetworkIO.inNeuronCount)
-        .Take(NetworkIO.outNeuronCount)
+        .Skip(NetworkPorts.inputNeuronCount)
+        .Take(NetworkPorts.outputNeuronCount)
         .Where(neuronGeneB => genotype.SynapseGenes.None(s =>
           neuronGeneA.InnovationId == s.fromNeuronId &&
           neuronGeneB.InnovationId == s.toNeuronId))

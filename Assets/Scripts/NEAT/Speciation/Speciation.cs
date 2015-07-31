@@ -103,7 +103,7 @@ namespace NEAT {
 
           adjustedFitness /= (float)specie.Count;
 
-          phenotype.AdjustedFitness = adjustedFitness;
+          phenotype.AdjustedFitness = Mathf.Max(adjustedFitness, 0.001f);
         }
       }
 

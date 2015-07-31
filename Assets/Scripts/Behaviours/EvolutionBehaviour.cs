@@ -15,6 +15,9 @@ public class EvolutionBehaviour : MonoBehaviour {
   public Transform prefab;
   private readonly int batchSize = 100;
 
+  public delegate void BestEvaluationEvent(EvaluationBehaviour bestEvaluation);
+  public event BestEvaluationEvent BestEvaluation;
+
   IEnumerator EvaluateBatch(int batchIndex, Phenotype[] batch, Orientations orientation) {
     IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
 
@@ -27,7 +30,7 @@ public class EvolutionBehaviour : MonoBehaviour {
       var t = PoolManager.Pools["Evaluations"].Spawn(prefab, layout.Current, Quaternion.identity, transform);
 
       var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
-      controllerBehaviour.Network = NetworkIO.FromGenotype(phenotype.Genotype);
+      controllerBehaviour.Network = NetworkPorts.FromGenotype(phenotype.Genotype);
 
       var evaluationBehaviour = t.GetComponent<EvaluationBehaviour>();
       evaluationBehaviour.Phenotype = phenotype;
@@ -38,7 +41,10 @@ public class EvolutionBehaviour : MonoBehaviour {
 
     // Wait for evaluations to complete
     while (evaluations.Any(ev => !ev.IsComplete)) {
-      yield return new WaitForFixedUpdate();
+      var ordered = evaluations.OrderByDescending(ev => ev.Phenotype.CurrentTrial.Fitness);
+      var best = ordered.First();
+      BestEvaluation(best);
+      yield return new WaitForSeconds(0.1f);
     }
 
     // Cleanup
@@ -56,12 +62,12 @@ public class EvolutionBehaviour : MonoBehaviour {
   IEnumerator EvaluateBatches(Phenotype[][] batches) {
     int batchIndex = 0;
     foreach (var batch in batches) {
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftLeft));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftRight));
+      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftLeft));
+      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftRight));
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumLeft));
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumRight));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
+      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
+      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
       batchIndex++;
     }
   }
@@ -94,9 +100,9 @@ public class EvolutionBehaviour : MonoBehaviour {
     var mutations = new MutationCollection();
     mutations.Add(0.005f, new AddNeuronMutator(innovations)); // 0.1%
     mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
+    mutations.Add(0.01f, new ConnectSensorMutator(innovations, 1.0f)); // 1%
     mutations.Add(0.01f, new PruneSynapseMutator(0.25f)); // 0.1%
     mutations.Add(0.01f, new ToggleSynapseMutator(0.125f));
-    mutations.Add(0.01f, new ConnectSensorMutator(innovations, 0.125f)); // 1%
     mutations.Add(0.20f, new PerturbNeuronMutator(0.5f, 0.25f)); // 98% vvv
     mutations.Add(0.20f, new PerturbSynapseMutator(0.5f, 0.25f));
     mutations.Add(0.20f, new ReplaceNeuronMutator(0.5f));
@@ -111,7 +117,12 @@ public class EvolutionBehaviour : MonoBehaviour {
     var distanceMetric = new DistanceMetric(2.0f, 2.0f, 1.0f);
     var speciation = new Speciation(10, 6.0f, 0.3f, distanceMetric);
 
-    var neuronGenes = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
+    Debug.LogFormat("Initial Neurons: {0}, Input Neurons: {1}, Output Neurons: {2}",
+      NetworkPorts.initialNeuronCount,
+      NetworkPorts.inputNeuronCount,
+      NetworkPorts.outputNeuronCount);
+
+    var neuronGenes = Enumerable.Range(0, NetworkPorts.initialNeuronCount)
       .Select(i => NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
       .ToGeneList();
     var synapseGenes = new GeneList<SynapseGene>();
@@ -234,7 +245,7 @@ public class EvolutionBehaviour : MonoBehaviour {
       var offspring = offspringSelector.Select(species, offspringCount);
 
       var mutationResults = mutations.Mutate(offspring);
-      Debug.LogFormat("[{0}] Mutations: Added Neurons: {1}, Added Synapses: {2}, Perturbed Neurons: {3}, Perturbed Synapses: {4}, Replaced Neurons: {5}, Replaced Synapses: {6}, Toggled Synapses: {7}",
+      Debug.LogFormat("[{0}] Mutations: Added Neurons: {1}, Added Synapses: {2}, Perturbed Neurons: {3}, Perturbed Synapses: {4}, Replaced Neurons: {5}, Replaced Synapses: {6}, Toggled Synapses: {7}, Pruned Synapses: {8}, Orphaned Neurons: {9}",
         generation,
         mutationResults.addedNeurons,
         mutationResults.addedSynapses,
