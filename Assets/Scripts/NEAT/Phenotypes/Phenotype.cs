@@ -26,13 +26,13 @@ namespace NEAT {
 
     public float BestFitness {
       get {
-        return trials.Min(t => t.Fitness);
+        return trials.Max(t => t.Fitness);
       }
     }
 
     public float WorstFitness {
       get {
-        return trials.Max(t => t.Fitness);
+        return trials.Min(t => t.Fitness);
       }
     }
 
@@ -46,7 +46,17 @@ namespace NEAT {
 
     public float Fitness {
       get {
-        return MeanFitness;
+        if (trials.Count > 0) {
+          // fitness: 0.3, 0.7
+          // avg: 0.5
+          // std: 0.2 (penalty)
+          // fit: 0.3
+          var mean = MeanFitness;
+          var stdev = GetStdDevFitness(mean);
+          return Mathf.Clamp01(mean - stdev);
+        } else {
+          return 0.0f;
+        }
       }
     }
 

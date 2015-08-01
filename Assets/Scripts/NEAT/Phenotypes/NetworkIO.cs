@@ -6,7 +6,6 @@ using System.Linq;
 using UnityEngine.Assertions;
 
 // Responsible for marshalling input/output data to/from the neural network.
-// TODO: Ports: NetworkIO.ThetaUpperPort.Set(thetaUpper)
 public class NetworkIO {
 
   static readonly Range[] angularRanges = Range.From(new double[]{
@@ -15,36 +14,16 @@ public class NetworkIO {
     1.0, 5.0, 15.0, 30.0, 45.0, 60.0, 75.0, 90.0, 120.0, 150.0, 180.0,
   });
 
-  // static readonly Range[] angularRanges = Range.From(
-  //   Range.Intervals(-180.0, 180.0, 30.0).Except(Range.Intervals(-90.0, 90.0, 30.0)).ToArray(),
-  //   Range.Intervals(-90.0, 90.0, 15.0).Except(Range.Intervals(-15.0, 15.0, 15.0)).ToArray(),
-  //   Range.Intervals(-15.0, 15.0, 5.0),
-  //   Range.Intervals(-1.0, 1.0, 1.0)
-  // ).Distinct().ToArray();
-
   static readonly Range[] linearRanges = Range.From(new double[]{
     -6.0, -5.0, -4.0, -3.0, -2.0f, -1.0,
     0.0,
     1.0, 2.0, 3.0, 4.0, 5.0, 6.0,
   });
 
-  // static readonly Range[] linearRanges = Range.From(
-  //   Range.Intervals(-6.0, 6.0, 1.0)
-  // ).Distinct().ToArray();
-
   static readonly double[] speeds = new double[]{
     -250.0, -200.0, -150.0, -100.0, -50.0, -25.0, -10.0, -5.0, -1.0, -0.1,
     0.1, 1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 150.0, 200.0, 250.0
   };
-
-  // static readonly double[] speeds =
-  //   Range.Intervals(-0.1, 0.1, 0.1).Concat(
-  //   Range.Intervals(-1.0, 1.0, 1.0)).Concat(
-  //   Range.Intervals(-10.0, 10.0, 5.0)).Concat(
-  //   Range.Intervals(-50.0, 50.0, 25.0)).Concat(
-  //   Range.Intervals(-250.0, 250.0, 50.0)).Distinct()
-  //     .Except(new []{0.0})
-  //     .ToArray();
 
   static readonly Range[] inputRanges;
 

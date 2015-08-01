@@ -13,7 +13,7 @@ using NEAT;
 public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
-  private readonly int batchSize = 100;
+  private readonly int batchSize = 50;
 
   public delegate void BestEvaluationEvent(EvaluationBehaviour bestEvaluation);
   public event BestEvaluationEvent BestEvaluation;
@@ -62,12 +62,12 @@ public class EvolutionBehaviour : MonoBehaviour {
   IEnumerator EvaluateBatches(Phenotype[][] batches) {
     int batchIndex = 0;
     foreach (var batch in batches) {
-      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftLeft));
-      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftRight));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftLeft));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftRight));
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumLeft));
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumRight));
-      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
-      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
       batchIndex++;
     }
   }
@@ -94,13 +94,13 @@ public class EvolutionBehaviour : MonoBehaviour {
     generationLog = File.CreateText("logs/generations.csv");
     speciesLog = File.CreateText("logs/species.csv");
 
-    var populationSize = 100;
+    var populationSize = 150;
     var innovations = new InnovationCollection();
 
     var mutations = new MutationCollection();
     mutations.Add(0.005f, new AddNeuronMutator(innovations)); // 0.1%
     mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
-    mutations.Add(0.01f, new ConnectSensorMutator(innovations, 1.0f)); // 1%
+    mutations.Add(0.01f, new ConnectSensorMutator(innovations, 0.125f)); // 1%
     mutations.Add(0.01f, new PruneSynapseMutator(0.25f)); // 0.1%
     mutations.Add(0.01f, new ToggleSynapseMutator(0.125f));
     mutations.Add(0.20f, new PerturbNeuronMutator(0.5f, 0.25f)); // 98% vvv

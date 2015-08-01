@@ -13,10 +13,6 @@ public class ControllerBehaviour : MonoBehaviour {
 
   public NetworkPorts Network { get; set; }
 
-  float fastSpeed = 250.0f;
-  float mediumSpeed = 50.0f;
-  float slowSpeed = 15.0f;
-
   WheelJoint2D wheelJoint;
   Rigidbody2D upper;
   Rigidbody2D lower;
@@ -74,14 +70,7 @@ public class ControllerBehaviour : MonoBehaviour {
 
       Network.Tick();
 
-      speed += (float)Network.SlowForward.Rate * slowSpeed;
-      speed += (float)Network.MediumForward.Rate * mediumSpeed;
-      speed += (float)Network.FastForward.Rate * fastSpeed;
-      speed -= (float)Network.FastBackward.Rate * fastSpeed;
-      speed -= (float)Network.MediumBackward.Rate * mediumSpeed;
-      speed -= (float)Network.SlowBackward.Rate * slowSpeed;
-
-      speed = Mathf.Clamp(speed, -fastSpeed, +fastSpeed);
+      speed = (float)Network.Speed.Get();
     }
 
     // Update motor speed

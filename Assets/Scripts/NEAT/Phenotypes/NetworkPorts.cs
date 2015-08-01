@@ -9,20 +9,10 @@ using UnityEngine.Assertions;
 public class NetworkPorts {
 
   public readonly NetworkInputPort UpperTheta;
-  // public readonly NetworkInputPort UpperThetaDot;
-
   public readonly NetworkInputPort LowerTheta;
-  // public readonly NetworkInputPort LowerThetaDot;
-
   public readonly NetworkInputPort Position;
-  // public readonly NetworkInputPort Velocity;
 
-  public readonly NetworkSpikeRatePort FastForward;
-  public readonly NetworkSpikeRatePort FastBackward;
-  public readonly NetworkSpikeRatePort MediumForward;
-  public readonly NetworkSpikeRatePort MediumBackward;
-  public readonly NetworkSpikeRatePort SlowForward;
-  public readonly NetworkSpikeRatePort SlowBackward;
+  public readonly NetworkSumOutputPort Speed;
 
   private readonly double[] input;
   private double[] output;
@@ -46,20 +36,24 @@ public class NetworkPorts {
     return rfs.ToArray();
   }
 
+  static readonly double[] speeds = new double[]{
+    -250.0, -200.0, -150.0, -100.0, -50.0, -25.0, -10.0, -5.0, -1.0, -0.1,
+    0.1, 1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 150.0, 200.0, 250.0
+  };
+
   static NetworkPorts() {
     rotation = IntervalHelper(new double[]{
       -180.0, -150.0, -120.0, -90.0, -75.0, -60.0, -45.0, -30.0, -15.0, -5.0, -1.0,
       0.0, 1.0, 5.0, 15.0, 30.0, 45.0, 60.0, 75.0, 90.0, 120.0, 150.0, 180.0,
     });
-    position = EnumerableHelper.Range(-6.0, 6.0, 1.0f)
-      .Select(m => new SignReceptiveField(m, 1.0))
-      .Cast<IReceptiveField>()
-      .ToArray();
 
-    inputNeuronCount =
-      rotation.Length * 2 + position.Length;
-    outputNeuronCount = 6;
+    position = IntervalHelper(new double[]{
+      -6.0, -5.0, -4.0, -3.0, -2.0, -1.0,
+      0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0
+    });
 
+    inputNeuronCount = rotation.Length * 2 + position.Length;
+    outputNeuronCount = speeds.Length;
     initialNeuronCount = inputNeuronCount + outputNeuronCount;
   }
 
@@ -76,29 +70,16 @@ public class NetworkPorts {
     this.output = new double[network.NeuronCount];
 
     var inputs = new Slicer<double>(input);
-    var outputs = new Slicer<double>(output);
-
     UpperTheta = new NetworkInputPort(inputs, rotation);
     LowerTheta = new NetworkInputPort(inputs, rotation);
     Position = new NetworkInputPort(inputs, position);
 
-    FastForward = new NetworkSpikeRatePort(outputs, 1);
-    FastBackward = new NetworkSpikeRatePort(outputs, 1);
-    MediumForward = new NetworkSpikeRatePort(outputs, 1);
-    MediumBackward = new NetworkSpikeRatePort(outputs, 1);
-    SlowForward = new NetworkSpikeRatePort(outputs, 1);
-    SlowBackward = new NetworkSpikeRatePort(outputs, 1);
+    var outputs = new Slice<double>(output, inputNeuronCount, speeds.Length);
+    Speed = new NetworkSumOutputPort(outputs, speeds);
   }
 
   public void Tick() {
     network.Tick(20ul, input, ref output);
-
-    FastForward.Tick();
-    FastBackward.Tick();
-    MediumForward.Tick();
-    MediumBackward.Tick();
-    SlowForward.Tick();
-    SlowBackward.Tick();
   }
 
   public static NetworkPorts FromGenotype(NEAT.Genotype genotype) {

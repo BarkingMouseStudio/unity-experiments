@@ -20,15 +20,7 @@ public class OutputBehaviour : MonoBehaviour {
 
 	void Update() {
 		if (controller.Network != null) {
-	    SetColor(tiles[0], controller.Network.SlowForward.Rate);
-	    SetColor(tiles[1], controller.Network.MediumForward.Rate);
-	    SetColor(tiles[2], controller.Network.FastForward.Rate);
-
-	    SetColor(tiles[3], controller.Network.FastBackward.Rate);
-	    SetColor(tiles[4], controller.Network.MediumBackward.Rate);
-	    SetColor(tiles[5], controller.Network.SlowBackward.Rate);
+    	SetColor(tiles[0], controller.Network.Speed.Get() / 250.0f);
 		}
-
-    SetColor(tiles[6], controller.Speed / 250.0f);
 	}
 }
