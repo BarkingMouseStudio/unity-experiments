@@ -10,7 +10,7 @@ namespace NEAT {
 
     public Genotype[] Select(Specie[] species, int eliteCount) {
       var orderedSpecies = species.OrderByDescending(sp =>
-        sp.MeanAdjustedFitness);
+        sp.BestAdjustedFitness);
 
       var elites = orderedSpecies.Select(sp => {
         var orderedSpecie = sp.OrderByDescending(pt => pt.AdjustedFitness);

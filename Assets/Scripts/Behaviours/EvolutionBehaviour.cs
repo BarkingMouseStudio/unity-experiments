@@ -60,8 +60,8 @@ public class EvolutionBehaviour : MonoBehaviour {
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftRight));
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumLeft));
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumRight));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
+      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
+      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
       batchIndex++;
     }
   }

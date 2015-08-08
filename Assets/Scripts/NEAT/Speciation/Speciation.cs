@@ -33,12 +33,12 @@ namespace NEAT {
     public Specie[] Speciate(Specie[] species, Phenotype[] phenotypes) {
       // Begin new species
       var speciesListNext = species.Select(sp => {
-        if (sp.MeanAdjustedFitness >= sp.BestMeanAdjustedFitness) {
+        if (sp.BestAdjustedFitness >= sp.PastBestAdjustedFitness) {
           return new Specie(sp.SpeciesId, sp.Representative, sp.Age + 1,
-            sp.Age, sp.MeanAdjustedFitness);
+            sp.Age, sp.BestAdjustedFitness);
         } else {
           return new Specie(sp.SpeciesId, sp.Representative, sp.Age + 1,
-            sp.BestAge, sp.BestMeanAdjustedFitness);
+            sp.BestAge, sp.PastBestAdjustedFitness);
         }
       }).ToList();
 
@@ -107,7 +107,7 @@ namespace NEAT {
         }
       }
 
-      return speciesNext.OrderByDescending(sp => sp.MeanAdjustedFitness)
+      return speciesNext.OrderByDescending(sp => sp.BestAdjustedFitness)
         .ToArray();
     }
   }
