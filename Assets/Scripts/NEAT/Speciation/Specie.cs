@@ -12,7 +12,7 @@ namespace NEAT {
     private readonly Genotype representative;
     private int age;
     private int bestAge;
-    private float bestMeanAdjustedFitness;
+    private float pastBestAdjustedFitness;
 
     public int SpeciesId {
       get {
@@ -30,7 +30,7 @@ namespace NEAT {
 
     public float BestFitness {
       get {
-        return this.Min(pt => pt.Fitness);
+        return this.Max(pt => pt.Fitness);
       }
     }
 
@@ -47,6 +47,12 @@ namespace NEAT {
         return this.Aggregate(0.0f,
           (sum, pt) => sum + pt.AdjustedFitness,
           (sum) => sum / (float)this.Count);
+      }
+    }
+
+    public float BestAdjustedFitness {
+      get {
+        return this.Max(pt => pt.AdjustedFitness);
       }
     }
 
@@ -68,25 +74,29 @@ namespace NEAT {
       }
     }
 
-    public float BestMeanAdjustedFitness {
+    public float PastBestAdjustedFitness {
       get {
-        return bestMeanAdjustedFitness;
+        return pastBestAdjustedFitness;
       }
     }
 
-    public Specie(int speciesId, Genotype representative, int age, int bestAge, float bestMeanAdjustedFitness) : base() {
+    public Specie(int speciesId, Genotype representative, int age, int bestAge, float pastBestAdjustedFitness) : base() {
       this.speciesId = speciesId;
       this.representative = representative;
       this.age = age;
       this.bestAge = bestAge;
-      this.bestMeanAdjustedFitness = bestMeanAdjustedFitness;
+      this.pastBestAdjustedFitness = pastBestAdjustedFitness;
     }
 
     public Genotype ProduceOffspring(ICrossover crossover) {
+      // Truncate lower 20%
+      var candidates = this.OrderByDescending(pt => pt.AdjustedFitness)
+        .Take(Mathf.CeilToInt(this.Count * 0.8f))
+        .ToList();
+
       // Tournament selection
-      // (This should be equivalent or better than truncating lower percent.)
-      var parent1 = this[Random.Range(0, this.Count)];
-      var parent2 = this.Sample(2)
+      var parent1 = candidates[Random.Range(0, candidates.Count)];
+      var parent2 = candidates.Sample(2)
         .OrderByDescending(pt => pt.AdjustedFitness)
         .First();
       return crossover.Crossover(parent1, parent2);

@@ -66,8 +66,8 @@ public class EvolutionBehaviour : MonoBehaviour {
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftRight));
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumLeft));
       yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumRight));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
+      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
+      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
       batchIndex++;
     }
   }
@@ -134,9 +134,18 @@ public class EvolutionBehaviour : MonoBehaviour {
     var species = new Specie[0];
     var generation = 0;
 
+    var elitePhenotypes = new List<Phenotype>();
+    var offspringPhenotypes = genotypes.Select(gt => new Phenotype(gt)).ToList();
+
     while (true) {
-      var phenotypes = genotypes.Select(gt => new Phenotype(gt)).ToList();
-      yield return StartCoroutine(EvaluatePopulation(phenotypes));
+      yield return StartCoroutine(EvaluatePopulation(offspringPhenotypes));
+
+      var phenotypes = new List<Phenotype>(elitePhenotypes.Count + offspringPhenotypes.Count);
+      phenotypes.AddRange(elitePhenotypes);
+      phenotypes.AddRange(offspringPhenotypes);
+
+      Assert.AreEqual(phenotypes.Count, populationSize,
+        "Population size must remain constant");
 
       var longest = phenotypes.OrderByDescending(pt => pt.BestDuration).First();
       Debug.LogFormat("[{0}] Fitness: {1}, Duration: {2}s ({3}, {4}) (Longest)",
@@ -239,12 +248,12 @@ public class EvolutionBehaviour : MonoBehaviour {
       }
 
       var eliteCount = species.Length;
-      var elites = eliteSelector.Select(species, eliteCount);
+      elitePhenotypes = eliteSelector.Select(species, eliteCount);
 
-      var offspringCount = populationSize - elites.Length;
-      var offspring = offspringSelector.Select(species, offspringCount);
+      var offspringCount = populationSize - elitePhenotypes.Count;
+      var offspringGenotypes = offspringSelector.Select(species, offspringCount);
 
-      var mutationResults = mutations.Mutate(offspring);
+      var mutationResults = mutations.Mutate(offspringGenotypes);
       Debug.LogFormat("[{0}] Mutations: Added Neurons: {1}, Added Synapses: {2}, Perturbed Neurons: {3}, Perturbed Synapses: {4}, Replaced Neurons: {5}, Replaced Synapses: {6}, Toggled Synapses: {7}, Pruned Synapses: {8}, Orphaned Neurons: {9}",
         generation,
         mutationResults.addedNeurons,
@@ -257,9 +266,7 @@ public class EvolutionBehaviour : MonoBehaviour {
         mutationResults.prunedSynapses,
         mutationResults.orphanedNeurons);
 
-      genotypes = elites.Concat(offspring).ToArray();
-      Assert.AreEqual(genotypes.Length, populationSize,
-        "Population size must remain constant");
+      offspringPhenotypes = offspringGenotypes.Select(gt => new Phenotype(gt)).ToList();
 
       generation++;
 

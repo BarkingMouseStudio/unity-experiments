@@ -38,25 +38,19 @@ namespace NEAT {
 
     public float MeanFitness {
       get {
-        return trials.Aggregate(0.0f,
-          (sum, t) => sum + t.Fitness,
-          (sum) => sum / trials.Count);
+        if (trials.Count > 0) {
+          return trials.Aggregate(0.0f,
+            (sum, t) => sum + t.Fitness,
+            (sum) => sum / trials.Count);
+        } else {
+          return 0.0f;
+        }
       }
     }
 
     public float Fitness {
       get {
-        if (trials.Count > 0) {
-          // fitness: 0.3, 0.7
-          // avg: 0.5
-          // std: 0.2 (penalty)
-          // fit: 0.3
-          var mean = MeanFitness;
-          var stdev = GetStdDevFitness(mean);
-          return Mathf.Clamp01(mean - stdev);
-        } else {
-          return 0.0f;
-        }
+        return MeanFitness;
       }
     }
 

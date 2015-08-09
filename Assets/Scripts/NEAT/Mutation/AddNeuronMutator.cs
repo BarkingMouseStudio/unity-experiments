@@ -34,7 +34,8 @@ namespace NEAT {
       );
 
       // If the genotype already contains the innovation id, bail
-      if (genotype.SynapseGenes.Contains(innovationId)) {
+      if (genotype.NeuronGenes.Contains(innovationId) ||
+          genotype.SynapseGenes.Contains(innovationId)) {
         return;
       }
 
