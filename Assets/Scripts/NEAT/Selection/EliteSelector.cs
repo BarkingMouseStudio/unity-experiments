@@ -6,18 +6,17 @@ using System.Linq;
 
 namespace NEAT {
 
-  public class EliteSelector : ISelector {
+  public class EliteSelector {
 
-    public Genotype[] Select(Specie[] species, int eliteCount) {
-      var orderedSpecies = species.OrderByDescending(sp =>
-        sp.BestAdjustedFitness);
+    public List<Phenotype> Select(Specie[] species, int eliteCount) {
+      var orderedSpecies = species.OrderByDescending(sp => sp.BestFitness);
 
       var elites = orderedSpecies.Select(sp => {
-        var orderedSpecie = sp.OrderByDescending(pt => pt.AdjustedFitness);
-        return new Genotype(orderedSpecie.First().Genotype);
-      }).Take(eliteCount).ToArray();
+        var orderedSpecie = sp.OrderByDescending(pt => pt.Fitness);
+        return orderedSpecie.First();
+      }).Take(eliteCount).ToList();
 
-      Assert.AreEqual(eliteCount, elites.Length,
+      Assert.AreEqual(eliteCount, elites.Count,
         "Must return the expected number of elites");
 
       return elites;

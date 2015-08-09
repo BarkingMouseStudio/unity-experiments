@@ -30,7 +30,7 @@ namespace NEAT {
 
     public float BestFitness {
       get {
-        return this.Min(pt => pt.Fitness);
+        return this.Max(pt => pt.Fitness);
       }
     }
 

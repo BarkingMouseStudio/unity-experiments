@@ -43,7 +43,7 @@ namespace NEAT {
     public void TestEliteSelector() {
       var eliteSelector = new EliteSelector();
       var elites = eliteSelector.Select(species, species.Length);
-      Assert.AreEqual(species.Length, elites.Length);
+      Assert.AreEqual(species.Length, elites.Count);
     }
   }
 }
