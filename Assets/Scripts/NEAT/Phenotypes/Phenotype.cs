@@ -26,13 +26,13 @@ namespace NEAT {
 
     public float BestFitness {
       get {
-        return trials.Min(t => t.Fitness);
+        return trials.Max(t => t.Fitness);
       }
     }
 
     public float WorstFitness {
       get {
-        return trials.Max(t => t.Fitness);
+        return trials.Min(t => t.Fitness);
       }
     }
 

@@ -6,45 +6,19 @@ using System.Linq;
 using UnityEngine.Assertions;
 
 // Responsible for marshalling input/output data to/from the neural network.
-// TODO: Ports: NetworkIO.ThetaUpperPort.Set(thetaUpper)
 public class NetworkIO {
 
   static readonly Range[] angularRanges = Range.From(new double[]{
-    -180.0, -150.0, -120.0, -90.0, -75.0, -60.0, -45.0, -30.0, -15.0, -5.0, -1.0,
-    0.0,
-    1.0, 5.0, 15.0, 30.0, 45.0, 60.0, 75.0, 90.0, 120.0, 150.0, 180.0,
+    -180.0, -150.0, -120.0, -90.0, -75.0, -60.0, -45.0, -30.0, -15.0, -5.0, -1.0, 0.0, 1.0, 5.0, 15.0, 30.0, 45.0, 60.0, 75.0, 90.0, 120.0, 150.0, 180.0,
   });
-
-  // static readonly Range[] angularRanges = Range.From(
-  //   Range.Intervals(-180.0, 180.0, 30.0).Except(Range.Intervals(-90.0, 90.0, 30.0)).ToArray(),
-  //   Range.Intervals(-90.0, 90.0, 15.0).Except(Range.Intervals(-15.0, 15.0, 15.0)).ToArray(),
-  //   Range.Intervals(-15.0, 15.0, 5.0),
-  //   Range.Intervals(-1.0, 1.0, 1.0)
-  // ).Distinct().ToArray();
 
   static readonly Range[] linearRanges = Range.From(new double[]{
-    -6.0, -5.0, -4.0, -3.0, -2.0f, -1.0,
-    0.0,
-    1.0, 2.0, 3.0, 4.0, 5.0, 6.0,
+    -6.0, -5.0, -4.0, -3.0, -2.0f, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0,
   });
 
-  // static readonly Range[] linearRanges = Range.From(
-  //   Range.Intervals(-6.0, 6.0, 1.0)
-  // ).Distinct().ToArray();
-
   static readonly double[] speeds = new double[]{
-    -250.0, -200.0, -150.0, -100.0, -50.0, -25.0, -10.0, -5.0, -1.0, -0.1,
-    0.1, 1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 150.0, 200.0, 250.0
+    -250.0, -200.0, -150.0, -100.0, -50.0, -25.0, -10.0, -5.0, -1.0, -0.1, 0.1, 1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 150.0, 200.0, 250.0
   };
-
-  // static readonly double[] speeds =
-  //   Range.Intervals(-0.1, 0.1, 0.1).Concat(
-  //   Range.Intervals(-1.0, 1.0, 1.0)).Concat(
-  //   Range.Intervals(-10.0, 10.0, 5.0)).Concat(
-  //   Range.Intervals(-50.0, 50.0, 25.0)).Concat(
-  //   Range.Intervals(-250.0, 250.0, 50.0)).Distinct()
-  //     .Except(new []{0.0})
-  //     .ToArray();
 
   static readonly Range[] inputRanges;
 
@@ -79,12 +53,11 @@ public class NetworkIO {
       angularRanges.Length * 2 +
       linearRanges.Length * 1
     );
+
     inputRanges.AddRange(angularRanges); // theta lower
-    // inputRanges.AddRange(angularRanges); // theta dot lower
     inputRanges.AddRange(angularRanges); // theta upper
-    // inputRanges.AddRange(angularRanges); // theta dot upper
     inputRanges.AddRange(linearRanges); // x
-    // inputRanges.AddRange(linearRanges); // x dot
+
     NetworkIO.inputRanges = inputRanges.ToArray();
 
     Assert.AreEqual(inputRanges.Count, inNeuronCount,
@@ -107,7 +80,7 @@ public class NetworkIO {
     var neuronGenes = genotype.NeuronGenes.ToList();
     var synapseGenes = genotype.SynapseGenes.ToList();
 
-    var network = new Neural.Network();
+    var network = new Neural.Network(20ul);
 
     foreach (var neuronGene in neuronGenes) {
       float a = NumberHelper.Scale(neuronGene.a, 0.02f, 0.1f); // 0.1
@@ -116,7 +89,7 @@ public class NetworkIO {
       float d = NumberHelper.Scale(neuronGene.d, 0.05f, 8.0f); // 2.0
 
       try {
-	      network.AddNeuron(a, b, c, d);
+	      network.AddNeuron(Neural.IzhikevichConfig.Of(a, b, c, d));
       } catch (Exception e) {
         Debug.LogException(e);
       }
@@ -137,7 +110,7 @@ public class NetworkIO {
       float weight = NumberHelper.Scale(synapseGene.weight, -40.0f, 40.0f);
 
       try {
-        network.AddSynapse((ulong)fromNeuronId, (ulong)toNeuronId, weight, -40.0f, 40.0f);
+        network.AddSynapse((ulong)fromNeuronId, (ulong)toNeuronId, Neural.STDPConfig.Of(weight, -40.0f, 40.0f));
       } catch (Exception e) {
         Debug.LogException(e);
       }
