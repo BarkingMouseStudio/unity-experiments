@@ -83,10 +83,17 @@ public class EvolutionBehaviour : MonoBehaviour {
   }
 
   IEnumerator Start() {
-    elitesLog = File.CreateText("logs/elites.csv");
-    populationLog = File.CreateText("logs/populations.csv");
-    generationLog = File.CreateText("logs/generations.csv");
-    speciesLog = File.CreateText("logs/species.csv");
+    var logPath = string.Format("logs_{0}", DateTime.Now.Ticks);
+    Debug.LogFormat("Logging to {0}", logPath);
+
+    if (!Directory.Exists(logPath)) {
+      Directory.CreateDirectory(logPath);
+    }
+
+    elitesLog = File.CreateText(Path.Combine(logPath, "elites.csv"));
+    populationLog = File.CreateText(Path.Combine(logPath, "populations.csv"));
+    generationLog = File.CreateText(Path.Combine(logPath, "generations.csv"));
+    speciesLog = File.CreateText(Path.Combine(logPath, "species.csv"));
 
     var populationSize = 100;
     var innovations = new InnovationCollection();
@@ -217,6 +224,7 @@ public class EvolutionBehaviour : MonoBehaviour {
         speciesLog.WriteLine(new []{
           generation,
           sp.SpeciesId, sp.Count,
+          sp.BestFitness,
           sp.MeanFitness,
           sp.MeanAdjustedFitness,
           sp.MeanComplexity,
