@@ -7,10 +7,9 @@ public class NameBehaviour : MonoBehaviour {
 
   static readonly string[] names = new string[]{"Ben", "Jim", "Bob", "Sue", "Amy", "Ann", "Sam", "Dan", "George", "Ed", "Joe"};
 
-  Text nameField;
+  public Text nameField;
 
 	void Awake() {
-    nameField = transform.Find("Canvas/Text").GetComponent<Text>();
     nameField.text = names[Random.Range(0, names.Length)];
 	}
 
