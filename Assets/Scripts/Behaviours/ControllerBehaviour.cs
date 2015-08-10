@@ -28,6 +28,12 @@ public class ControllerBehaviour : MonoBehaviour {
 
   EvaluationBehaviour evaluation;
 
+  float speed = 0.0f;
+
+  public float Speed {
+    get { return speed; }
+  }
+
   void Awake() {
     upper = transform.Find("Cart/Upper").GetComponent<Rigidbody2D>();
     lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
@@ -45,20 +51,16 @@ public class ControllerBehaviour : MonoBehaviour {
   }
 
   void OnDespawned() {
-    this.speed = 0.0f;
-
     // Reset motor speed
-    SetMotorSpeed(this.speed);
+    speed = 0.0f;
+    SetMotorSpeed(speed);
   }
-
 
   void SetMotorSpeed(float speed) {
     var motor = wheelJoint.motor;
 	  motor.motorSpeed = speed;
   	wheelJoint.motor = motor;
   }
-
-  public float speed = 0.0f;
 
 	void FixedUpdate() {
     if (evaluation.IsComplete) {
@@ -72,15 +74,14 @@ public class ControllerBehaviour : MonoBehaviour {
     var x = wheel.transform.localPosition.x;
     var xDot = wheel.velocity.magnitude;
 
-    this.speed = 0.0f;
     if (networkIO != null) {
-      this.speed = networkIO.Send(
+      speed = networkIO.Send(
         thetaLower, thetaDotLower,
         thetaUpper, thetaDotUpper,
         x, xDot);
-    }
 
-    // Update motor speed
-    SetMotorSpeed(this.speed);
+      // Update motor speed
+      SetMotorSpeed(speed);
+    }
 	}
 }
