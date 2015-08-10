@@ -15,6 +15,9 @@ public class EvolutionBehaviour : MonoBehaviour {
   public Transform prefab;
   private readonly int batchSize = 100;
 
+  public delegate void BestEvaluationEvent(EvaluationBehaviour bestEvaluation);
+  public event BestEvaluationEvent BestEvaluation;
+
   IEnumerator EvaluateBatch(int batchIndex, Phenotype[] batch, Orientations orientation) {
     IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
 
@@ -38,6 +41,11 @@ public class EvolutionBehaviour : MonoBehaviour {
 
     // Wait for evaluations to complete
     while (evaluations.Any(ev => !ev.IsComplete)) {
+      if (BestEvaluation != null) {
+        var ordered = evaluations.OrderByDescending(ev => ev.Phenotype.CurrentTrial.Fitness);
+        var best = ordered.First();
+        BestEvaluation(best);
+      }
       yield return new WaitForFixedUpdate();
     }
 
