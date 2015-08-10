@@ -101,9 +101,9 @@ public class EvolutionBehaviour : MonoBehaviour {
     var mutations = new MutationCollection();
     mutations.Add(0.005f, new AddNeuronMutator(innovations)); // 0.1%
     mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
+    mutations.Add(0.01f, new ConnectSensorMutator(innovations, 0.125f)); // 1%
     mutations.Add(0.01f, new PruneSynapseMutator(0.25f)); // 0.1%
     mutations.Add(0.01f, new ToggleSynapseMutator(0.125f));
-    mutations.Add(0.01f, new ConnectSensorMutator(innovations, 0.125f)); // 1%
     mutations.Add(0.20f, new PerturbNeuronMutator(0.5f, 0.25f)); // 98% vvv
     mutations.Add(0.20f, new PerturbSynapseMutator(0.5f, 0.25f));
     mutations.Add(0.20f, new ReplaceNeuronMutator(0.5f));
@@ -117,6 +117,9 @@ public class EvolutionBehaviour : MonoBehaviour {
 
     var distanceMetric = new DistanceMetric(2.0f, 2.0f, 1.0f);
     var speciation = new Speciation(10, 6.0f, 0.3f, distanceMetric);
+
+    Debug.LogFormat("Initial Neurons: {0}, In Neurons: {1}, Out Neurons: {2}",
+      NetworkIO.InitialNeuronCount, NetworkIO.inNeuronCount, NetworkIO.outNeuronCount);
 
     var neuronGenes = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
       .Select(i => NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
@@ -254,7 +257,7 @@ public class EvolutionBehaviour : MonoBehaviour {
       var offspringGenotypes = offspringSelector.Select(species, offspringCount);
 
       var mutationResults = mutations.Mutate(offspringGenotypes);
-      Debug.LogFormat("[{0}] Mutations: Added Neurons: {1}, Added Synapses: {2}, Perturbed Neurons: {3}, Perturbed Synapses: {4}, Replaced Neurons: {5}, Replaced Synapses: {6}, Toggled Synapses: {7}",
+      Debug.LogFormat("[{0}] Mutations: Added Neurons: {1}, Added Synapses: {2}, Perturbed Neurons: {3}, Perturbed Synapses: {4}, Replaced Neurons: {5}, Replaced Synapses: {6}, Toggled Synapses: {7}, Pruned Synapses: {8}, Orphaned Neurons: {9}",
         generation,
         mutationResults.addedNeurons,
         mutationResults.addedSynapses,
