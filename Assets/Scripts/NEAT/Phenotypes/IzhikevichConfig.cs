@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Neural {
 
+  [StructLayout(LayoutKind.Sequential)]
   public struct IzhikevichConfig {
     public double v;
     public double u;
@@ -12,6 +13,8 @@ namespace Neural {
     public double d;
     public double e;
     public double f;
+
+    [MarshalAs(UnmanagedType.I1)]
     public bool is_accomodation;
 
     [DllImport("libneural")]
@@ -28,8 +31,10 @@ namespace Neural {
       return config;
     }
 
-    public static IzhikevichConfig Default() {
-      return GetIzhikevichConfig();
+    public static IzhikevichConfig Default {
+      get {
+        return GetIzhikevichConfig();
+      }
     }
   }
 }

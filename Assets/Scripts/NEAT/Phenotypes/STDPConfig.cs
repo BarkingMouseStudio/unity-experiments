@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Neural {
 
+  [StructLayout(LayoutKind.Sequential)]
   public struct STDPConfig {
     public double weight;
     public double min;
@@ -13,8 +14,13 @@ namespace Neural {
     public double tau_neg;
     public double a_pos;
     public double a_neg;
+
+    [MarshalAs(UnmanagedType.I1)]
     public bool continuous;
+
+    [MarshalAs(UnmanagedType.I1)]
     public bool scale;
+
     public UIntPtr delay;
 
     [DllImport("libneural")]
