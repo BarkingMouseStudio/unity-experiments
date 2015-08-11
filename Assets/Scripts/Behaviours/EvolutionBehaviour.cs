@@ -260,9 +260,6 @@ public class EvolutionBehaviour : MonoBehaviour {
       var eliteCount = species.Length;
       elitePhenotypes = eliteSelector.Select(species, eliteCount);
 
-      Debug.Log(string.Join(",", elitePhenotypes.Select(pt => pt.BestDuration.ToString()).ToArray()));
-      Debug.Log(string.Join(",", elitePhenotypes.Select(pt => pt.Fitness.ToString()).ToArray()));
-
       var offspringCount = populationSize - elitePhenotypes.Count;
       var offspringGenotypes = offspringSelector.Select(species, offspringCount);
 
