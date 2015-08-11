@@ -13,7 +13,7 @@ using NEAT;
 public class EvolutionBehaviour : MonoBehaviour {
 
   public Transform prefab;
-  private readonly int batchSize = 50;
+  private readonly int batchSize = 100;
 
   public delegate void BestEvaluationEvent(EvaluationBehaviour bestEvaluation);
   public event BestEvaluationEvent BestEvaluation;
@@ -106,15 +106,15 @@ public class EvolutionBehaviour : MonoBehaviour {
     generationLog = File.CreateText(Path.Combine(logPath, "generations.csv"));
     speciesLog = File.CreateText(Path.Combine(logPath, "species.csv"));
 
-    var populationSize = 150;
+    var populationSize = 100;
     var innovations = new InnovationCollection();
 
     var mutations = new MutationCollection();
     mutations.Add(0.005f, new AddNeuronMutator(innovations)); // 0.1%
     mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
-    mutations.Add(0.01f, new ConnectSensorMutator(innovations, 0.125f)); // 1%
     mutations.Add(0.01f, new PruneSynapseMutator(0.25f)); // 0.1%
     mutations.Add(0.01f, new ToggleSynapseMutator(0.125f));
+    mutations.Add(0.01f, new ConnectSensorMutator(innovations, 0.125f)); // 1%
     mutations.Add(0.20f, new PerturbNeuronMutator(0.5f, 0.25f)); // 98% vvv
     mutations.Add(0.20f, new PerturbSynapseMutator(0.5f, 0.25f));
     mutations.Add(0.20f, new ReplaceNeuronMutator(0.5f));
