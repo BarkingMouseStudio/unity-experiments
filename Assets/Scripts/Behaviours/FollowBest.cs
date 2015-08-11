@@ -27,7 +27,7 @@ public class FollowBest : MonoBehaviour {
 	}
 
 	void Update() {
-		Vector3 targetPosition = currentBest != null ? currentBest.wheel.transform.position : Vector3.zero;
+		Vector3 targetPosition = currentBest != null ? currentBest.Wheel.transform.position : Vector3.zero;
 
 		Vector3 nextPosition = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * speed);
 		nextPosition.z = -10.0f;

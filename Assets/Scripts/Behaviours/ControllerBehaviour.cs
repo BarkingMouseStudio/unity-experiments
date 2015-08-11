@@ -20,6 +20,11 @@ public class ControllerBehaviour : MonoBehaviour {
 
   EvaluationBehaviour evaluation;
 
+  private float speed = 0.0f;
+  public float Speed {
+    get { return speed; }
+  }
+
   void Awake() {
     upper = transform.Find("Cart/Upper").GetComponent<Rigidbody2D>();
     lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
@@ -35,24 +40,15 @@ public class ControllerBehaviour : MonoBehaviour {
     }
   }
 
-  float speed = 0.0f;
-
-  public float Speed {
-    get {
-      return speed;
-    }
-  }
-
   void OnDespawned() {
-    speed = 0.0f;
-
     // Reset motor speed
-    SetMotorSpeed(speed);
+    this.speed = 0.0f;
+    SetMotorSpeed(this.speed);
   }
 
-  void SetMotorSpeed(float speed) {
+  void SetMotorSpeed(float localSpeed) {
     var motor = wheelJoint.motor;
-	  motor.motorSpeed = speed;
+	  motor.motorSpeed = localSpeed;
   	wheelJoint.motor = motor;
   }
 
@@ -61,19 +57,23 @@ public class ControllerBehaviour : MonoBehaviour {
       return;
     }
 
-    speed = 0.0f;
-
     if (Network != null) {
-      Network.UpperTheta.Set(AngleHelper.GetAngle(upper.rotation));
-      Network.LowerTheta.Set(AngleHelper.GetAngle(lower.rotation));
-      Network.Position.Set(wheel.transform.localPosition.x);
+      var upperTheta = AngleHelper.GetAngle(upper.rotation);
+      var lowerTheta = AngleHelper.GetAngle(lower.rotation);
+      var position = wheel.transform.localPosition.x;
+
+      Network.Clear();
+
+      Network.UpperTheta.Set(upperTheta);
+      Network.LowerTheta.Set(lowerTheta);
+      Network.Position.Set(position);
 
       Network.Tick();
 
-      speed = (float)Network.Speed.Get();
-    }
+      this.speed = (float)Network.Speed.Get();
 
-    // Update motor speed
-    SetMotorSpeed(speed);
+      // Update motor speed
+      SetMotorSpeed(this.speed);
+    }
 	}
 }

@@ -4,13 +4,12 @@ using System.Collections;
 
 public class FitnessBehaviour : MonoBehaviour {
 
-  Text textField;
+  public Text textField;
+
   EvaluationBehaviour evaluation;
 
 	void Awake() {
-    textField = transform.Find("Canvas/Text").GetComponent<Text>();
     textField.text = (0.0f).ToString();
-
     evaluation = GetComponent<EvaluationBehaviour>();
 	}
 

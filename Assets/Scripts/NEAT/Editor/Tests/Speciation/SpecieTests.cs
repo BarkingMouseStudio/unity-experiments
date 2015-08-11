@@ -40,10 +40,10 @@ namespace NEAT {
       }
 
       foreach (var pt in specie) {
-        pt.AdjustedFitness = pt.Fitness / (float)specie.Count;
+        pt.AdjustedFitness = 1.0f / (float)specie.Count;
       }
 
-      Assert.AreEqual(1.0f, specie.MeanFitness, 0.001f);
+      Assert.AreEqual(0.0f, specie.MeanFitness, 0.001f);
       Assert.AreEqual(0.01f, specie.MeanAdjustedFitness, 0.001f);
       Assert.AreEqual(100, specie.Count);
     }

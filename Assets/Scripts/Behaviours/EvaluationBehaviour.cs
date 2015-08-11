@@ -13,6 +13,10 @@ public class EvaluationBehaviour : MonoBehaviour {
   Rigidbody2D lower;
   Rigidbody2D upper;
 
+  public Rigidbody2D Wheel {
+    get { return wheel; }
+  }
+
   Vector3 startPosition;
   float startTime;
 

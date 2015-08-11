@@ -1,3 +1,5 @@
+using UnityEngine;
+using UnityEngine.Assertions;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -21,29 +23,20 @@ namespace Neural {
     private static extern size_t GetSynapseCount(IntPtr network);
 
     [DllImport("libneural")]
-    private static extern size_t AddNeuron(IntPtr network, double a, double b, double c, double d);
+    private static extern size_t AddNeuron(IntPtr network, IzhikevichConfig config);
 
     [DllImport("libneural")]
-    private static extern size_t AddSynapse(IntPtr network, size_t sendrId, size_t recvrId, double weight, double min, double max);
+    private static extern size_t AddSynapse(IntPtr network, size_t sendrId, size_t recvrId, STDPConfig config);
 
     [DllImport("libneural")]
-    private static extern double TickNetwork(IntPtr network, size_t ticks, IntPtr inputsPtr, IntPtr outputsPtr);
-
-    [Conditional("DEBUG")]
-    static void Assert(bool condition, string message) {
-      if (!condition) {
-        throw new Exception(message);
-      }
-    }
-
-    private const ulong MAX_DELAY = 20;
+    private static extern double TickNetwork(IntPtr network, size_t ticks, IntPtr inputsPtr, IntPtr spikesPtr);
 
     private IntPtr ptr;
     private bool disposed;
 
-    public Network() {
-      ptr = CreateNetwork(new size_t(MAX_DELAY));
-  		Assert(ptr != IntPtr.Zero, "Failed to initialize the neural network.");
+    public Network(ulong maxDelay) {
+      ptr = CreateNetwork(new size_t(maxDelay));
+      Assert.AreNotEqual(ptr, IntPtr.Zero, "Failed to initialize the neural network.");
     }
 
     ~Network() {
@@ -75,12 +68,12 @@ namespace Neural {
       }
     }
 
-    public ulong AddNeuron(double a, double b, double c, double d) {
-      return (ulong)AddNeuron(ptr, a, b, c, d);
+    public ulong AddNeuron(IzhikevichConfig config) {
+      return (ulong)AddNeuron(ptr, config);
     }
 
-    public ulong AddSynapse(ulong sendrId, ulong recvrId, double weight, double min, double max) {
-      return (ulong)AddSynapse(ptr, new size_t(sendrId), new size_t(recvrId), weight, min, max);
+    public ulong AddSynapse(ulong sendrId, ulong recvrId, STDPConfig config) {
+      return (ulong)AddSynapse(ptr, new size_t(sendrId), new size_t(recvrId), config);
     }
 
     public unsafe double Tick(ulong ticks, double[] inputs, ref double[] outputs) {

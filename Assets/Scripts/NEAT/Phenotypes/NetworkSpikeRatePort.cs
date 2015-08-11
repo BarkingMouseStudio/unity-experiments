@@ -16,7 +16,7 @@ public class NetworkSpikeRatePort {
   double spikeRate = 0.0f;
 
   public double Rate {
-    get { return spikeRate / 200.0f; }
+    get { return spikeRate / 1000.0f; }
   }
 
   public NetworkSpikeRatePort(Slice<double> output) {
