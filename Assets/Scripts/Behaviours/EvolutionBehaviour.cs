@@ -18,9 +18,6 @@ public class EvolutionBehaviour : MonoBehaviour {
   public delegate void BestEvaluationEvent(EvaluationBehaviour bestEvaluation);
   public event BestEvaluationEvent BestEvaluation;
 
-  public delegate void BestEvaluationEvent(EvaluationBehaviour bestEvaluation);
-  public event BestEvaluationEvent BestEvaluation;
-
   IEnumerator EvaluateBatch(int batchIndex, Phenotype[] batch, Orientations orientation) {
     IList<EvaluationBehaviour> evaluations = new List<EvaluationBehaviour>();
 
