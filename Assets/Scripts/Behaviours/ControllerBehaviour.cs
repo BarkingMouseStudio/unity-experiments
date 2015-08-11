@@ -58,8 +58,8 @@ public class ControllerBehaviour : MonoBehaviour {
       return;
     }
 
-    var lowerTheta = AngleHelper.GetAngle(lower.rotation);
     var upperTheta = AngleHelper.GetAngle(upper.rotation);
+    var lowerTheta = AngleHelper.GetAngle(lower.rotation);
     var position = wheel.transform.localPosition.x;
 
     if (Network != null) {
