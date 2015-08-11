@@ -11,15 +11,7 @@ public class ControllerBehaviour : MonoBehaviour {
 
   public TextAsset json;
 
-  private NetworkIO networkIO;
-  public NetworkIO Network {
-    get {
-      return networkIO;
-    }
-    set {
-      networkIO = value;
-    }
-  }
+  public NetworkPorts Network { get; set; }
 
   WheelJoint2D wheelJoint;
   Rigidbody2D upper;
@@ -45,7 +37,7 @@ public class ControllerBehaviour : MonoBehaviour {
       Assert.AreEqual(JSON.Serialize(genotype.ToJSON()), json.text.Trim(),
         "JSON should be compatible round-trip");
 
-      networkIO = NetworkIO.FromGenotype(genotype);
+      Network = NetworkPorts.FromGenotype(genotype);
     }
   }
 
@@ -66,18 +58,20 @@ public class ControllerBehaviour : MonoBehaviour {
       return;
     }
 
-    var thetaLower = AngleHelper.GetAngle(lower.rotation);
-    var thetaDotLower = AngleHelper.GetAngle(lower.angularVelocity);
-    var thetaUpper = AngleHelper.GetAngle(upper.rotation);
-    var thetaDotUpper = AngleHelper.GetAngle(upper.angularVelocity);
-    var x = wheel.transform.localPosition.x;
-    var xDot = wheel.velocity.magnitude;
+    var lowerTheta = AngleHelper.GetAngle(lower.rotation);
+    var upperTheta = AngleHelper.GetAngle(upper.rotation);
+    var position = wheel.transform.localPosition.x;
 
-    if (networkIO != null) {
-      this.speed = networkIO.Send(
-        thetaLower, thetaDotLower,
-        thetaUpper, thetaDotUpper,
-        x, xDot);
+    if (Network != null) {
+      Network.Clear();
+
+      Network.UpperTheta.Set(upperTheta);
+      Network.LowerTheta.Set(lowerTheta);
+      Network.Position.Set(position);
+
+      Network.Tick();
+
+      this.speed = (float)Network.Speed.Get();
 
       // Update motor speed
       SetMotorSpeed(this.speed);

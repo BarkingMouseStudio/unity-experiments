@@ -26,7 +26,7 @@ namespace NEAT {
       // An orphan is a neuron with no connecting synapses
       // For each neuron: check if any synapse connects to it
       // Exclude IO neurons
-      var orphanedNeurons = genotype.NeuronGenes.Skip(NetworkIO.InitialNeuronCount)
+      var orphanedNeurons = genotype.NeuronGenes.Skip(NetworkPorts.initialNeuronCount)
         .Where(g =>
           synapseGenes.None(s =>
             s.fromNeuronId == g.InnovationId ||

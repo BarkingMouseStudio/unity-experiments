@@ -30,7 +30,7 @@ public class EvolutionBehaviour : MonoBehaviour {
       var t = PoolManager.Pools["Evaluations"].Spawn(prefab, layout.Current, Quaternion.identity, transform);
 
       var controllerBehaviour = t.GetComponent<ControllerBehaviour>();
-      controllerBehaviour.Network = NetworkIO.FromGenotype(phenotype.Genotype);
+      controllerBehaviour.Network = NetworkPorts.FromGenotype(phenotype.Genotype);
 
       var evaluationBehaviour = t.GetComponent<EvaluationBehaviour>();
       evaluationBehaviour.Phenotype = phenotype;
@@ -126,10 +126,12 @@ public class EvolutionBehaviour : MonoBehaviour {
     var distanceMetric = new DistanceMetric(2.0f, 2.0f, 1.0f);
     var speciation = new Speciation(10, 6.0f, 0.3f, distanceMetric);
 
-    Debug.LogFormat("Initial Neurons: {0}, In Neurons: {1}, Out Neurons: {2}",
-      NetworkIO.InitialNeuronCount, NetworkIO.inNeuronCount, NetworkIO.outNeuronCount);
+    Debug.LogFormat("Initial Neurons: {0}, Input Neurons: {1}, Output Neurons: {2}",
+      NetworkPorts.initialNeuronCount,
+      NetworkPorts.inputNeuronCount,
+      NetworkPorts.outputNeuronCount);
 
-    var neuronGenes = Enumerable.Range(0, NetworkIO.InitialNeuronCount)
+    var neuronGenes = Enumerable.Range(0, NetworkPorts.initialNeuronCount)
       .Select(i => NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
       .ToGeneList();
     var synapseGenes = new GeneList<SynapseGene>();
