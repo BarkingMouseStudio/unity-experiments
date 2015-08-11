@@ -28,8 +28,7 @@ public class ControllerBehaviour : MonoBehaviour {
 
   EvaluationBehaviour evaluation;
 
-  float speed = 0.0f;
-
+  private float speed = 0.0f;
   public float Speed {
     get { return speed; }
   }
@@ -52,13 +51,13 @@ public class ControllerBehaviour : MonoBehaviour {
 
   void OnDespawned() {
     // Reset motor speed
-    speed = 0.0f;
-    SetMotorSpeed(speed);
+    this.speed = 0.0f;
+    SetMotorSpeed(this.speed);
   }
 
-  void SetMotorSpeed(float speed) {
+  void SetMotorSpeed(float localSpeed) {
     var motor = wheelJoint.motor;
-	  motor.motorSpeed = speed;
+	  motor.motorSpeed = localSpeed;
   	wheelJoint.motor = motor;
   }
 
@@ -75,13 +74,13 @@ public class ControllerBehaviour : MonoBehaviour {
     var xDot = wheel.velocity.magnitude;
 
     if (networkIO != null) {
-      speed = networkIO.Send(
+      this.speed = networkIO.Send(
         thetaLower, thetaDotLower,
         thetaUpper, thetaDotUpper,
         x, xDot);
 
       // Update motor speed
-      SetMotorSpeed(speed);
+      SetMotorSpeed(this.speed);
     }
 	}
 }
