@@ -13,10 +13,10 @@ namespace NEAT {
     [Test]
     public void TestMultipointCrossover() {
       var innovationIdsA = new int[]{1, 2, 3, 4, 5, 8};
-      var neuronGenesA = innovationIdsA.Select(i => new NeuronGene(i)).ToGeneList();
+      var neuronGenesA = innovationIdsA.Select(i => new NeuronGene(i, NeuronType.HiddenNeuron)).ToGeneList();
 
       var innovationIdsB = new int[]{1, 2, 3, 4, 5, 6, 7, 9, 10};
-      var neuronGenesB = innovationIdsB.Select(i => new NeuronGene(i)).ToGeneList();
+      var neuronGenesB = innovationIdsB.Select(i => new NeuronGene(i, NeuronType.HiddenNeuron)).ToGeneList();
 
       var expectedInnovationIds = new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 

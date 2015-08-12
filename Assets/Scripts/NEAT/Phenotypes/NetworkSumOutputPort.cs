@@ -1,23 +1,21 @@
+using System.Collections;
+using System.Collections.Generic;
+
 public class NetworkSumOutputPort {
 
-  Slice<double> output;
-  double[] multipliers;
+  double[] output;
+  IDictionary<int, IReceptiveField> rfs;
 
-  public NetworkSumOutputPort(Slice<double> output, double[] multipliers) {
+  public NetworkSumOutputPort(double[] output, IDictionary<int, IReceptiveField> rfs) {
     this.output = output;
-    this.multipliers = multipliers;
-  }
-
-  public NetworkSumOutputPort(Slicer<double> slicer, double[] multipliers) {
-    this.output = slicer.NextSlice(multipliers.Length);
-    this.multipliers = multipliers;
+    this.rfs = rfs;
   }
 
   public double Get() {
     // Read out neuron V for sum
     double sum = 0.0f;
-    for (int i = 0; i < output.Count; i++) {
-      sum += (output[i] / 30.0) * multipliers[i];
+    foreach (var rf in rfs) {
+      sum += rf.Value.Normalize(output[rf.Key] / 30.0);
     }
     return sum;
   }

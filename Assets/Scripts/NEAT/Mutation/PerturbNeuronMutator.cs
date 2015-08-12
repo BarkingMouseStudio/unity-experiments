@@ -24,6 +24,8 @@ namespace NEAT {
           neuronGene.b = Mathf.Clamp01(RandomHelper.NextCauchy(neuronGene.b, mutationScale));
           neuronGene.c = Mathf.Clamp01(RandomHelper.NextCauchy(neuronGene.c, mutationScale));
           neuronGene.d = Mathf.Clamp01(RandomHelper.NextCauchy(neuronGene.d, mutationScale));
+          neuronGene.mean = Mathf.Clamp01(RandomHelper.NextCauchy(neuronGene.mean, mutationScale));
+          neuronGene.sigma = Mathf.Clamp01(RandomHelper.NextCauchy(neuronGene.sigma, mutationScale));
           genotype.NeuronGenes[neuronGene.InnovationId] = neuronGene;
           results.perturbedNeurons++;
         }

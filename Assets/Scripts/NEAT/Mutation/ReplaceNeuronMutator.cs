@@ -17,12 +17,8 @@ namespace NEAT {
       var innovationIds = genotype.NeuronGenes.InnovationIds;
       for (int i = 0; i < innovationIds.Count; i++) {
         if (Random.value < p) {
-          var neuronGene = genotype.NeuronGenes[innovationIds[i]];
-          neuronGene.a = Random.value;
-          neuronGene.b = Random.value;
-          neuronGene.c = Random.value;
-          neuronGene.d = Random.value;
-          genotype.NeuronGenes[neuronGene.InnovationId] = neuronGene;
+          var innovationId = innovationIds[i];
+          genotype.NeuronGenes[innovationId] = NeuronGene.Random(innovationId);
           results.replacedNeurons++;
         }
       }

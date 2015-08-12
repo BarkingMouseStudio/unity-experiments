@@ -10,6 +10,36 @@ namespace NEAT {
     private GeneList<NeuronGene> neuronGenes;
     private GeneList<SynapseGene> synapseGenes;
 
+    private List<NeuronGene> inputNeurons;
+    public List<NeuronGene> InputNeurons {
+      get {
+        if (inputNeurons == null) {
+          inputNeurons = neuronGenes.Where(g => g.type.IsInput()).ToList();
+        }
+        return inputNeurons;
+      }
+    }
+
+    private List<NeuronGene> outputNeurons;
+    public List<NeuronGene> OutputNeurons {
+      get {
+        if (outputNeurons == null) {
+          outputNeurons = neuronGenes.Where(g => g.type.IsOutput()).ToList();
+        }
+        return outputNeurons;
+      }
+    }
+
+    private List<NeuronGene> hiddenNeurons;
+    public List<NeuronGene> HiddenNeurons {
+      get {
+        if (hiddenNeurons == null) {
+          hiddenNeurons = neuronGenes.Where(g => g.type.IsHidden()).ToList();
+        }
+        return hiddenNeurons;
+      }
+    }
+
     public int NeuronCount {
       get {
         return neuronGenes.Count;
@@ -70,7 +100,12 @@ namespace NEAT {
         .ToGeneList();
     }
 
-    public bool ContainsInnovation(Innovation innov) {
+    public bool Contains(int innovationId) {
+      return neuronGenes.Contains(innovationId) ||
+        synapseGenes.Contains(innovationId);
+    }
+
+    public bool Contains(Innovation innov) {
       switch (innov.type) {
         case InnovationType.Neuron:
           return neuronGenes.Contains(innov.innovationId);

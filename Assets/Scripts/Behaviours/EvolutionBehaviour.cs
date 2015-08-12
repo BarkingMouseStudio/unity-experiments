@@ -107,16 +107,13 @@ public class EvolutionBehaviour : MonoBehaviour {
     var innovations = new InnovationCollection();
 
     var mutations = new MutationCollection();
-    mutations.Add(0.005f, new AddNeuronMutator(innovations)); // 0.1%
-    mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
-    mutations.Add(0.01f, new PruneSynapseMutator(0.25f)); // 0.1%
-    mutations.Add(0.01f, new ToggleSynapseMutator(0.125f));
-    mutations.Add(0.01f, new ConnectSensorMutator(innovations, 0.125f)); // 1%
+    mutations.Add(0.01f, new AddNeuronMutator(innovations)); // 0.1%
+    mutations.Add(0.05f, new AddSynapseMutator(innovations)); // 1%
+    mutations.Add(0.05f, new ToggleSynapseMutator(0.125f));
     mutations.Add(0.20f, new PerturbNeuronMutator(0.5f, 0.25f)); // 98% vvv
     mutations.Add(0.20f, new PerturbSynapseMutator(0.5f, 0.25f));
     mutations.Add(0.20f, new ReplaceNeuronMutator(0.5f));
     mutations.Add(0.20f, new ReplaceSynapseMutator(0.5f));
-    mutations.Add(0.155f, new NoopMutator()); // TODO: This should be simplier
 
     var eliteSelector = new EliteSelector();
 
@@ -126,14 +123,12 @@ public class EvolutionBehaviour : MonoBehaviour {
     var distanceMetric = new DistanceMetric(2.0f, 2.0f, 1.0f);
     var speciation = new Speciation(10, 6.0f, 0.3f, distanceMetric);
 
-    Debug.LogFormat("Initial Neurons: {0}, Input Neurons: {1}, Output Neurons: {2}",
-      NetworkPorts.initialNeuronCount,
-      NetworkPorts.inputNeuronCount,
-      NetworkPorts.outputNeuronCount);
-
-    var neuronGenes = Enumerable.Range(0, NetworkPorts.initialNeuronCount)
-      .Select(i => NeuronGene.Random(innovations.GetInitialNeuronInnovationId(i)))
-      .ToGeneList();
+    var neuronGenes = new []{
+      new NeuronGene(innovations.GetInitialNeuronInnovationId(0), NeuronType.UpperNeuron),
+      new NeuronGene(innovations.GetInitialNeuronInnovationId(1), NeuronType.LowerNeuron),
+      new NeuronGene(innovations.GetInitialNeuronInnovationId(2), NeuronType.PositionNeuron),
+      new NeuronGene(innovations.GetInitialNeuronInnovationId(3), NeuronType.SpeedNeuron),
+    }.ToGeneList();
     var synapseGenes = new GeneList<SynapseGene>();
     var protoGenotype = new Genotype(neuronGenes, synapseGenes);
 

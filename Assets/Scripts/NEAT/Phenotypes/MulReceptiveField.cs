@@ -3,17 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public struct SignReceptiveField : IReceptiveField {
+public struct MulReceptiveField : IReceptiveField {
   double mean;
   double sigma;
 
-  public SignReceptiveField(double mean, double sigma) {
+  public MulReceptiveField(double mean, double sigma) {
     this.mean = mean;
     this.sigma = sigma;
   }
 
   public double Normalize(double val) {
-    var x = 1.0 - Math.Abs(val - mean) / sigma;
-    return Math.Max(0.0, Math.Sign(x));
+    return (val * mean) * sigma;
   }
 }

@@ -60,8 +60,8 @@ namespace NEAT {
 
       // Test prune
       var genotypes = Enumerable.Range(0, 3).Select(_0 => {
-        var neuronGeneA = new NeuronGene(a);
-        var neuronGeneB = new NeuronGene(b);
+        var neuronGeneA = new NeuronGene(a, NeuronType.HiddenNeuron);
+        var neuronGeneB = new NeuronGene(b, NeuronType.HiddenNeuron);
         var synapseGeneA = new SynapseGene(sA, a, b, true);
         var synapseGeneB = new SynapseGene(sB, b, c, true);
         var neuronGenes = new []{neuronGeneA, neuronGeneB}.ToGeneList();

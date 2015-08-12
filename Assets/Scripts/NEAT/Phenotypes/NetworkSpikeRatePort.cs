@@ -11,7 +11,7 @@ public class NetworkSpikeRatePort {
   int[] spikes = new int[5]; // 20ms per bucket
   int T = 0;
 
-  Slice<double> output;
+  double[] output;
 
   double spikeRate = 0.0f;
 
@@ -19,12 +19,8 @@ public class NetworkSpikeRatePort {
     get { return spikeRate / 1000.0f; }
   }
 
-  public NetworkSpikeRatePort(Slice<double> output) {
+  public NetworkSpikeRatePort(double[] output) {
     this.output = output;
-  }
-
-  public NetworkSpikeRatePort(Slicer<double> slicer, int count) {
-    this.output = slicer.NextSlice(count);
   }
 
   public void Tick() {

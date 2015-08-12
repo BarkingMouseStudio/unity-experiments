@@ -14,7 +14,7 @@ namespace NEAT {
     [SetUp]
     public void Init() {
       var neuronGenesA = Enumerable.Range(0, 3)
-        .Select(i => new NeuronGene(i))
+        .Select(i => new NeuronGene(i, NeuronType.HiddenNeuron))
         .ToGeneList();
       var synapseGenesA = Enumerable.Range(0, 3)
         .Select(i => new SynapseGene(i, 0, 1, true, 0.5f))
@@ -24,7 +24,7 @@ namespace NEAT {
       genotypeB = new Genotype(genotypeA);
 
       var neuronGenesC = Enumerable.Range(0, 3)
-        .Select(i => new NeuronGene(i))
+        .Select(i => new NeuronGene(i, NeuronType.HiddenNeuron))
         .ToGeneList();
       var synapseGenesC = Enumerable.Range(0, 3)
         .Select(i => new SynapseGene(i + 1, -1, 1, true, 0.0f))

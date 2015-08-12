@@ -17,64 +17,24 @@ public class NetworkPorts {
   private readonly double[] input;
   private double[] output;
 
-  public static readonly int inputNeuronCount;
-  public static readonly int outputNeuronCount;
-  public static readonly int initialNeuronCount;
-
-  static IReceptiveField[] rotation;
-  static IReceptiveField[] position;
-
-  static IReceptiveField[] IntervalHelper(double[] intervals) {
-    var rfs = new List<IReceptiveField>();
-    for (int i = 0; i < intervals.Length - 1; i++) {
-      var start = intervals[i];
-      var end = intervals[i + 1];
-
-      var sigma = Math.Abs(start - end);
-      var mean = start + (sigma / 2);
-
-      rfs.Add(new SignReceptiveField(mean, sigma));
-    }
-    return rfs.ToArray();
-  }
-
-  static readonly double[] speeds = new double[]{
-    -250.0, -200.0, -150.0, -100.0, -50.0, -25.0, -10.0, -5.0, -1.0, -0.1, 0.1, 1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 150.0, 200.0, 250.0
-  };
-
-  static NetworkPorts() {
-    rotation = IntervalHelper(new double[]{
-      -180.0, -150.0, -120.0, -90.0, -75.0, -60.0, -45.0, -30.0, -15.0, -5.0, -1.0, 0.0, 1.0, 5.0, 15.0, 30.0, 45.0, 60.0, 75.0, 90.0, 120.0, 150.0, 180.0,
-    });
-
-    position = IntervalHelper(new double[]{
-      -6.0, -5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0,
-    });
-
-    inputNeuronCount = rotation.Length * 2 + position.Length;
-    outputNeuronCount = speeds.Length;
-    initialNeuronCount = inputNeuronCount + outputNeuronCount;
-  }
-
   private readonly Neural.Network network;
 
-  public NetworkPorts(Neural.Network network) {
-    if (network == null) {
-      return;
-    }
-
+  public NetworkPorts(Neural.Network network,
+    IDictionary<int, IReceptiveField> upperNeurons,
+    IDictionary<int, IReceptiveField> lowerNeurons,
+    IDictionary<int, IReceptiveField> positionNeurons,
+    IDictionary<int, IReceptiveField> speedNeurons
+  ) {
     this.network = network;
 
     this.input = new double[network.NeuronCount];
     this.output = new double[network.NeuronCount];
 
-    var inputs = new Slicer<double>(input);
-    LowerTheta = new NetworkInputPort(inputs, rotation);
-    UpperTheta = new NetworkInputPort(inputs, rotation);
-    Position = new NetworkInputPort(inputs, position);
+    UpperTheta = new NetworkInputPort(input, upperNeurons);
+    LowerTheta = new NetworkInputPort(input, lowerNeurons);
+    Position = new NetworkInputPort(input, positionNeurons);
 
-    var outputs = new Slice<double>(output, inputNeuronCount, outputNeuronCount);
-    Speed = new NetworkSumOutputPort(outputs, speeds);
+    Speed = new NetworkSumOutputPort(output, speedNeurons);
   }
 
   public void Clear() {
@@ -92,6 +52,11 @@ public class NetworkPorts {
 
     var network = new Neural.Network(20ul);
 
+    var upperNeurons = new Dictionary<int, IReceptiveField>();
+    var lowerNeurons = new Dictionary<int, IReceptiveField>();
+    var positionNeurons = new Dictionary<int, IReceptiveField>();
+    var speedNeurons = new Dictionary<int, IReceptiveField>();
+
     foreach (var neuronGene in neuronGenes) {
       float a = NumberHelper.Scale(neuronGene.a, 0.02f, 0.1f); // 0.1
       float b = NumberHelper.Scale(neuronGene.b, 0.2f, 0.25f); // 0.2
@@ -99,7 +64,32 @@ public class NetworkPorts {
       float d = NumberHelper.Scale(neuronGene.d, 0.05f, 8.0f); // 2.0
 
       try {
-	      network.AddNeuron(Neural.IzhikevichConfig.Of(a, b, c, d));
+	      var id = (int)network.AddNeuron(Neural.IzhikevichConfig.Of(a, b, c, d));
+
+        var mean = 0.0f;
+        var sigma = 0.0f;
+        switch (neuronGene.type) {
+          case NeuronType.UpperNeuron:
+            mean = NumberHelper.Scale(neuronGene.mean, -180.0f, 180.0f);
+            sigma = NumberHelper.Scale(neuronGene.sigma, 0.0f, 360.0f);
+            upperNeurons[id] = new SignReceptiveField(mean, sigma);
+            break;
+          case NeuronType.LowerNeuron:
+            mean = NumberHelper.Scale(neuronGene.mean, -180.0f, 180.0f);
+            sigma = NumberHelper.Scale(neuronGene.sigma, 0.0f, 360.0f);
+            lowerNeurons[id] = new SignReceptiveField(mean, sigma);
+            break;
+          case NeuronType.PositionNeuron:
+            mean = NumberHelper.Scale(neuronGene.mean, -6.0f, 6.0f);
+            sigma = NumberHelper.Scale(neuronGene.sigma, 0.0f, 12.0f);
+            positionNeurons[id] = new SignReceptiveField(mean, sigma);
+            break;
+          case NeuronType.SpeedNeuron:
+            mean = NumberHelper.Scale(neuronGene.mean, -1.0f, 1.0f);
+            sigma = NumberHelper.Scale(neuronGene.sigma, 0.0f, 500.0f);
+            speedNeurons[id] = new MulReceptiveField(mean, sigma);
+            break;
+        }
       } catch (Exception e) {
         Debug.LogException(e);
       }
@@ -126,6 +116,6 @@ public class NetworkPorts {
       }
     }
 
-    return new NetworkPorts(network);
+    return new NetworkPorts(network, upperNeurons, lowerNeurons, positionNeurons, speedNeurons);
   }
 }

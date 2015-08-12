@@ -13,8 +13,7 @@ namespace NEAT {
     [Test]
     public void TestNetworkSpikeRatePort_Zero() {
       var arr = new []{0.0};
-      var slicer = new Slicer<double>(arr);
-      var port = new NetworkSpikeRatePort(slicer, 1);
+      var port = new NetworkSpikeRatePort(arr);
       port.Tick();
       Assert.AreEqual(0.0, port.Rate);
       port.Tick();
@@ -26,8 +25,7 @@ namespace NEAT {
     [Test]
     public void TestNetworkSpikeRatePort_One() {
       var arr = new []{30.0};
-      var slicer = new Slicer<double>(arr);
-      var port = new NetworkSpikeRatePort(slicer, 1);
+      var port = new NetworkSpikeRatePort(arr);
       port.Tick();
       Assert.AreEqual(0.01, port.Rate, 0.001);
       port.Tick();
@@ -47,8 +45,7 @@ namespace NEAT {
     [Test]
     public void TestNetworkSpikeRatePort_Full() {
       var arr = new []{600.0};
-      var slicer = new Slicer<double>(arr);
-      var port = new NetworkSpikeRatePort(slicer, 1);
+      var port = new NetworkSpikeRatePort(arr);
       port.Tick();
       Assert.AreEqual(0.2, port.Rate, 0.001);
       port.Tick();

@@ -18,7 +18,7 @@ namespace NEAT {
 
       var neuronGenes = Enumerable.Range(0, 3).Select(i => {
         var inId = innovations.GetInitialNeuronInnovationId(i);
-        return new NeuronGene(inId);
+        return new NeuronGene(inId, NeuronType.HiddenNeuron);
       }).ToGeneList();
 
       var synapseGenes = Enumerable.Range(0, 3).Select(i => {

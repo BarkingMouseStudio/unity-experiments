@@ -15,8 +15,8 @@ namespace NEAT {
 
     public void Mutate(Genotype genotype, MutationResults results) {
       var prunedSynapses = genotype.SynapseGenes
-        .Where(g => !g.isEnabled)
         .Where(_ => Random.value < p)
+        .Where(g => !g.isEnabled)
         .ToList();
 
       var synapseGenes = genotype.SynapseGenes.Except(prunedSynapses)
@@ -26,11 +26,10 @@ namespace NEAT {
       // An orphan is a neuron with no connecting synapses
       // For each neuron: check if any synapse connects to it
       // Exclude IO neurons
-      var orphanedNeurons = genotype.NeuronGenes.Skip(NetworkPorts.initialNeuronCount)
-        .Where(g =>
-          synapseGenes.None(s =>
-            s.fromNeuronId == g.InnovationId ||
-            s.toNeuronId == g.InnovationId)).ToList();
+      var orphanedNeurons = genotype.HiddenNeurons.Where(g =>
+        synapseGenes.None(s =>
+          s.fromNeuronId == g.InnovationId ||
+          s.toNeuronId == g.InnovationId)).ToList();
 
       var neuronGenes = genotype.NeuronGenes.Except(orphanedNeurons)
         .ToGeneList();

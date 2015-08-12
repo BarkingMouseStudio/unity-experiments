@@ -15,8 +15,8 @@ namespace NEAT {
       var innovationIdsA = new int[]{1, 2, 3, 4, 5, 8};
       var innovationIdsB = new int[]{1, 2, 3, 4, 5, 6, 7, 9, 10};
 
-      var genesA = innovationIdsA.Select(i => new NeuronGene(i)).ToGeneList();
-      var genesB = innovationIdsB.Select(i => new NeuronGene(i)).ToGeneList();
+      var genesA = innovationIdsA.Select(i => new NeuronGene(i, NeuronType.HiddenNeuron)).ToGeneList();
+      var genesB = innovationIdsB.Select(i => new NeuronGene(i, NeuronType.HiddenNeuron)).ToGeneList();
 
       var innovationIds = new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 

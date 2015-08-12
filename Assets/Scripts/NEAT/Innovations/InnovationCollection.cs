@@ -74,7 +74,7 @@ namespace NEAT {
       var initialCount = innovations.Count;
 
       innovations = innovations.Where(innov =>
-        genotypes.Any(gt => gt.ContainsInnovation(innov))).ToList();
+        genotypes.Any(gt => gt.Contains(innov))).ToList();
 
       var prunedCount = innovations.Count;
       return System.Math.Abs(initialCount - prunedCount);

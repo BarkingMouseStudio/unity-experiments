@@ -1,2 +1,0 @@
-[GendarmePath ] /usr/local/lib/gendarme-2.10/gendarme.exe
-[DefaultIgnore] /Assets/Ferr/UnityGendarmerie/ignore.txt
