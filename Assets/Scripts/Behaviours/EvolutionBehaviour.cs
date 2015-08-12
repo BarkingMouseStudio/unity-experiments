@@ -64,12 +64,7 @@ public class EvolutionBehaviour : MonoBehaviour {
   IEnumerator EvaluateBatches(Phenotype[][] batches) {
     int batchIndex = 0;
     foreach (var batch in batches) {
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftLeft));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftRight));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumLeft));
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumRight));
-      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardLeft));
-      // yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.HardRight));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.Downward));
       batchIndex++;
     }
   }
