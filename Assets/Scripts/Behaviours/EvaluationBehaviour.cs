@@ -85,8 +85,10 @@ public class EvaluationBehaviour : MonoBehaviour {
       return;
     }
 
+    var duration = Time.time - startTime;
+
     // Consider 30 seconds to be solved
-    if (Time.time - startTime > 30.0f) {
+    if (duration > 30.0f) {
       EndTrial();
     }
 
@@ -103,11 +105,19 @@ public class EvaluationBehaviour : MonoBehaviour {
     var x = wheel.transform.localPosition.x;
     var xDot = wheel.velocity.magnitude;
 
-    // End if it fell over
-    if (NumberHelper.Between(thetaLower, -190.0f, -170.0f) ||
-        NumberHelper.Between(thetaUpper, -190.0f, -170.0f)) {
+    // End if it went out of bounds
+    if (x < -10.0f || x > 10.0f) {
       EndTrial();
       return;
+    }
+
+    // End if it fell over or is still down after x seconds
+    if (duration > 5.0f) {
+      if (NumberHelper.Between(Mathf.Abs(thetaLower), 178.0f, 182.0f) ||
+          NumberHelper.Between(Mathf.Abs(thetaUpper), 178.0f, 182.0f)) {
+        EndTrial();
+        return;
+      }
     }
 
     if (Phenotype != null) {
