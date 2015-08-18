@@ -102,9 +102,9 @@ public class EvolutionBehaviour : MonoBehaviour {
     var innovations = new InnovationCollection();
 
     var mutations = new MutationCollection();
-    mutations.Add(0.01f, new AddNeuronMutator(innovations)); // 0.1%
-    mutations.Add(0.05f, new AddSynapseMutator(innovations)); // 1%
-    mutations.Add(0.05f, new ToggleSynapseMutator(0.125f));
+    mutations.Add(0.005f, new AddNeuronMutator(innovations)); // 0.1%
+    mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
+    mutations.Add(0.01f, new ToggleSynapseMutator(0.125f));
     mutations.Add(0.20f, new PerturbNeuronMutator(0.5f, 0.25f)); // 98% vvv
     mutations.Add(0.20f, new PerturbSynapseMutator(0.5f, 0.25f));
     mutations.Add(0.20f, new ReplaceNeuronMutator(0.5f));
@@ -148,13 +148,13 @@ public class EvolutionBehaviour : MonoBehaviour {
 
       var longest = phenotypes.OrderByDescending(pt => pt.BestDuration).First();
       Debug.LogFormat("[{0}] Fitness: {1}, Duration: {2}s ({3}, {4}) (Longest)",
-        generation, longest.Fitness, longest.BestDuration,
+        generation, longest.MeanFitness, longest.MeanDuration,
         longest.Genotype.NeuronCount,
         longest.Genotype.SynapseCount);
 
       var best = phenotypes.OrderByDescending(pt => pt.Fitness).First();
       Debug.LogFormat("[{0}] Fitness: {1}, Duration: {2}s ({3}, {4}) (Best)",
-        generation, best.Fitness, best.BestDuration,
+        generation, best.MeanFitness, best.MeanDuration,
         best.Genotype.NeuronCount,
         best.Genotype.SynapseCount);
 

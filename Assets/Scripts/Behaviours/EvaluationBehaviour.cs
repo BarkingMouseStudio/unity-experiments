@@ -12,6 +12,13 @@ public class EvaluationBehaviour : MonoBehaviour {
   Rigidbody2D lower;
   Rigidbody2D upper;
   Rigidbody2D wheel;
+  // ControllerBehaviour controllerBehaviour;
+
+  Trial currentTrial;
+
+  public Trial CurrentTrial {
+    get { return currentTrial; }
+  }
 
   public Rigidbody2D Wheel {
     get { return wheel; }
@@ -19,6 +26,10 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   Vector3 startPosition;
   float startTime;
+
+  bool dying;
+  float dyingStart;
+  int dyingCount;
 
   public NEAT.Phenotype Phenotype { get; set; }
 
@@ -34,11 +45,14 @@ public class EvaluationBehaviour : MonoBehaviour {
     lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
     upper = transform.Find("Cart/Upper").GetComponent<Rigidbody2D>();
     wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
+    // controllerBehaviour = GetComponent<ControllerBehaviour>();
 	}
 
   void Start() {
     SetRotation(orientation);
     startPosition = transform.position;
+
+    BeginTrial(orientation, Time.time);
   }
 
   void OnSpawned() {
@@ -64,19 +78,27 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   public void BeginTrial(Orientations orientation, float startTime) {
     this.startTime = startTime;
+    this.orientation = orientation;
+    this.dying = false;
+    this.dyingCount = 0;
 
     SetRotation(orientation);
-    Phenotype.BeginTrial(orientation, startTime);
+
+    currentTrial = new Trial(orientation, startTime);
+
+    if (Phenotype != null) {
+      Phenotype.AddTrial(currentTrial);
+    }
   }
 
   void EndTrial() {
-    wheel.isKinematic = true;
-    upper.isKinematic = true;
-    lower.isKinematic = true;
-    isComplete = true;
+    currentTrial.End(Time.time);
 
     if (Phenotype != null) {
-      Phenotype.EndTrial(Time.time);
+      wheel.isKinematic = true;
+      upper.isKinematic = true;
+      lower.isKinematic = true;
+      isComplete = true;
     }
   }
 
@@ -85,9 +107,8 @@ public class EvaluationBehaviour : MonoBehaviour {
       return;
     }
 
-    var duration = Time.time - startTime;
-
     // Consider 30 seconds to be solved
+    var duration = Time.time - startTime;
     if (duration > 30.0f) {
       EndTrial();
     }
@@ -103,27 +124,41 @@ public class EvaluationBehaviour : MonoBehaviour {
     var thetaUpper = AngleHelper.GetAngle(upper.rotation);
     var thetaDotUpper = AngleHelper.GetAngle(upper.angularVelocity);
     var x = wheel.transform.localPosition.x;
-    var xDot = wheel.velocity.magnitude;
+    var xDot = wheel.velocity.magnitude; // controllerBehaviour.Speed;
 
     // End if it went out of bounds
-    if (x < -10.0f || x > 10.0f) {
+    if (Mathf.Abs(x) > 14.0f) {
       EndTrial();
       return;
     }
 
-    // End if it fell over or is still down after x seconds
-    if (duration > 5.0f) {
-      if (NumberHelper.Between(Mathf.Abs(thetaLower), 178.0f, 182.0f) ||
-          NumberHelper.Between(Mathf.Abs(thetaUpper), 178.0f, 182.0f)) {
+    var upperFell = NumberHelper.Between(Mathf.Abs(thetaUpper), 110.0f, 250.0f);
+    var fellOver = upperFell;
+
+    // If it fell over, start the dying clock
+    if (!dying && fellOver) {
+      currentTrial.Reset(Time.time);
+
+      dyingStart = Time.time;
+      dyingCount++;
+      dying = true;
+    }
+
+    if (dying && !fellOver) {
+      dying = false;
+    }
+
+    // If it's dying and has been for 5 seconds, end the trial
+    if (dying) {
+      var dyingDuration = Time.time - dyingStart;
+      if (dyingDuration > 5.0f || dyingCount >= 6) {
         EndTrial();
         return;
       }
     }
 
-    if (Phenotype != null) {
-      Phenotype.UpdateTrial(thetaLower, thetaDotLower,
-        thetaUpper, thetaDotUpper,
-        x, xDot);
-    }
+    currentTrial.Update(thetaLower, thetaDotLower,
+      thetaUpper, thetaDotUpper,
+      x, xDot);
 	}
 }

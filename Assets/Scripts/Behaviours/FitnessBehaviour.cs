@@ -14,8 +14,6 @@ public class FitnessBehaviour : MonoBehaviour {
 	}
 
 	void Update() {
-    if (evaluation.Phenotype != null) {
-      textField.text = evaluation.Phenotype.CurrentTrial.Fitness.ToString();
-    }
+    textField.text = evaluation.CurrentTrial.Fitness.ToString();
 	}
 }

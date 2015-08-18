@@ -14,6 +14,9 @@ public struct SignReceptiveField : IReceptiveField {
 
   public double Normalize(double val) {
     var x = 1.0 - Math.Abs(val - mean) / sigma;
+    if (double.IsNaN(x)) {
+      return 0.0f;
+    }
     return Math.Max(0.0, Math.Sign(x));
   }
 }

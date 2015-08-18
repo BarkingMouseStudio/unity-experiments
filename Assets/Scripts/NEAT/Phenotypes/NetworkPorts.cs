@@ -71,17 +71,17 @@ public class NetworkPorts {
         switch (neuronGene.type) {
           case NeuronType.UpperNeuron:
             mean = NumberHelper.Scale(neuronGene.mean, -180.0f, 180.0f);
-            sigma = NumberHelper.Scale(neuronGene.sigma, 0.0f, 360.0f);
+            sigma = NumberHelper.Scale(neuronGene.sigma, 0.0f, 180.0f);
             upperNeurons[id] = new SignReceptiveField(mean, sigma);
             break;
           case NeuronType.LowerNeuron:
             mean = NumberHelper.Scale(neuronGene.mean, -180.0f, 180.0f);
-            sigma = NumberHelper.Scale(neuronGene.sigma, 0.0f, 360.0f);
+            sigma = NumberHelper.Scale(neuronGene.sigma, 0.0f, 180.0f);
             lowerNeurons[id] = new SignReceptiveField(mean, sigma);
             break;
           case NeuronType.PositionNeuron:
-            mean = NumberHelper.Scale(neuronGene.mean, -10.0f, 10.0f);
-            sigma = NumberHelper.Scale(neuronGene.sigma, 0.0f, 20.0f);
+            mean = NumberHelper.Scale(neuronGene.mean, -12.0f, 12.0f);
+            sigma = NumberHelper.Scale(neuronGene.sigma, 0.0f, 12.0f);
             positionNeurons[id] = new SignReceptiveField(mean, sigma);
             break;
           case NeuronType.SpeedNeuron:

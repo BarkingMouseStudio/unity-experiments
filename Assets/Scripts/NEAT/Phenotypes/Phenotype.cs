@@ -90,18 +90,8 @@ namespace NEAT {
         (stdev) => stdev / trials.Count);
     }
 
-    public Trial BeginTrial(Orientations orientation, float startTime) {
-      CurrentTrial = new Trial(orientation, startTime);
-      trials.Add(CurrentTrial);
-      return CurrentTrial;
-    }
-
-    public void UpdateTrial(float thetaLower, float thetaDotLower, float thetaUpper, float thetaDotUpper, float x, float xDot) {
-      CurrentTrial.Update(thetaLower, thetaDotLower, thetaUpper, thetaDotUpper, x, xDot);
-    }
-
-    public void EndTrial(float endTime) {
-      CurrentTrial.End(endTime);
+    public void AddTrial(Trial trial) {
+      trials.Add(trial);
     }
   }
 }
