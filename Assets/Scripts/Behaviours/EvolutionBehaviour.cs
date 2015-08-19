@@ -64,7 +64,10 @@ public class EvolutionBehaviour : MonoBehaviour {
   IEnumerator EvaluateBatches(Phenotype[][] batches) {
     int batchIndex = 0;
     foreach (var batch in batches) {
-      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.Downward));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftLeft));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.SoftRight));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumLeft));
+      yield return StartCoroutine(EvaluateBatch(batchIndex, batch, Orientations.MediumRight));
       batchIndex++;
     }
   }
@@ -102,9 +105,9 @@ public class EvolutionBehaviour : MonoBehaviour {
     var innovations = new InnovationCollection();
 
     var mutations = new MutationCollection();
-    mutations.Add(0.005f, new AddNeuronMutator(innovations)); // 0.1%
-    mutations.Add(0.01f, new AddSynapseMutator(innovations)); // 1%
-    mutations.Add(0.01f, new ToggleSynapseMutator(0.125f));
+    mutations.Add(0.01f, new AddNeuronMutator(innovations)); // 0.1%
+    mutations.Add(0.05f, new AddSynapseMutator(innovations)); // 1%
+    mutations.Add(0.05f, new ToggleSynapseMutator(0.125f));
     mutations.Add(0.20f, new PerturbNeuronMutator(0.5f, 0.25f)); // 98% vvv
     mutations.Add(0.20f, new PerturbSynapseMutator(0.5f, 0.25f));
     mutations.Add(0.20f, new ReplaceNeuronMutator(0.5f));
