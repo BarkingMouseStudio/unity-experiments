@@ -12,7 +12,6 @@ public class EvaluationBehaviour : MonoBehaviour {
   Rigidbody2D lower;
   Rigidbody2D upper;
   Rigidbody2D wheel;
-  // ControllerBehaviour controllerBehaviour;
 
   Trial currentTrial;
 
@@ -26,10 +25,6 @@ public class EvaluationBehaviour : MonoBehaviour {
 
   Vector3 startPosition;
   float startTime;
-
-  bool dying;
-  float dyingStart;
-  int dyingCount;
 
   public NEAT.Phenotype Phenotype { get; set; }
 
@@ -45,7 +40,6 @@ public class EvaluationBehaviour : MonoBehaviour {
     lower = transform.Find("Cart/Lower").GetComponent<Rigidbody2D>();
     upper = transform.Find("Cart/Upper").GetComponent<Rigidbody2D>();
     wheel = transform.Find("Cart/Wheel").GetComponent<Rigidbody2D>();
-    // controllerBehaviour = GetComponent<ControllerBehaviour>();
 	}
 
   void Start() {
@@ -79,8 +73,6 @@ public class EvaluationBehaviour : MonoBehaviour {
   public void BeginTrial(Orientations orientation, float startTime) {
     this.startTime = startTime;
     this.orientation = orientation;
-    this.dying = false;
-    this.dyingCount = 0;
 
     SetRotation(orientation);
 
@@ -92,14 +84,12 @@ public class EvaluationBehaviour : MonoBehaviour {
   }
 
   void EndTrial() {
-    currentTrial.End(Time.time);
+    wheel.isKinematic = true;
+    upper.isKinematic = true;
+    lower.isKinematic = true;
+    isComplete = true;
 
-    if (Phenotype != null) {
-      wheel.isKinematic = true;
-      upper.isKinematic = true;
-      lower.isKinematic = true;
-      isComplete = true;
-    }
+    currentTrial.End(Time.time);
   }
 
 	void FixedUpdate() {
@@ -124,7 +114,7 @@ public class EvaluationBehaviour : MonoBehaviour {
     var thetaUpper = AngleHelper.GetAngle(upper.rotation);
     var thetaDotUpper = AngleHelper.GetAngle(upper.angularVelocity);
     var x = wheel.transform.localPosition.x;
-    var xDot = wheel.velocity.magnitude; // controllerBehaviour.Speed;
+    var xDot = wheel.velocity.magnitude; // speed?
 
     // End if it went out of bounds
     if (Mathf.Abs(x) > 14.0f) {
@@ -133,28 +123,10 @@ public class EvaluationBehaviour : MonoBehaviour {
     }
 
     var upperFell = NumberHelper.Between(Mathf.Abs(thetaUpper), 110.0f, 250.0f);
-    var fellOver = upperFell;
-
-    // If it fell over, start the dying clock
-    if (!dying && fellOver) {
-      currentTrial.Reset(Time.time);
-
-      dyingStart = Time.time;
-      dyingCount++;
-      dying = true;
-    }
-
-    if (dying && !fellOver) {
-      dying = false;
-    }
-
-    // If it's dying and has been for 5 seconds, end the trial
-    if (dying) {
-      var dyingDuration = Time.time - dyingStart;
-      if (dyingDuration > 5.0f || dyingCount >= 6) {
-        EndTrial();
-        return;
-      }
+    var lowerFell = NumberHelper.Between(Mathf.Abs(thetaLower), 110.0f, 250.0f);
+    if (upperFell || lowerFell) {
+      EndTrial();
+      return;
     }
 
     currentTrial.Update(thetaLower, thetaDotLower,

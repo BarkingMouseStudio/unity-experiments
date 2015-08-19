@@ -16,8 +16,6 @@ namespace NEAT {
       }
     }
 
-    public Trial CurrentTrial { get; protected set; }
-
     public Genotype Genotype {
       get {
         return genotype;
