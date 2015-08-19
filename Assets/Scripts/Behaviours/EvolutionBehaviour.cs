@@ -42,7 +42,7 @@ public class EvolutionBehaviour : MonoBehaviour {
     // Wait for evaluations to complete
     while (evaluations.Any(ev => !ev.IsComplete)) {
       if (BestEvaluation != null) {
-        var ordered = evaluations.OrderByDescending(ev => ev.Phenotype.CurrentTrial.Fitness);
+        var ordered = evaluations.OrderByDescending(ev => ev.CurrentTrial.Fitness);
         var best = ordered.First();
         BestEvaluation(best);
       }
