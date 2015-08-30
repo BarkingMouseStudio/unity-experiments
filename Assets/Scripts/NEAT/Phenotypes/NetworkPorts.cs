@@ -110,7 +110,7 @@ public class NetworkPorts {
       float weight = NumberHelper.Scale(synapseGene.weight, -40.0f, 40.0f);
 
       try {
-        network.AddSynapse((ulong)fromNeuronId, (ulong)toNeuronId, Neural.STDPConfig.Of(weight, -40.0f, 40.0f));
+        network.AddSynapse((ulong)fromNeuronId, (ulong)toNeuronId, Neural.SymConfig.Of(weight, -40.0f, 40.0f));
       } catch (Exception e) {
         Debug.LogException(e);
       }
