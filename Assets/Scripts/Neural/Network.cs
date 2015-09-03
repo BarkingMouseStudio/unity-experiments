@@ -29,10 +29,10 @@ namespace Neural {
     private static extern size_t AddSynapse(IntPtr network, size_t sendrId, size_t recvrId, SymConfig config);
 
     [DllImport("libneural")]
-    private static extern double TickNetwork(IntPtr network, size_t ticks, IntPtr inputsPtr, IntPtr spikesPtr);
+    private static extern double TickNetwork(IntPtr network, size_t ticks, [In] double[] inputs, [In, Out] double[] outputs);
 
     [DllImport("libneural")]
-    private static extern void DumpWeights(IntPtr network, IntPtr weightsPtr);
+    private static extern void DumpWeights(IntPtr network, [In, Out] double[] weights);
 
     private IntPtr ptr;
     private bool disposed;
@@ -79,18 +79,12 @@ namespace Neural {
       return (ulong)AddSynapse(ptr, new size_t(sendrId), new size_t(recvrId), config);
     }
 
-    public unsafe void DumpWeights(ref double[] weights) {
-      fixed (double* weightsPtr = weights) {
-        DumpWeights(ptr, (IntPtr)weightsPtr);
-      }
+    public void DumpWeights(double[] weights) {
+      DumpWeights(ptr, weights);
     }
 
-    public unsafe double Tick(ulong ticks, double[] inputs, ref double[] outputs) {
-      // Grab a pointer to the first element
-      fixed (double* inputsPtr = inputs, outputsPtr = outputs) {
-        // Convert double* to IntPtr to avoid `unsafe`
-        return TickNetwork(ptr, new size_t(ticks), (IntPtr)inputsPtr, (IntPtr)outputsPtr);
-      }
+    public double Tick(ulong ticks, double[] inputs, double[] outputs) {
+      return TickNetwork(ptr, new size_t(ticks), inputs, outputs);
     }
   }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 public static class IEnumerableExtensions {
 
@@ -30,7 +31,16 @@ public static class IEnumerableExtensions {
   }
 
   public static string Stringify<T>(this IEnumerable<T> source) {
-    return string.Join(",", source.Select(v => v.ToString()).ToArray());
+    var sb = new StringBuilder();
+    var i = 0;
+    foreach (var v in source) {
+      if (i > 0) {
+        sb.Append(", ");
+      }
+      sb.Append(v.ToString());
+      i++;
+    }
+    return sb.ToString();
   }
 
   public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> source, int N) {

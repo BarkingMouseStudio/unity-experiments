@@ -8,22 +8,31 @@ using UnityEngine.Assertions;
 // Population represens as single var
 public class PopulationPort {
 
-  private ArraySegment<double> population;
+  private double[] input;
+  private double[] rate;
+  private int offset;
+  private int size;
+  private int total;
+
   private CenterOfMassEstimator estimator;
 
-  public PopulationPort(ArraySegment<double> population, float sigma, float F_max) {
-    this.population = population;
-    this.estimator = new CenterOfMassEstimator(sigma, F_max, population.Count);
+  public PopulationPort(double[] input, double[] rate, int offset, int size, int total, float sigma, float F_max, float v) {
+    this.input = input;
+    this.rate = rate;
+    this.offset = offset;
+    this.size = size;
+    this.total = total;
+    this.estimator = new CenterOfMassEstimator(sigma, F_max, v);
   }
 
-  public void Set(float v) {
-    Assert.IsTrue(v >= 0.0f && v <= 1.0f, v.ToString());
-    estimator.Set(population.Array, population.Offset, v);
+  public void Set(float theta) {
+    Assert.IsTrue(theta >= 0.0f && theta <= 1.0f, theta.ToString());
+    estimator.Set(input, offset, size, total, theta);
   }
 
-  public bool TryGet(out float v) {
-    var success = estimator.TryGet(population.Array, population.Offset, out v);
-    Assert.IsTrue(v >= 0.0f && v <= 1.0f, v.ToString());
+  public bool TryGet(out float theta) {
+    var success = estimator.TryGet(rate, offset, size, out theta);
+    Assert.IsTrue(theta >= 0.0f && theta <= 1.0f, theta.ToString());
     return success;
   }
 }

@@ -20,4 +20,9 @@ public static class RandomHelper {
     var b = NextGaussian();
     return m + gamma * 0.01f * (a / b);
   }
+
+  public static float PoissonInput(float rate /* Hz */, float v) {
+    var dt = 1f / 1000f; // 1ms
+    return UnityEngine.Random.value < rate * dt ? v : 0.0f;
+  }
 }

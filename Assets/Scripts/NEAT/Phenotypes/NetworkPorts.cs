@@ -43,7 +43,7 @@ public class NetworkPorts {
   }
 
   public void Tick() {
-    network.Tick(20ul, input, ref output);
+    network.Tick(20ul, input, output);
   }
 
   public static NetworkPorts FromGenotype(NEAT.Genotype genotype) {

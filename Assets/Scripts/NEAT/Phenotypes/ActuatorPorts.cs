@@ -9,29 +9,40 @@ public class ActuatorPorts {
 
   public readonly double[] input;
   public double[] output;
+  public double[] rate;
+  public double[] weights;
 
-  private readonly Neural.Network network;
+  public double totalRate = 0.0;
+  public double averageRate = 0.0;
 
   public PopulationPort shoulderProprioception;
   public PopulationPort elbowProprioception;
-
   public PopulationPort targetDirection;
-
   public PopulationPort shoulderMotorCommand;
   public PopulationPort elbowMotorCommand;
 
-  public const int inputLayerSize = 100;
-  public const int outputLayerSize = 100;
+  readonly Neural.Network network;
 
-  private int neuronCount;
-  private int synapseCount;
-  private double[] weights;
-  private float w_min, w_max;
+  double[,] spikeTimes;
+  int spikeIndex;
 
-  public ActuatorPorts(float w_min, float w_max, float sigma, float F_max) {
-    this.w_min = w_min;
-    this.w_max = w_max;
+  int neuronCount;
+  int synapseCount;
 
+  int inputLayerSize = 100;
+  int outputLayerSize = 100;
+
+  int spikeWindow = 1; // Multiples of delta-time (0.02s)
+  int ticksPerFrame = 20;
+
+  float peakV = 30.0f;
+  float spikeV = 120.0f;
+	float sigma = 3.0f;
+	float F_max = 100.0f;
+	float w_min = -15.0f;
+	float w_max = 15.0f;
+
+  public ActuatorPorts() {
     network = new Neural.Network(20ul);
 
     // Proprioception: angles of each respective joint (shoulder x 3: roll,
@@ -54,32 +65,52 @@ public class ActuatorPorts {
     // (Torque or angular velocity to apply to each joint.)
     Connect(L_input_1, L_output_1);
     Connect(L_input_1, L_output_2);
-
     Connect(L_input_2, L_output_1);
     Connect(L_input_2, L_output_2);
-
     Connect(L_input_3, L_output_1);
     Connect(L_input_3, L_output_2);
 
     neuronCount = (int)network.NeuronCount;
     synapseCount = (int)network.SynapseCount;
+
     Debug.LogFormat("Neuron Count: {0}, Synapse Count: {1}", neuronCount, synapseCount);
 
-    this.input = new double[neuronCount];
+    this.input = new double[neuronCount * ticksPerFrame];
     this.output = new double[neuronCount];
+    this.spikeTimes = new double[neuronCount,spikeWindow];
+    this.rate = new double[neuronCount];
     this.weights = new double[synapseCount];
 
-    shoulderProprioception = new PopulationPort(new ArraySegment<double>(input, 0, inputLayerSize), sigma, F_max);
-    elbowProprioception = new PopulationPort(new ArraySegment<double>(input, inputLayerSize, inputLayerSize), sigma, F_max);
-    targetDirection = new PopulationPort(new ArraySegment<double>(input, inputLayerSize * 2, inputLayerSize), sigma, F_max);
-    shoulderMotorCommand = new PopulationPort(new ArraySegment<double>(output, inputLayerSize * 3, outputLayerSize), sigma, F_max);
-    elbowMotorCommand = new PopulationPort(new ArraySegment<double>(output, inputLayerSize * 3 + outputLayerSize, outputLayerSize), sigma, F_max);
+    shoulderProprioception = new PopulationPort(
+      input, rate, 0,
+      inputLayerSize, neuronCount,
+      sigma, F_max, spikeV);
+
+    elbowProprioception = new PopulationPort(
+      input, rate, inputLayerSize,
+      inputLayerSize, neuronCount,
+      sigma, F_max, spikeV);
+
+    targetDirection = new PopulationPort(
+      input, rate, inputLayerSize * 2,
+      inputLayerSize, neuronCount,
+      sigma, F_max, spikeV);
+
+    shoulderMotorCommand = new PopulationPort(
+      input, rate, inputLayerSize * 3,
+      outputLayerSize, neuronCount,
+      sigma, F_max, spikeV);
+
+    elbowMotorCommand = new PopulationPort(
+      input, rate, inputLayerSize * 3 + outputLayerSize,
+      outputLayerSize, neuronCount,
+      sigma, F_max, spikeV);
   }
 
   private List<int> CreateLayer(int layerSize) {
     var layer = new List<int>(layerSize);
     for (var i = 0; i < layerSize; i++) {
-      var config = Neural.IzhikevichConfig.Of(0.02f, 0.2f, -65.0f, 2.0f);
+      var config = Neural.IzhikevichConfig.Of(0.1f, 0.2f, -65.0f, 2.0f);
       var id = (int)network.AddNeuron(config);
       layer.Add(id);
     }
@@ -90,29 +121,47 @@ public class ActuatorPorts {
     foreach (var inputId in L_input) {
       foreach (var outputId in L_output) {
         network.AddSynapse((ulong)inputId, (ulong)outputId,
-          Neural.SymConfig.Of(RandomHelper.NextGaussian(), w_min, w_max));
+          Neural.SymConfig.Of(RandomHelper.NextGaussian() * 5.0f, w_min, w_max));
       }
     }
   }
 
   public double[] DumpWeights() {
     Array.Clear(weights, 0, synapseCount);
-    network.DumpWeights(ref weights);
+    network.DumpWeights(weights);
     return weights;
   }
 
   public void Clear() {
     Array.Clear(input, 0, input.Length);
     Array.Clear(output, 0, output.Length);
+    Array.Clear(rate, 0, rate.Length);
   }
 
-  public void Noise(float v) {
-    for (var i = 0; i < input.Length; ++i) {
-      input[i] = UnityEngine.Random.value * v;
+  public void Noise(float rate, float v) {
+    if (rate > 0.0f && v > 0.0f) {
+      for (var i = 0; i < neuronCount; i++) {
+        for (var t = 0; t < ticksPerFrame; t++) {
+          input[t * neuronCount + i] += RandomHelper.PoissonInput(rate, v);
+        }
+      }
     }
   }
 
   public void Tick() {
-    network.Tick(20ul, input, ref output);
+    network.Tick((ulong)ticksPerFrame, input, output);
+
+    totalRate = 0.0;
+    for (var i = 0; i < output.Length; i++) {
+      spikeTimes[i,spikeIndex] = output[i] / peakV; // 20ms
+      for (var j = 0; j < spikeWindow; j++) {
+        rate[i] += ((float)spikeTimes[i,j]);
+      }
+      rate[i] *= (1000f / (spikeWindow * ticksPerFrame));
+      totalRate += rate[i];
+    }
+
+    spikeIndex = (spikeIndex + 1) % spikeWindow;
+    averageRate = totalRate / neuronCount;
   }
 }
