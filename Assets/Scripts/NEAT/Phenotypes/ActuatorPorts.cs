@@ -39,8 +39,8 @@ public class ActuatorPorts {
   float spikeV = 120.0f; // Voltage required to elicit a spike
 	float sigma = 3.0f;
 	float F_max = 100.0f;
-	float w_min = -15.0f;
-	float w_max = 15.0f;
+	float w_min = -5.0f;
+	float w_max = 5.0f;
 
   public ActuatorPorts() {
     network = new Neural.Network(20ul);
