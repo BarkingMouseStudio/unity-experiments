@@ -29,9 +29,11 @@ public class ActuatorBehaviour : MonoBehaviour {
 	double totalRate, averageRate;
   #pragma warning restore 0414
 
+	float shoulderProprioception = 0.0f;
+	float elbowProprioception = 0.0f;
+	float targetDirection = 0.0f;
 	float shoulderMotorCommand = 0.0f;
 	float elbowMotorCommand = 0.0f;
-	float targetAngleNorm = 0.0f;
 
 	IntervalMode intervalMode = IntervalMode.Resting;
 	int intervalCount = 0;
@@ -91,28 +93,36 @@ public class ActuatorBehaviour : MonoBehaviour {
 		}
 	}
 
-	float GetTargetAngleNorm(Vector2 targetDirection) {
+	static float GetTargetAngleNorm(Vector2 targetDirection) {
 		var targetAngleRad = Mathf.Atan2(targetDirection.y, targetDirection.x); // [-PI / 2, PI / 2]
 		var targetAngleDeg = targetAngleRad * Mathf.Rad2Deg; // [-180, 180]
 		var targetAngleBin = NumberHelper.Bin(targetAngleDeg, 5.0f) / 72f; // [-0.5, 0.5]
 		return NumberHelper.Normalize(targetAngleBin, -0.5f, 0.5f); // [0, 1]
 	}
 
+	void UpdateProprioception() {
+		var shoulderAngle = shoulderJoint.rotation.eulerAngles.z;
+		var elbowAngle = elbowJoint.rotation.eulerAngles.z;
+		var shoulderBin = NumberHelper.Bin(shoulderAngle, 5.0f);
+		var elbowBin = NumberHelper.Bin(elbowAngle, 5.0f);
+		shoulderProprioception = shoulderBin / 72f;
+		elbowProprioception = elbowBin / 72f;
+	  network.shoulderProprioception.Set(shoulderProprioception);
+	  network.elbowProprioception.Set(elbowProprioception);
+	}
+
 	void Train() {
 		if (intervalMode == IntervalMode.Training) { // Training interval
-			Debug.LogFormat("Training... {0}s", intervalTime);
+			// Debug.LogFormat("Training... {0}s", intervalTime);
 
-			if (intervalTime > trainingDuration) {
+			if (intervalTime < trainingDuration) {
+				intervalTime += Time.deltaTime;
+			} else {
 				intervalTime = 0.0f;
 				intervalMode = IntervalMode.Resting;
-			} else {
-			  network.targetDirection.Set(targetAngleNorm);
-				network.shoulderMotorCommand.Set(shoulderMotorCommand);
-				network.elbowMotorCommand.Set(elbowMotorCommand);
-				intervalTime += Time.deltaTime;
 			}
 		} else if (intervalMode == IntervalMode.Resting) { // Resting interval
-			Debug.LogFormat("Resting... {0}s", intervalTime);
+			// Debug.LogFormat("Resting... {0}s", intervalTime);
 
 			if (intervalTime > restingDuration) {
 				intervalTime = 0.0f;
@@ -134,15 +144,22 @@ public class ActuatorBehaviour : MonoBehaviour {
 
 				// Compute difference of end effectors position from movements
 				var currentEndEffectorPosition = endEffector.position;
-				var targetDirection = (currentEndEffectorPosition - previousEndEffectorPosition).normalized;
-				Debug.DrawRay(previousEndEffectorPosition, targetDirection, Color.red);
+				var targetDirectionTemp = (currentEndEffectorPosition - previousEndEffectorPosition).normalized;
+				Debug.DrawRay(previousEndEffectorPosition, targetDirectionTemp, Color.red);
 
-				targetAngleNorm = GetTargetAngleNorm(targetDirection);
+				targetDirection = GetTargetAngleNorm(targetDirectionTemp);
 
 				intervalCount++;
 			} else {
 				intervalTime += Time.deltaTime;
 			}
+		}
+
+		if (intervalMode == IntervalMode.Training) { // Training interval
+			UpdateProprioception();
+		  network.targetDirection.Set(targetDirection);
+			network.shoulderMotorCommand.Set(shoulderMotorCommand);
+			network.elbowMotorCommand.Set(elbowMotorCommand);
 		}
 
 		LogInput();
@@ -155,11 +172,12 @@ public class ActuatorBehaviour : MonoBehaviour {
 	void Perform() {
 		var currentEndEffectorPosition = endEffector.position;
 		var targetPosition = target.position;
-		var targetDirection = (targetPosition - currentEndEffectorPosition).normalized;
-		Debug.DrawRay(currentEndEffectorPosition, targetDirection, Color.red);
+		var targetDirectionTemp = (targetPosition - currentEndEffectorPosition).normalized;
+		Debug.DrawRay(currentEndEffectorPosition, targetDirectionTemp, Color.red);
+		targetDirection = GetTargetAngleNorm(targetDirectionTemp);
 
-		targetAngleNorm = GetTargetAngleNorm(targetDirection);
-	  network.targetDirection.Set(targetAngleNorm);
+		UpdateProprioception();
+	  network.targetDirection.Set(targetDirection);
 
 		LogInput();
 
@@ -180,16 +198,7 @@ public class ActuatorBehaviour : MonoBehaviour {
 
 	void FixedUpdate() {
     network.Clear();
-		network.Noise(3f, 120f);
-
-		var shoulderAngle = shoulderJoint.rotation.eulerAngles.z;
-		var elbowAngle = elbowJoint.rotation.eulerAngles.z;
-		var shoulderBin = NumberHelper.Bin(shoulderAngle, 5.0f);
-		var elbowBin = NumberHelper.Bin(elbowAngle, 5.0f);
-		var shoulderNorm = shoulderBin / 72f;
-		var elbowNorm = elbowBin / 72f;
-	  network.shoulderProprioception.Set(shoulderNorm);
-	  network.elbowProprioception.Set(elbowNorm);
+		network.Noise(3f, 30f);
 
 		if (isTraining) {
 			Train();

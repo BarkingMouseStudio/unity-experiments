@@ -36,9 +36,9 @@ public class ActuatorPorts {
   int ticksPerFrame = 20;
 
   float peakV = 30.0f;
-  float spikeV = 120.0f;
+  float spikeV = 120.0f; // Voltage required to elicit a spike
 	float sigma = 3.0f;
-	float F_max = 100.0f;
+	float F_max = 500.0f;
 	float w_min = -15.0f;
 	float w_max = 15.0f;
 
@@ -63,12 +63,23 @@ public class ActuatorPorts {
     // Each neuron in the input layers is connected with an excitatory and
     // inhibitory synapse to each output neuron.
     // (Torque or angular velocity to apply to each joint.)
-    Connect(L_input_1, L_output_1);
-    Connect(L_input_1, L_output_2);
-    Connect(L_input_2, L_output_1);
-    Connect(L_input_2, L_output_2);
-    Connect(L_input_3, L_output_1);
-    Connect(L_input_3, L_output_2);
+    Connect(L_input_1, L_output_1, w_min, 0);
+    Connect(L_input_1, L_output_1, 0, w_max);
+
+    Connect(L_input_1, L_output_2, w_min, 0);
+    Connect(L_input_1, L_output_2, 0, w_max);
+
+    Connect(L_input_2, L_output_1, w_min, 0);
+    Connect(L_input_2, L_output_1, 0, w_max);
+
+    Connect(L_input_2, L_output_2, w_min, 0);
+    Connect(L_input_2, L_output_2, 0, w_max);
+
+    Connect(L_input_3, L_output_1, w_min, 0);
+    Connect(L_input_3, L_output_1, 0, w_max);
+
+    Connect(L_input_3, L_output_2, w_min, 0);
+    Connect(L_input_3, L_output_2, 0, w_max);
 
     neuronCount = (int)network.NeuronCount;
     synapseCount = (int)network.SynapseCount;
@@ -117,11 +128,11 @@ public class ActuatorPorts {
     return layer;
   }
 
-  private void Connect(List<int> L_input, List<int> L_output) {
+  private void Connect(List<int> L_input, List<int> L_output, double min, double max) {
     foreach (var inputId in L_input) {
       foreach (var outputId in L_output) {
         network.AddSynapse((ulong)inputId, (ulong)outputId,
-          Neural.SymConfig.Of(RandomHelper.NextGaussian() * 5.0f, w_min, w_max));
+          Neural.SymConfig.Of(RandomHelper.NextGaussian() * 5.0f, min, max));
       }
     }
   }
