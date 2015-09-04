@@ -10,9 +10,11 @@ public class CenterOfMassEstimator {
   private float sigma2_2; // 2 x standard deviation, squared of the gaussian curve
   private float F_max; // maximum firing rate
   private float v; // minimum input voltage required to induce a spike
+  private float binSize;
 
-  public CenterOfMassEstimator(float sigma, float F_max, float v) {
+  public CenterOfMassEstimator(float sigma, float F_max, float v, float binSize) {
     this.sigma2_2 = 2.0f * Mathf.Pow(sigma, 2.0f);
+    this.binSize = binSize;
     this.F_max = F_max;
     this.v = v;
   }

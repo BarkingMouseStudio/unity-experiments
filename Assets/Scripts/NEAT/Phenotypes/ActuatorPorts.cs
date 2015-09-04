@@ -35,10 +35,10 @@ public class ActuatorPorts {
   int spikeWindow = 1; // Multiples of delta-time (0.02s)
   int ticksPerFrame = 20;
 
-  float peakV = 30.0f;
+  float peakV = 30.0f; // Voltage returned as a spike
   float spikeV = 120.0f; // Voltage required to elicit a spike
 	float sigma = 3.0f;
-	float F_max = 500.0f;
+	float F_max = 100.0f;
 	float w_min = -15.0f;
 	float w_max = 15.0f;
 
@@ -95,27 +95,27 @@ public class ActuatorPorts {
     shoulderProprioception = new PopulationPort(
       input, rate, 0,
       inputLayerSize, neuronCount,
-      sigma, F_max, spikeV);
+      sigma, F_max, spikeV, 5);
 
     elbowProprioception = new PopulationPort(
       input, rate, inputLayerSize,
       inputLayerSize, neuronCount,
-      sigma, F_max, spikeV);
+      sigma, F_max, spikeV, 5);
 
     targetDirection = new PopulationPort(
       input, rate, inputLayerSize * 2,
       inputLayerSize, neuronCount,
-      sigma, F_max, spikeV);
+      sigma, F_max, spikeV, 45);
 
     shoulderMotorCommand = new PopulationPort(
       input, rate, inputLayerSize * 3,
       outputLayerSize, neuronCount,
-      sigma, F_max, spikeV);
+      sigma, F_max, spikeV, 1);
 
     elbowMotorCommand = new PopulationPort(
       input, rate, inputLayerSize * 3 + outputLayerSize,
       outputLayerSize, neuronCount,
-      sigma, F_max, spikeV);
+      sigma, F_max, spikeV, 1);
   }
 
   private List<int> CreateLayer(int layerSize) {

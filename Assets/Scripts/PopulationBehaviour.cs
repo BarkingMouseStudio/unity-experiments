@@ -37,11 +37,10 @@ public class PopulationBehaviour : MonoBehaviour {
 
     input = new double[neuronCount * ticksPerFrame];
     output = new double[neuronCount];
-
     spikeTimes = new double[neuronCount,spikeWindow];
     rate = new double[neuronCount];
 
-    population = new PopulationPort(input, rate, 0, neuronCount, neuronCount, 3.0f, 100.0f, 120.0f);
+    population = new PopulationPort(input, rate, 0, neuronCount, neuronCount, 3.0f, 500.0f, 120.0f, 0.1f);
 	}
 
 	void FixedUpdate() {

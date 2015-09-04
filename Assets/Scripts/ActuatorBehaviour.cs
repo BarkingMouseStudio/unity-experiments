@@ -96,17 +96,12 @@ public class ActuatorBehaviour : MonoBehaviour {
 	static float GetTargetAngleNorm(Vector2 targetDirection) {
 		var targetAngleRad = Mathf.Atan2(targetDirection.y, targetDirection.x); // [-PI / 2, PI / 2]
 		var targetAngleDeg = targetAngleRad * Mathf.Rad2Deg; // [-180, 180]
-		var targetAngleBin = NumberHelper.Bin(targetAngleDeg, 5.0f) / 72f; // [-0.5, 0.5]
-		return NumberHelper.Normalize(targetAngleBin, -0.5f, 0.5f); // [0, 1]
+		return NumberHelper.Normalize(targetAngleDeg, -180, 180); // [0, 1]
 	}
 
 	void UpdateProprioception() {
-		var shoulderAngle = shoulderJoint.rotation.eulerAngles.z;
-		var elbowAngle = elbowJoint.rotation.eulerAngles.z;
-		var shoulderBin = NumberHelper.Bin(shoulderAngle, 5.0f);
-		var elbowBin = NumberHelper.Bin(elbowAngle, 5.0f);
-		shoulderProprioception = shoulderBin / 72f;
-		elbowProprioception = elbowBin / 72f;
+		shoulderProprioception = NumberHelper.Normalize(shoulderJoint.rotation.eulerAngles.z, 0, 360);
+		elbowProprioception = NumberHelper.Normalize(elbowJoint.rotation.eulerAngles.z, 0, 360);
 	  network.shoulderProprioception.Set(shoulderProprioception);
 	  network.elbowProprioception.Set(elbowProprioception);
 	}

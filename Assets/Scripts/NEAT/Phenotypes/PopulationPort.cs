@@ -16,13 +16,13 @@ public class PopulationPort {
 
   private CenterOfMassEstimator estimator;
 
-  public PopulationPort(double[] input, double[] rate, int offset, int size, int total, float sigma, float F_max, float v) {
+  public PopulationPort(double[] input, double[] rate, int offset, int size, int total, float sigma, float F_max, float v, float binSize) {
     this.input = input;
     this.rate = rate;
     this.offset = offset;
     this.size = size;
     this.total = total;
-    this.estimator = new CenterOfMassEstimator(sigma, F_max, v);
+    this.estimator = new CenterOfMassEstimator(sigma, F_max, v, binSize);
   }
 
   public void Set(float theta) {
