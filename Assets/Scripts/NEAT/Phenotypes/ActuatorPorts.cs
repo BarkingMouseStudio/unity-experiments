@@ -29,8 +29,9 @@ public class ActuatorPorts {
   int neuronCount;
   int synapseCount;
 
-  int inputLayerSize = 100;
-  int outputLayerSize = 100;
+  int inputLayerSize = 200;
+  int outputLayerSize = 200;
+  // int hiddenLayerSize = 10;
 
   int spikeWindow = 1; // Multiples of delta-time (0.02s)
   int ticksPerFrame = 20;
@@ -60,6 +61,9 @@ public class ActuatorPorts {
     var L_output_1 = CreateLayer(outputLayerSize);
     var L_output_2 = CreateLayer(outputLayerSize);
 
+    // Hidden layer to circumvent binning. Basically a combination of input + hidden allows differentiating "like" inputs to produce unique outputs.
+    // var L_hidden_1 = CreateLayer(hiddenLayerSize);
+
     // Each neuron in the input layers is connected with an excitatory and
     // inhibitory synapse to each output neuron.
     // (Torque or angular velocity to apply to each joint.)
@@ -81,6 +85,16 @@ public class ActuatorPorts {
     Connect(L_input_3, L_output_2, w_min, 0);
     Connect(L_input_3, L_output_2, 0, w_max);
 
+    // Connect hidden
+    // Connect(L_input_1, L_hidden_1, w_min, 0);
+    // Connect(L_input_1, L_hidden_1, 0, w_max);
+
+    // Connect(L_input_2, L_hidden_1, w_min, 0);
+    // Connect(L_input_2, L_hidden_1, 0, w_max);
+
+    // Connect(L_input_3, L_hidden_1, w_min, 0);
+    // Connect(L_input_3, L_hidden_1, 0, w_max);
+
     neuronCount = (int)network.NeuronCount;
     synapseCount = (int)network.SynapseCount;
 
@@ -95,27 +109,27 @@ public class ActuatorPorts {
     shoulderProprioception = new PopulationPort(
       input, rate, 0,
       inputLayerSize, neuronCount,
-      sigma, F_max, spikeV, 5);
+      sigma, F_max, spikeV, -180, 180);
 
     elbowProprioception = new PopulationPort(
       input, rate, inputLayerSize,
       inputLayerSize, neuronCount,
-      sigma, F_max, spikeV, 5);
+      sigma, F_max, spikeV, -180, 180);
 
     targetDirection = new PopulationPort(
       input, rate, inputLayerSize * 2,
       inputLayerSize, neuronCount,
-      sigma, F_max, spikeV, 45);
+      sigma, F_max, spikeV, -180, 180);
 
     shoulderMotorCommand = new PopulationPort(
       input, rate, inputLayerSize * 3,
       outputLayerSize, neuronCount,
-      sigma, F_max, spikeV, 1);
+      sigma, F_max, spikeV, -5, 5);
 
     elbowMotorCommand = new PopulationPort(
       input, rate, inputLayerSize * 3 + outputLayerSize,
       outputLayerSize, neuronCount,
-      sigma, F_max, spikeV, 1);
+      sigma, F_max, spikeV, -5, 5);
   }
 
   private List<int> CreateLayer(int layerSize) {
@@ -128,11 +142,11 @@ public class ActuatorPorts {
     return layer;
   }
 
-  private void Connect(List<int> L_input, List<int> L_output, double min, double max) {
+  private void Connect(List<int> L_input, List<int> L_output, float min, float max) {
     foreach (var inputId in L_input) {
       foreach (var outputId in L_output) {
         network.AddSynapse((ulong)inputId, (ulong)outputId,
-          Neural.SymConfig.Of(RandomHelper.NextGaussian() * 5.0f, min, max));
+          Neural.SymConfig.Of(RandomHelper.NextGaussian(), min, max));
       }
     }
   }

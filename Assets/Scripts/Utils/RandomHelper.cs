@@ -2,10 +2,6 @@ using UnityEngine;
 
 public static class RandomHelper {
 
-  public static float NextTime(float rate) {
-    return -Mathf.Log(1.0f - Random.value) / rate;
-  }
-
   public static bool NextBool() {
     return Random.value > 0.5f;
   }

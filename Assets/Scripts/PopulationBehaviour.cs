@@ -40,7 +40,7 @@ public class PopulationBehaviour : MonoBehaviour {
     spikeTimes = new double[neuronCount,spikeWindow];
     rate = new double[neuronCount];
 
-    population = new PopulationPort(input, rate, 0, neuronCount, neuronCount, 3.0f, 500.0f, 120.0f, 0.1f);
+    population = new PopulationPort(input, rate, 0, neuronCount, neuronCount, 3.0f, 500.0f, 120.0f, -1, 1);
 	}
 
 	void FixedUpdate() {
@@ -48,7 +48,7 @@ public class PopulationBehaviour : MonoBehaviour {
     Array.Clear(output, 0, output.Length);
     Array.Clear(rate, 0, rate.Length);
 
-    inputValue = NumberHelper.Normalize(Mathf.Sin(Time.fixedTime), -1f, 1f);
+    inputValue = Mathf.Sin(Time.fixedTime);
 	  population.Set(inputValue);
 
     network.Tick((ulong)ticksPerFrame, input, output);

@@ -14,25 +14,39 @@ public class PopulationPort {
   private int size;
   private int total;
 
+  private float min;
+  private float max;
+
   private CenterOfMassEstimator estimator;
 
-  public PopulationPort(double[] input, double[] rate, int offset, int size, int total, float sigma, float F_max, float v, float binSize) {
+  public PopulationPort(double[] input, double[] rate, int offset, int size, int total, float sigma, float F_max, float v, float min, float max) {
     this.input = input;
     this.rate = rate;
     this.offset = offset;
     this.size = size;
     this.total = total;
-    this.estimator = new CenterOfMassEstimator(sigma, F_max, v, binSize);
+
+    this.min = min;
+    this.max = max;
+
+    this.estimator = new CenterOfMassEstimator(sigma, F_max, v);
   }
 
   public void Set(float theta) {
-    Assert.IsTrue(theta >= 0.0f && theta <= 1.0f, theta.ToString());
-    estimator.Set(input, offset, size, total, theta);
+    var thetaNorm = NumberHelper.Normalize(theta, min, max);
+    Assert.IsTrue(thetaNorm >= 0.0f && thetaNorm <= 1.0f, thetaNorm.ToString());
+    estimator.Set(input, offset, size, total, thetaNorm);
   }
 
   public bool TryGet(out float theta) {
-    var success = estimator.TryGet(rate, offset, size, out theta);
-    Assert.IsTrue(theta >= 0.0f && theta <= 1.0f, theta.ToString());
-    return success;
+    float thetaNorm;
+    if (!estimator.TryGet(rate, offset, size, out thetaNorm)) {
+      theta = 0.0f;
+      return false;
+    }
+
+    Assert.IsTrue(thetaNorm >= 0.0f && thetaNorm <= 1.0f, thetaNorm.ToString());
+    theta = NumberHelper.Scale(thetaNorm, min, max);
+    return true;
   }
 }
