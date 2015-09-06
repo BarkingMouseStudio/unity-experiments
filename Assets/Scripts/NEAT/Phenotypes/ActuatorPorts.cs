@@ -29,19 +29,20 @@ public class ActuatorPorts {
   int neuronCount;
   int synapseCount;
 
-  int inputLayerSize = 200;
-  int outputLayerSize = 200;
-  // int hiddenLayerSize = 10;
+  int inputLayerSize = 100;
+  int outputLayerSize = 100;
+  int hiddenLayerSize = 100;
 
   int spikeWindow = 1; // Multiples of delta-time (0.02s)
   int ticksPerFrame = 20;
 
   float peakV = 30.0f; // Voltage returned as a spike
   float spikeV = 120.0f; // Voltage required to elicit a spike
-	float sigma = 3.0f;
-	float F_max = 100.0f;
-	float w_min = -5.0f;
-	float w_max = 5.0f;
+	float sigma = 1.0f; // Cannot be too large or it reduces perceivable variance
+
+	float F_max = 150.0f; // 50 - 500, must be balanced with weights to produce movement sans noise
+	float w_min = -15.0f;
+	float w_max = 15.0f;
 
   public ActuatorPorts() {
     network = new Neural.Network(20ul);
@@ -62,7 +63,7 @@ public class ActuatorPorts {
     var L_output_2 = CreateLayer(outputLayerSize);
 
     // Hidden layer to circumvent binning. Basically a combination of input + hidden allows differentiating "like" inputs to produce unique outputs.
-    // var L_hidden_1 = CreateLayer(hiddenLayerSize);
+    var L_hidden_1 = CreateLayer(hiddenLayerSize);
 
     // Each neuron in the input layers is connected with an excitatory and
     // inhibitory synapse to each output neuron.
@@ -85,15 +86,22 @@ public class ActuatorPorts {
     Connect(L_input_3, L_output_2, w_min, 0);
     Connect(L_input_3, L_output_2, 0, w_max);
 
-    // Connect hidden
-    // Connect(L_input_1, L_hidden_1, w_min, 0);
-    // Connect(L_input_1, L_hidden_1, 0, w_max);
+    // Connect input to hidden
+    Connect(L_input_1, L_hidden_1, w_min, 0);
+    Connect(L_input_1, L_hidden_1, 0, w_max);
 
-    // Connect(L_input_2, L_hidden_1, w_min, 0);
-    // Connect(L_input_2, L_hidden_1, 0, w_max);
+    Connect(L_input_2, L_hidden_1, w_min, 0);
+    Connect(L_input_2, L_hidden_1, 0, w_max);
 
-    // Connect(L_input_3, L_hidden_1, w_min, 0);
-    // Connect(L_input_3, L_hidden_1, 0, w_max);
+    Connect(L_input_3, L_hidden_1, w_min, 0);
+    Connect(L_input_3, L_hidden_1, 0, w_max);
+
+    // Connect hidden to output
+    Connect(L_hidden_1, L_output_1, w_min, 0);
+    Connect(L_hidden_1, L_output_1, 0, w_max);
+
+    Connect(L_hidden_1, L_output_2, w_min, 0);
+    Connect(L_hidden_1, L_output_2, 0, w_max);
 
     neuronCount = (int)network.NeuronCount;
     synapseCount = (int)network.SynapseCount;
@@ -146,7 +154,7 @@ public class ActuatorPorts {
     foreach (var inputId in L_input) {
       foreach (var outputId in L_output) {
         network.AddSynapse((ulong)inputId, (ulong)outputId,
-          Neural.SymConfig.Of(RandomHelper.NextGaussian(), min, max));
+          Neural.SymConfig.Of(RandomHelper.NextGaussianRange(min, max), min, max));
       }
     }
   }

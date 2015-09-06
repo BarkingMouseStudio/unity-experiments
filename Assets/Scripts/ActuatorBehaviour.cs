@@ -44,6 +44,9 @@ public class ActuatorBehaviour : MonoBehaviour {
 	float trainingDuration = 0.02f;
 	float restingDuration = 0.05f;
 
+	float[] homePositions = new float[]{0, -45, 45};
+	int iteration = 0;
+
   StreamWriter weightsLog;
   StreamWriter inputLog;
   StreamWriter outputLog;
@@ -92,6 +95,7 @@ public class ActuatorBehaviour : MonoBehaviour {
 
 		if (saveWeights) {
 			if (Time.time >= nextSaveWeights) {
+				Debug.Log("Saving weights");
 				var weights = network.DumpWeights();
 				weightsLog.WriteLine(weights.Stringify());
 				weightsLog.Flush();
@@ -102,6 +106,13 @@ public class ActuatorBehaviour : MonoBehaviour {
 
 	static float GetTargetDirection(Vector2 targetDirection) {
 		return Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg;
+	}
+
+	void SetHomePosition() {
+		var shoulderHome = homePositions[UnityEngine.Random.Range(0, homePositions.Length)];
+		var elbowHome = homePositions[UnityEngine.Random.Range(0, homePositions.Length)];
+		shoulderJoint.localRotation = Quaternion.Euler(0, 0, shoulderHome);
+		elbowJoint.localRotation = Quaternion.Euler(0, 0, elbowHome);
 	}
 
 	void Train() {
@@ -142,6 +153,13 @@ public class ActuatorBehaviour : MonoBehaviour {
 
 				// Compute difference of end effectors position from movements
 				targetDirection = GetTargetDirection((endEffector.position - previousEndEffectorPosition).normalized);
+
+				if (intervalCount % 4 == 1) { // Every fourth intervalMode, change home position
+					SetHomePosition();
+
+					Debug.LogFormat("Iteration: {0}", iteration);
+					iteration++;
+				}
 
 				intervalCount++;
 			} else {
