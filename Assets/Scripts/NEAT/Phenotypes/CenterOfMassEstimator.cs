@@ -50,6 +50,7 @@ public class CenterOfMassEstimator {
       ));
 
       for (var t = 0; t < 20; t++) { // 20ms
+        // NOTE: We use "add" here so that noise isn't cancelled out.
         p[t * totalCount + (sliceOffset + i)] += RandomHelper.PoissonInput(rate, v);
       }
     }

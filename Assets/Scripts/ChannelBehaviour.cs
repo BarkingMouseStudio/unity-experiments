@@ -43,12 +43,16 @@ public class ChannelBehaviour : MonoBehaviour {
   const int spikeWindow = 2; // 1 : 20ms
   float rateMultiplier = 1000f / (spikeWindow * ticksPerFrame);
 
-  float totalRate = 0.0f;
+  #pragma warning disable 0414
   float averageRate = 0.0f;
+  #pragma warning restore 0414
 
   PopulationPort inputPopulation, outputPopulation;
-  float inputValue, outputValue;
   float expectedInputValue, expectedOutputValue;
+
+  #pragma warning disable 0414
+  float inputValue, outputValue;
+  #pragma warning restore 0414
 
   #pragma warning disable 0414
   float errValue;
@@ -143,7 +147,7 @@ public class ChannelBehaviour : MonoBehaviour {
 
     network.Tick((ulong)ticksPerFrame, input, output);
 
-    totalRate = 0.0f;
+    var totalRate = 0.0f;
     for (var i = 0; i < output.Length; i++) {
       spikeTimes[i,spikeIndex] = output[i] / peakV; // 20ms
       for (var j = 0; j < spikeWindow; j++) {
