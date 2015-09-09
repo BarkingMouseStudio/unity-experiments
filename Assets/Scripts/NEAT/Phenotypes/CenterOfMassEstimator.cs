@@ -7,24 +7,38 @@ using UnityEngine.Assertions;
 
 public class CenterOfMassEstimator {
 
+  private int N;
+
   private float sigma2_2; // 2 x standard deviation, squared of the gaussian curve
   private float F_max; // maximum firing rate
   private float v; // minimum input voltage required to induce a spike
 
-  public CenterOfMassEstimator(float sigma, float F_max, float v) {
+  private float width; // width of the gaussian curve in the value units
+  private float scale; // scaling factor applied to values
+
+  public CenterOfMassEstimator(float sigma, float F_max, float v, int N) {
     this.sigma2_2 = 2.0f * Mathf.Pow(sigma, 2.0f);
     this.F_max = F_max;
     this.v = v;
+    this.N = N;
+
+    this.width = (sigma * 3.0f) / N;
+    this.scale = 1.0f - (width * 2.0f);
   }
 
-  // f : [0, 1] -> [1, n]
-  private static int f(float v, int n) {
-    return Mathf.RoundToInt(v * n);
+  // f : [0, 1] -> [1, N]
+  private int f(float v) {
+    v *= scale;
+    v += width;
+    return Mathf.RoundToInt(v * N);
   }
 
-  // f_inv : [1, n] -> [0, 1]
-  private static float f_inv(int x, int n) {
-    return (float)x / (float)n;
+  // f_inv : [1, N] -> [0, 1]
+  private float f_inv(int x) {
+    var v = (float)x / (float)N;
+    v -= width;
+    v /= scale;
+    return v;
   }
 
   // expresses the firing rate of neuron x when the normalized value v_0 is encoded
@@ -32,7 +46,7 @@ public class CenterOfMassEstimator {
     float rate;
     for (var i = 0; i < sliceSize; i++) {
       rate = F_max * Mathf.Exp(
-        -1.0f * (Mathf.Pow(i - f(theta, sliceSize), 2.0f) / sigma2_2
+        -1.0f * (Mathf.Pow(i - f(theta), 2.0f) / sigma2_2
       ));
 
       for (var t = 0; t < 20; t++) { // 20ms
@@ -44,7 +58,7 @@ public class CenterOfMassEstimator {
   public bool TryGet(float[] p, int sliceOffset, int sliceSize, out float theta) {
     var num = 0.0f;
     for (var i = 0; i < sliceSize; i++) {
-      num += f_inv(i, sliceSize) * (float)p[sliceOffset + i];
+      num += f_inv(i) * (float)p[sliceOffset + i];
     }
 
     var den = 0.0f;

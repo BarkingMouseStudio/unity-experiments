@@ -77,6 +77,14 @@ namespace Neural {
       }
     }
 
+    public void ToggleTransmission(bool enabled) {
+      ToggleTransmission(ptr, enabled);
+    }
+
+    public void ToggleLearning(bool enabled) {
+      ToggleLearning(ptr, enabled);
+    }
+
     public ulong AddNeuron(IzhikevichConfig config) {
       return (ulong)AddNeuron(ptr, config);
     }

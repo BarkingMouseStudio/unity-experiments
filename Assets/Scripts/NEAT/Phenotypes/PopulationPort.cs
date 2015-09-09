@@ -29,12 +29,11 @@ public class PopulationPort {
     this.min = min;
     this.max = max;
 
-    this.estimator = new CenterOfMassEstimator(sigma, F_max, v);
+    this.estimator = new CenterOfMassEstimator(sigma, F_max, v, size);
   }
 
   public void Set(float theta) {
     var thetaNorm = NumberHelper.Normalize(theta, min, max);
-    Assert.IsTrue(thetaNorm >= 0.0f && thetaNorm <= 1.0f, thetaNorm.ToString());
     estimator.Set(input, offset, size, total, thetaNorm);
   }
 
@@ -45,7 +44,6 @@ public class PopulationPort {
       return false;
     }
 
-    Assert.IsTrue(thetaNorm >= 0.0f && thetaNorm <= 1.0f, thetaNorm.ToString());
     theta = NumberHelper.Scale(thetaNorm, min, max);
     return true;
   }

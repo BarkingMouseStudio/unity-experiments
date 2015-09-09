@@ -18,15 +18,15 @@ public class ChannelBehaviour : MonoBehaviour {
   public float noiseV = 30f;
   public float noiseRate = 3f;
 
-  int layerSize = 100;
+  const int layerSize = 100;
   float spikeV = 120f;
-  float sigma = 3f;
+  float sigma = layerSize * 0.02f;
   float minValue = -1;
   float maxValue = 1;
 
   float F_max = 500f;
-  float w_min = -5;
-  float w_max = +5;
+  float w_min = -4;
+  float w_max = +4;
 
   float[] input;
   float[] output;
@@ -35,12 +35,16 @@ public class ChannelBehaviour : MonoBehaviour {
 
   Neural.Network network;
   int neuronCount, synapseCount;
-  int ticksPerFrame = 20; // fixed delta time = 0.02s (20ms)
+  const int ticksPerFrame = 20; // fixed delta time = 0.02s (20ms)
   float peakV = 30.0f; // voltage returned as a spike
 
   float[,] spikeTimes;
   int spikeIndex = 0;
-  int spikeWindow = 1; // 1 : 20ms
+  const int spikeWindow = 2; // 1 : 20ms
+  float rateMultiplier = 1000f / (spikeWindow * ticksPerFrame);
+
+  float totalRate = 0.0f;
+  float averageRate = 0.0f;
 
   PopulationPort inputPopulation, outputPopulation;
   float inputValue, outputValue;
@@ -65,6 +69,7 @@ public class ChannelBehaviour : MonoBehaviour {
       foreach (var outputId in L_output) {
         var weight = RandomHelper.NextGaussianRange(min, max);
         var config = Neural.SymConfig.Of(weight, min, max);
+        // config.a_sym = 0.01f;
         network.AddSynapse(inputId, outputId, config);
       }
     }
@@ -83,14 +88,10 @@ public class ChannelBehaviour : MonoBehaviour {
     network = new Neural.Network(20ul);
 
     var inputLayer = CreateLayer(layerSize);
-    var hiddenLayer = CreateLayer(layerSize);
     var outputLayer = CreateLayer(layerSize);
 
-    ConnectLayers(inputLayer, hiddenLayer, w_min, 0);
-    ConnectLayers(inputLayer, hiddenLayer, 0, w_max);
-
-    ConnectLayers(hiddenLayer, outputLayer, w_min, 0);
-    ConnectLayers(hiddenLayer, outputLayer, 0, w_max);
+    ConnectLayers(inputLayer, outputLayer, w_min, 0);
+    ConnectLayers(inputLayer, outputLayer, 0, w_max);
 
     neuronCount = (int)network.NeuronCount;
     synapseCount = (int)network.SynapseCount;
@@ -117,7 +118,7 @@ public class ChannelBehaviour : MonoBehaviour {
     Array.Clear(output, 0, output.Length);
     Array.Clear(rate, 0, rate.Length);
 
-    if (noiseRate > 0 && noiseV > 0) {
+    if (isTraining && noiseRate > 0 && noiseV > 0) {
       for (var i = 0; i < neuronCount; i++) {
         for (var t = 0; t < ticksPerFrame; t++) {
           input[t * neuronCount + i] += RandomHelper.PoissonInput(noiseRate, noiseV);
@@ -132,24 +133,36 @@ public class ChannelBehaviour : MonoBehaviour {
     // expectedOutputValue = Mathf.Cos(Time.fixedTime);
     // expectedOutputValue = expectedInputValue;
     if (isTraining) {
+      network.ToggleTransmission(false); // Disable synaptic transmission
+      network.ToggleLearning(true); // Enable synaptic learning
       outputPopulation.Set(expectedOutputValue);
+    } else {
+      network.ToggleTransmission(true); // Enable synaptic transmission
+      network.ToggleLearning(false); // Disable synaptic learning
     }
 
     network.Tick((ulong)ticksPerFrame, input, output);
 
+    totalRate = 0.0f;
     for (var i = 0; i < output.Length; i++) {
       spikeTimes[i,spikeIndex] = output[i] / peakV; // 20ms
       for (var j = 0; j < spikeWindow; j++) {
-        rate[i] += ((float)spikeTimes[i,j]);
+        rate[i] += spikeTimes[i,j];
       }
-      rate[i] *= (1000f / (spikeWindow * ticksPerFrame));
+      rate[i] *= rateMultiplier;
+      totalRate += rate[i];
     }
+    averageRate = totalRate / neuronCount;
 
     spikeIndex = (spikeIndex + 1) % spikeWindow;
 
 		inputPopulation.TryGet(out inputValue);
-		outputPopulation.TryGet(out outputValue);
-		errValue = Mathf.Abs(expectedOutputValue - outputValue);
+
+		if (outputPopulation.TryGet(out outputValue)) {
+      errValue = Mathf.Abs(expectedOutputValue - outputValue);
+    } else {
+      errValue = 1f;
+    }
 
 		if (saveWeights) {
 			if (Time.time >= nextSaveWeights) {
