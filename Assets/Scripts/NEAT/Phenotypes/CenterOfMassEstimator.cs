@@ -16,13 +16,17 @@ public class CenterOfMassEstimator {
   private float width; // width of the gaussian curve in the value units
   private float scale; // scaling factor applied to values
 
+  private int binSize;
+
   public CenterOfMassEstimator(float sigma, float F_max, float v, int N) {
     this.sigma2_2 = 2.0f * Mathf.Pow(sigma, 2.0f);
     this.F_max = F_max;
     this.v = v;
     this.N = N;
 
-    this.width = (sigma * 3.0f) / N;
+    this.binSize = 3; // Number of neurons in the bin
+
+    this.width = ((sigma * 3.0f) * binSize) / N;
     this.scale = 1.0f - (width * 2.0f);
   }
 
@@ -41,12 +45,16 @@ public class CenterOfMassEstimator {
     return v;
   }
 
+  private int Bin(int x) {
+    return Mathf.RoundToInt(x / binSize);
+  }
+
   // expresses the firing rate of neuron x when the normalized value v_0 is encoded
   public void Set(float[] p, int sliceOffset, int sliceSize, int totalCount, float theta) {
     float rate;
     for (var i = 0; i < sliceSize; i++) {
       rate = F_max * Mathf.Exp(
-        -1.0f * (Mathf.Pow(i - f(theta), 2.0f) / sigma2_2
+        -1.0f * (Mathf.Pow(Bin(i - f(theta)), 2.0f) / sigma2_2
       ));
 
       for (var t = 0; t < 20; t++) { // 20ms

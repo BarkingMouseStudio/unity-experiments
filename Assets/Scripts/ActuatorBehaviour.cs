@@ -7,6 +7,17 @@ using System.IO;
 
 public class ActuatorBehaviour : MonoBehaviour {
 
+	enum IntervalMode {
+		Training,
+		Resting,
+	}
+
+	IntervalMode intervalMode = IntervalMode.Resting;
+	int intervalCount = 0;
+	float intervalTime = 0.0f;
+	float trainingDuration = 0.02f;
+	float restingDuration = 0.04f;
+
 	public Transform shoulderJoint;
 	public Transform elbowJoint;
 	public Transform endEffector;
@@ -27,13 +38,22 @@ public class ActuatorBehaviour : MonoBehaviour {
 	double totalRate, averageRate;
   #pragma warning restore 0414
 
-	float shoulderProprioception = 0.0f;
-	float elbowProprioception = 0.0f;
-	float targetDirection = 0.0f;
-	float shoulderMotorCommand = 0.0f;
-	float elbowMotorCommand = 0.0f;
+	float target_shoulderProprioception = 0.0f;
+	float target_elbowProprioception = 0.0f;
+	float target_targetDirection = 0.0f;
+	float target_shoulderMotorCommand = 0.0f;
+	float target_elbowMotorCommand = 0.0f;
 
-	float[] homePositions = new float[]{0, -45, 45};
+  #pragma warning restore 0414
+	float actual_shoulderProprioception = 0.0f;
+	float actual_elbowProprioception = 0.0f;
+	float actual_targetDirection = 0.0f;
+  #pragma warning disable 0414
+
+	float actual_shoulderMotorCommand = 0.0f;
+	float actual_elbowMotorCommand = 0.0f;
+
+	float[] homePositions = new float[]{0, -45, 45, -90, 90};
 
   StreamWriter weightsLog;
   StreamWriter inputLog;
@@ -59,7 +79,7 @@ public class ActuatorBehaviour : MonoBehaviour {
 	}
 
 	void LogInput() {
-		Debug.DrawRay(endEffector.position, Quaternion.Euler(0, 0, targetDirection) * Vector2.right, Color.red);
+		Debug.DrawRay(endEffector.position, Quaternion.Euler(0, 0, target_targetDirection) * Vector2.right, Color.red);
 
 		if (saveInputs) {
 			inputLog.WriteLine(network.input.Stringify());
@@ -104,65 +124,89 @@ public class ActuatorBehaviour : MonoBehaviour {
 	}
 
 	void Train() {
-		// Set end effector position before applying movements
-		var previousEndEffectorPosition = endEffector.position;
+		if (intervalMode == IntervalMode.Training) { // Training interval
+			if (intervalTime < trainingDuration) {
+			  network.shoulderProprioception.Set(target_shoulderProprioception);
+			  network.elbowProprioception.Set(target_elbowProprioception);
+			  network.targetDirection.Set(target_targetDirection);
+				network.shoulderMotorCommand.Set(target_shoulderMotorCommand);
+				network.elbowMotorCommand.Set(target_elbowMotorCommand);
 
-		// Generate random motor commands (ERG)
-		shoulderMotorCommand = UnityEngine.Random.Range(-5.0f, 5.0f);
-		elbowMotorCommand = UnityEngine.Random.Range(-5.0f, 5.0f);
+				intervalTime += Time.deltaTime;
+			} else {
+				intervalTime = 0.0f;
+				intervalMode = IntervalMode.Resting;
+			}
+		}
 
-		// Move joints randomly
-		shoulderJoint.Rotate(0, 0, shoulderMotorCommand);
-		elbowJoint.Rotate(0, 0, elbowMotorCommand);
+		if (intervalMode == IntervalMode.Resting) { // Resting interval
+			if (intervalTime > restingDuration) {
+				intervalTime = 0.0f;
+				intervalMode = IntervalMode.Training;
 
-		shoulderProprioception = AngleHelper.GetAngle(shoulderJoint.localRotation.eulerAngles.z);
-		elbowProprioception = AngleHelper.GetAngle(elbowJoint.localRotation.eulerAngles.z);
-		targetDirection = GetTargetDirection((endEffector.position - previousEndEffectorPosition).normalized);
+				// Every fourth intervalMode, change home position
+				if (intervalCount % 4 == 0) {
+					SetHomePosition();
+				}
 
-		// Reset home position
-		SetHomePosition();
+				intervalCount++;
 
-	  network.shoulderProprioception.Set(shoulderProprioception);
-	  network.elbowProprioception.Set(elbowProprioception);
-	  network.targetDirection.Set(targetDirection);
-		network.shoulderMotorCommand.Set(shoulderMotorCommand);
-		network.elbowMotorCommand.Set(elbowMotorCommand);
+				// Set end effector position before applying movements
+				var previousEndEffectorPosition = endEffector.position;
+
+				// Generate random motor commands (ERG)
+				target_shoulderMotorCommand = UnityEngine.Random.Range(-5.0f, 5.0f);
+				target_elbowMotorCommand = UnityEngine.Random.Range(-5.0f, 5.0f);
+
+				// Move joints randomly
+				shoulderJoint.Rotate(0, 0, target_shoulderMotorCommand);
+				elbowJoint.Rotate(0, 0, target_elbowMotorCommand);
+
+				target_shoulderProprioception = AngleHelper.GetAngle(shoulderJoint.localRotation.eulerAngles.z);
+				target_elbowProprioception = AngleHelper.GetAngle(elbowJoint.localRotation.eulerAngles.z);
+				target_targetDirection = GetTargetDirection((endEffector.position - previousEndEffectorPosition).normalized);
+			} else {
+				intervalTime += Time.deltaTime;
+			}
+		}
 
 		LogInput();
     network.Tick();
 
-	  network.shoulderProprioception.TryGet(out shoulderProprioception);
-	  network.elbowProprioception.TryGet(out elbowProprioception);
-	  network.targetDirection.TryGet(out targetDirection);
-		network.shoulderMotorCommand.TryGet(out shoulderMotorCommand);
-		network.elbowMotorCommand.TryGet(out elbowMotorCommand);
+		if (intervalMode == IntervalMode.Training) { // Training interval
+		  network.shoulderProprioception.TryGet(out actual_shoulderProprioception);
+		  network.elbowProprioception.TryGet(out actual_elbowProprioception);
+		  network.targetDirection.TryGet(out actual_targetDirection);
+			network.shoulderMotorCommand.TryGet(out actual_shoulderMotorCommand);
+			network.elbowMotorCommand.TryGet(out actual_elbowMotorCommand);
+		}
 
 		LogOutput();
 	}
 
 	void Perform() {
-		shoulderProprioception = AngleHelper.GetAngle(shoulderJoint.localRotation.eulerAngles.z);
-		elbowProprioception = AngleHelper.GetAngle(elbowJoint.localRotation.eulerAngles.z);
-		targetDirection = GetTargetDirection((target.position - endEffector.position).normalized);
+		target_shoulderProprioception = AngleHelper.GetAngle(shoulderJoint.localRotation.eulerAngles.z);
+		target_elbowProprioception = AngleHelper.GetAngle(elbowJoint.localRotation.eulerAngles.z);
+		target_targetDirection = GetTargetDirection((target.position - endEffector.position).normalized);
 
-	  network.shoulderProprioception.Set(shoulderProprioception);
-	  network.elbowProprioception.Set(elbowProprioception);
-	  network.targetDirection.Set(targetDirection);
+	  network.shoulderProprioception.Set(target_shoulderProprioception);
+	  network.elbowProprioception.Set(target_elbowProprioception);
+	  network.targetDirection.Set(target_targetDirection);
 
 		LogInput();
 
     network.Tick();
 
-	  network.shoulderProprioception.TryGet(out shoulderProprioception);
-	  network.elbowProprioception.TryGet(out elbowProprioception);
-	  network.targetDirection.TryGet(out targetDirection);
+	  network.shoulderProprioception.TryGet(out actual_shoulderProprioception);
+	  network.elbowProprioception.TryGet(out actual_elbowProprioception);
+	  network.targetDirection.TryGet(out actual_targetDirection);
 
-		if (network.shoulderMotorCommand.TryGet(out shoulderMotorCommand)) {
-			shoulderJoint.Rotate(0, 0, shoulderMotorCommand);
+		if (network.shoulderMotorCommand.TryGet(out actual_shoulderMotorCommand)) {
+			shoulderJoint.Rotate(0, 0, actual_shoulderMotorCommand);
 		}
 
-		if (network.elbowMotorCommand.TryGet(out elbowMotorCommand)) {
-			elbowJoint.Rotate(0, 0, elbowMotorCommand);
+		if (network.elbowMotorCommand.TryGet(out actual_elbowMotorCommand)) {
+			elbowJoint.Rotate(0, 0, actual_elbowMotorCommand);
 		}
 
 		LogOutput();
