@@ -4,18 +4,18 @@ using System.Runtime.InteropServices;
 namespace Neural {
 
   public struct SymConfig {
-    public double weight;
-    public double a_sym;
-    public double tau_a;
-    public double tau_b;
+    public float weight;
+    public float a_sym;
+    public float tau_a;
+    public float tau_b;
     public UIntPtr delay;
-    public double min;
-    public double max;
+    public float min;
+    public float max;
 
     [DllImport("libneural")]
     private static extern SymConfig GetSymConfig();
 
-    public static SymConfig Of(double weight, double min, double max) {
+    public static SymConfig Of(float weight, float min, float max) {
       var config = GetSymConfig();
       config.weight = weight;
       config.min = min;

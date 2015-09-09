@@ -8,8 +8,8 @@ using UnityEngine.Assertions;
 // Population represens as single var
 public class PopulationPort {
 
-  private double[] input;
-  private double[] rate;
+  private float[] input;
+  private float[] rate;
   private int offset;
   private int size;
   private int total;
@@ -19,7 +19,7 @@ public class PopulationPort {
 
   private CenterOfMassEstimator estimator;
 
-  public PopulationPort(double[] input, double[] rate, int offset, int size, int total, float sigma, float F_max, float v, float min, float max) {
+  public PopulationPort(float[] input, float[] rate, int offset, int size, int total, float sigma, float F_max, float v, float min, float max) {
     this.input = input;
     this.rate = rate;
     this.offset = offset;

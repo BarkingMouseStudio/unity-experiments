@@ -7,13 +7,13 @@ using System.Linq;
 
 public class ActuatorPorts {
 
-  public readonly double[] input;
-  public double[] output;
-  public double[] rate;
-  public double[] weights;
+  public readonly float[] input;
+  public float[] output;
+  public float[] rate;
+  public float[] weights;
 
-  public double totalRate = 0.0;
-  public double averageRate = 0.0;
+  public float totalRate = 0.0f;
+  public float averageRate = 0.0f;
 
   public PopulationPort shoulderProprioception;
   public PopulationPort elbowProprioception;
@@ -23,7 +23,7 @@ public class ActuatorPorts {
 
   readonly Neural.Network network;
 
-  double[,] spikeTimes;
+  float[,] spikeTimes;
   int spikeIndex;
 
   int neuronCount;
@@ -31,16 +31,16 @@ public class ActuatorPorts {
 
   int inputLayerSize = 100;
   int outputLayerSize = 100;
-  int hiddenLayerSize = 100;
+  // int hiddenLayerSize = 100;
 
   int spikeWindow = 1; // Multiples of delta-time (0.02s)
   int ticksPerFrame = 20;
 
   float peakV = 30.0f; // Voltage returned as a spike
-  float spikeV = 120.0f; // Voltage required to elicit a spike
-	float sigma = 1.0f; // Cannot be too large or it reduces perceivable variance
+  float spikeV = 30.0f; // Voltage required to elicit a spike
+	float sigma = 3.0f; // Cannot be too large or it reduces perceivable variance
 
-	float F_max = 150.0f; // 50 - 500, must be balanced with weights to produce movement sans noise
+	float F_max = 500.0f; // 50 - 500, must be balanced with weights to produce movement sans noise
 	float w_min = -15.0f;
 	float w_max = 15.0f;
 
@@ -63,7 +63,7 @@ public class ActuatorPorts {
     var L_output_2 = CreateLayer(outputLayerSize);
 
     // Hidden layer to circumvent binning. Basically a combination of input + hidden allows differentiating "like" inputs to produce unique outputs.
-    var L_hidden_1 = CreateLayer(hiddenLayerSize);
+    // var L_hidden_1 = CreateLayer(hiddenLayerSize);
 
     // Each neuron in the input layers is connected with an excitatory and
     // inhibitory synapse to each output neuron.
@@ -87,32 +87,32 @@ public class ActuatorPorts {
     Connect(L_input_3, L_output_2, 0, w_max);
 
     // Connect input to hidden
-    Connect(L_input_1, L_hidden_1, w_min, 0);
-    Connect(L_input_1, L_hidden_1, 0, w_max);
+    // Connect(L_input_1, L_hidden_1, w_min, 0);
+    // Connect(L_input_1, L_hidden_1, 0, w_max);
 
-    Connect(L_input_2, L_hidden_1, w_min, 0);
-    Connect(L_input_2, L_hidden_1, 0, w_max);
+    // Connect(L_input_2, L_hidden_1, w_min, 0);
+    // Connect(L_input_2, L_hidden_1, 0, w_max);
 
-    Connect(L_input_3, L_hidden_1, w_min, 0);
-    Connect(L_input_3, L_hidden_1, 0, w_max);
+    // Connect(L_input_3, L_hidden_1, w_min, 0);
+    // Connect(L_input_3, L_hidden_1, 0, w_max);
 
     // Connect hidden to output
-    Connect(L_hidden_1, L_output_1, w_min, 0);
-    Connect(L_hidden_1, L_output_1, 0, w_max);
+    // Connect(L_hidden_1, L_output_1, w_min, 0);
+    // Connect(L_hidden_1, L_output_1, 0, w_max);
 
-    Connect(L_hidden_1, L_output_2, w_min, 0);
-    Connect(L_hidden_1, L_output_2, 0, w_max);
+    // Connect(L_hidden_1, L_output_2, w_min, 0);
+    // Connect(L_hidden_1, L_output_2, 0, w_max);
 
     neuronCount = (int)network.NeuronCount;
     synapseCount = (int)network.SynapseCount;
 
     Debug.LogFormat("Neuron Count: {0}, Synapse Count: {1}", neuronCount, synapseCount);
 
-    this.input = new double[neuronCount * ticksPerFrame];
-    this.output = new double[neuronCount];
-    this.spikeTimes = new double[neuronCount,spikeWindow];
-    this.rate = new double[neuronCount];
-    this.weights = new double[synapseCount];
+    this.input = new float[neuronCount * ticksPerFrame];
+    this.output = new float[neuronCount];
+    this.spikeTimes = new float[neuronCount,spikeWindow];
+    this.rate = new float[neuronCount];
+    this.weights = new float[synapseCount];
 
     shoulderProprioception = new PopulationPort(
       input, rate, 0,
@@ -153,13 +153,15 @@ public class ActuatorPorts {
   private void Connect(List<int> L_input, List<int> L_output, float min, float max) {
     foreach (var inputId in L_input) {
       foreach (var outputId in L_output) {
+        var config = Neural.SymConfig.Of(RandomHelper.NextGaussianRange(min, max), min, max);
+        // config.a_sym = 0.05;
         network.AddSynapse((ulong)inputId, (ulong)outputId,
-          Neural.SymConfig.Of(RandomHelper.NextGaussianRange(min, max), min, max));
+          config);
       }
     }
   }
 
-  public double[] DumpWeights() {
+  public float[] DumpWeights() {
     Array.Clear(weights, 0, synapseCount);
     network.DumpWeights(weights);
     return weights;
@@ -184,7 +186,7 @@ public class ActuatorPorts {
   public void Tick() {
     network.Tick((ulong)ticksPerFrame, input, output);
 
-    totalRate = 0.0;
+    totalRate = 0.0f;
     for (var i = 0; i < output.Length; i++) {
       spikeTimes[i,spikeIndex] = output[i] / peakV; // 20ms
       for (var j = 0; j < spikeWindow; j++) {

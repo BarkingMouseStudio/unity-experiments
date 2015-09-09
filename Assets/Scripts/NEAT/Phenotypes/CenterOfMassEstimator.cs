@@ -28,7 +28,7 @@ public class CenterOfMassEstimator {
   }
 
   // expresses the firing rate of neuron x when the normalized value v_0 is encoded
-  public void Set(double[] p, int sliceOffset, int sliceSize, int totalCount, float theta) {
+  public void Set(float[] p, int sliceOffset, int sliceSize, int totalCount, float theta) {
     float rate;
     for (var i = 0; i < sliceSize; i++) {
       rate = F_max * Mathf.Exp(
@@ -41,7 +41,7 @@ public class CenterOfMassEstimator {
     }
   }
 
-  public bool TryGet(double[] p, int sliceOffset, int sliceSize, out float theta) {
+  public bool TryGet(float[] p, int sliceOffset, int sliceSize, out float theta) {
     var num = 0.0f;
     for (var i = 0; i < sliceSize; i++) {
       num += f_inv(i, sliceSize) * (float)p[sliceOffset + i];

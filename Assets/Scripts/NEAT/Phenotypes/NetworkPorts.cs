@@ -14,8 +14,8 @@ public class NetworkPorts {
 
   public readonly NetworkSumOutputPort Speed;
 
-  private readonly double[] input;
-  private double[] output;
+  private readonly float[] input;
+  private float[] output;
 
   private readonly Neural.Network network;
 
@@ -27,8 +27,8 @@ public class NetworkPorts {
   ) {
     this.network = network;
 
-    this.input = new double[network.NeuronCount];
-    this.output = new double[network.NeuronCount];
+    this.input = new float[network.NeuronCount];
+    this.output = new float[network.NeuronCount];
 
     UpperTheta = new NetworkInputPort(input, upperNeurons);
     LowerTheta = new NetworkInputPort(input, lowerNeurons);

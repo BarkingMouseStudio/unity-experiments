@@ -5,5 +5,5 @@ using System.Linq;
 
 public interface IReceptiveField {
 
-  double Normalize(double val);
+  float Normalize(float val);
 }

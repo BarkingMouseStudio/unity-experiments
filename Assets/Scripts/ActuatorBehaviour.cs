@@ -44,7 +44,7 @@ public class ActuatorBehaviour : MonoBehaviour {
 	float trainingDuration = 0.02f;
 	float restingDuration = 0.05f;
 
-	float[] homePositions = new float[]{0, -45, 45};
+	float[] homePositions = new float[]{0, -45, 45, -90, 90, -180, 180};
 	int iteration = 0;
 
   StreamWriter weightsLog;

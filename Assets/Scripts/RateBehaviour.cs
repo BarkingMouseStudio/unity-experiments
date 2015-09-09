@@ -5,31 +5,32 @@ using System.Collections;
 using System.Linq;
 using System.IO;
 
+// Demonstrates firing a neuron at a particular rate
 public class RateBehaviour : MonoBehaviour {
 
   public float rate = 0.0f;
   public float v = 0.0f;
 
-  double[] input;
-  double[] output;
+  float[] input;
+  float[] output;
 
   Neural.Network network;
 
-  double instantRateA = 0.0;
-  double instantRateB = 0.0;
-  double instantRateC = 0.0;
+  float instantRateA = 0.0f;
+  float instantRateB = 0.0f;
+  float instantRateC = 0.0f;
 
   #pragma warning disable 0414
-  double spikeRateA = 0.0; // Hz
-  double spikeRateB = 0.0; // Hz
-  double spikeRateC = 0.0; // Hz
+  float spikeRateA = 0.0f; // Hz
+  float spikeRateB = 0.0f; // Hz
+  float spikeRateC = 0.0f; // Hz
   #pragma warning restore 0414
 
-  double inputRateA = 0.0;
-  double inputRateB = 0.0;
-  double inputRateC = 0.0;
+  float inputRateA = 0.0f;
+  float inputRateB = 0.0f;
+  float inputRateC = 0.0f;
 
-  double[][] spikes;
+  float[][] spikes;
   int spikeIndex = 0;
   int spikeWindow = 10;
 
@@ -43,12 +44,12 @@ public class RateBehaviour : MonoBehaviour {
 
     neuronCount = (int)network.NeuronCount;
 
-    input = new double[neuronCount * 20];
-    output = new double[neuronCount];
+    input = new float[neuronCount * 20];
+    output = new float[neuronCount];
 
-    spikes = new double[neuronCount][];
+    spikes = new float[neuronCount][];
     for (var i = 0; i < neuronCount; i++) {
-      spikes[i] = new double[spikeWindow];
+      spikes[i] = new float[spikeWindow];
     }
 	}
 
@@ -62,9 +63,9 @@ public class RateBehaviour : MonoBehaviour {
       }
     }
 
-    inputRateA = 0.0;
-    inputRateB = 0.0;
-    inputRateC = 0.0;
+    inputRateA = 0.0f;
+    inputRateB = 0.0f;
+    inputRateC = 0.0f;
 
     for (var t = 0; t < 20; t++) {
       inputRateA += input[t * neuronCount + 0];
@@ -74,9 +75,9 @@ public class RateBehaviour : MonoBehaviour {
 
     network.Tick(20ul, input, output);
 
-    instantRateA = output[0] / 30.0;
-    instantRateB = output[1] / 30.0;
-    instantRateC = output[2] / 30.0;
+    instantRateA = output[0] / 30.0f;
+    instantRateB = output[1] / 30.0f;
+    instantRateC = output[2] / 30.0f;
 
 		spikes[0][spikeIndex] = instantRateA;
 		spikes[1][spikeIndex] = instantRateB;
@@ -84,8 +85,8 @@ public class RateBehaviour : MonoBehaviour {
 
 		spikeIndex = (spikeIndex + 1) % spikeWindow;
 
-		spikeRateA = spikes[0].Aggregate(0.0, (sum, s) => sum + s, (sum) => sum * 5.0f);
-		spikeRateB = spikes[1].Aggregate(0.0, (sum, s) => sum + s, (sum) => sum * 5.0f);
-		spikeRateC = spikes[2].Aggregate(0.0, (sum, s) => sum + s, (sum) => sum * 5.0f);
+		spikeRateA = spikes[0].Aggregate(0.0f, (sum, s) => sum + s, (sum) => sum * 5.0f);
+		spikeRateB = spikes[1].Aggregate(0.0f, (sum, s) => sum + s, (sum) => sum * 5.0f);
+		spikeRateC = spikes[2].Aggregate(0.0f, (sum, s) => sum + s, (sum) => sum * 5.0f);
 	}
 }

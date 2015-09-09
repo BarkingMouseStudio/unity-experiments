@@ -12,22 +12,22 @@ namespace NEAT {
 
     [Test]
     public void TestSignReceptiveField() {
-      var rf = new SignReceptiveField(60.0, 30.0);
-      Assert.AreEqual(1.0, rf.Normalize(60.0));
-      Assert.AreEqual(1.0, rf.Normalize(75.0));
-      Assert.AreEqual(1.0, rf.Normalize(45.0));
-      Assert.AreEqual(0.0, rf.Normalize(90.0));
-      Assert.AreEqual(0.0, rf.Normalize(30.0));
+      var rf = new SignReceptiveField(60.0f, 30.0f);
+      Assert.AreEqual(1.0f, rf.Normalize(60.0f));
+      Assert.AreEqual(1.0f, rf.Normalize(75.0f));
+      Assert.AreEqual(1.0f, rf.Normalize(45.0f));
+      Assert.AreEqual(0.0f, rf.Normalize(90.0f));
+      Assert.AreEqual(0.0f, rf.Normalize(30.0f));
     }
 
     [Test]
     public void TestPowReceptiveField() {
-      var rf = new PowReceptiveField(60.0, 30.0);
-      Assert.AreEqual(1.0, rf.Normalize(60.0));
-      Assert.AreEqual(0.75, rf.Normalize(75.0));
-      Assert.AreEqual(0.75, rf.Normalize(45.0));
-      Assert.AreEqual(0.0, rf.Normalize(90.0));
-      Assert.AreEqual(0.0, rf.Normalize(30.0));
+      var rf = new PowReceptiveField(60.0f, 30.0f);
+      Assert.AreEqual(1.0f, rf.Normalize(60.0f));
+      Assert.AreEqual(0.75f, rf.Normalize(75.0f));
+      Assert.AreEqual(0.75f, rf.Normalize(45.0f));
+      Assert.AreEqual(0.0f, rf.Normalize(90.0f));
+      Assert.AreEqual(0.0f, rf.Normalize(30.0f));
     }
   }
 }

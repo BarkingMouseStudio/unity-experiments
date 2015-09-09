@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 
 public struct MulReceptiveField : IReceptiveField {
-  double mean;
-  double sigma;
+  float mean;
+  float sigma;
 
-  public MulReceptiveField(double mean, double sigma) {
+  public MulReceptiveField(float mean, float sigma) {
     this.mean = mean;
     this.sigma = sigma;
   }
 
-  public double Normalize(double val) {
+  public float Normalize(float val) {
     return (val * mean) * sigma;
   }
 }

@@ -23,16 +23,22 @@ namespace Neural {
     private static extern size_t GetSynapseCount(IntPtr network);
 
     [DllImport("libneural")]
+    private static extern void ToggleTransmission(IntPtr network, [MarshalAs(UnmanagedType.I1)] bool enabled);
+
+    [DllImport("libneural")]
+    private static extern void ToggleLearning(IntPtr network, [MarshalAs(UnmanagedType.I1)] bool enabled);
+
+    [DllImport("libneural")]
     private static extern size_t AddNeuron(IntPtr network, IzhikevichConfig config);
 
     [DllImport("libneural")]
     private static extern size_t AddSynapse(IntPtr network, size_t sendrId, size_t recvrId, SymConfig config);
 
     [DllImport("libneural")]
-    private static extern double TickNetwork(IntPtr network, size_t ticks, [In] double[] inputs, [In, Out] double[] outputs);
+    private static extern float TickNetwork(IntPtr network, size_t ticks, [In] float[] inputs, [In, Out] float[] outputs);
 
     [DllImport("libneural")]
-    private static extern void DumpWeights(IntPtr network, [In, Out] double[] weights);
+    private static extern void DumpWeights(IntPtr network, [In, Out] float[] weights);
 
     private IntPtr ptr;
     private bool disposed;
@@ -79,11 +85,11 @@ namespace Neural {
       return (ulong)AddSynapse(ptr, new size_t(sendrId), new size_t(recvrId), config);
     }
 
-    public void DumpWeights(double[] weights) {
+    public void DumpWeights(float[] weights) {
       DumpWeights(ptr, weights);
     }
 
-    public double Tick(ulong ticks, double[] inputs, double[] outputs) {
+    public float Tick(ulong ticks, float[] inputs, float[] outputs) {
       return TickNetwork(ptr, new size_t(ticks), inputs, outputs);
     }
   }
