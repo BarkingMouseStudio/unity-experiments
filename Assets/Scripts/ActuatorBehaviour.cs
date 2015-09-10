@@ -16,7 +16,7 @@ public class ActuatorBehaviour : MonoBehaviour {
 	int intervalCount = 0;
 	float intervalTime = 0.0f;
 	float trainingDuration = 0.02f;
-	float restingDuration = 0.04f;
+	float restingDuration = 0.05f;
 
 	public Transform shoulderJoint;
 	public Transform elbowJoint;
@@ -216,11 +216,11 @@ public class ActuatorBehaviour : MonoBehaviour {
     network.Clear();
 
 		if (isTraining) {
-			network.IsTraining = true;
-			network.Noise(3f, 30f);
+			network.ToggleTraining(true);
+			network.Noise(5f, 120f);
 			Train();
 		} else {
-			network.IsTraining = false;
+			network.ToggleTraining(false);
 			Perform();
 		}
 	}

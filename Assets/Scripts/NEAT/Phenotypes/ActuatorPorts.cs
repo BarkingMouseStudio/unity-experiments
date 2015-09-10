@@ -153,24 +153,13 @@ public class ActuatorPorts {
     }
   }
 
-  private bool isTraining = true;
-  public bool IsTraining {
-    get {
-      return isTraining;
-    }
-    set {
-      if (isTraining != value) {
-        isTraining = value;
-
-        Debug.LogFormat("IsTraining: {0}", isTraining);
-        if (isTraining) {
-          network.ToggleTransmission(false); // Disable synaptic transmission
-          network.ToggleLearning(true); // Enable synaptic learning
-        } else {
-          network.ToggleTransmission(true); // Enable synaptic transmission
-          network.ToggleLearning(false); // Disable synaptic learning
-        }
-      }
+  public void ToggleTraining(bool enabled) {
+    if (enabled) {
+      network.ToggleTransmission(false); // Disable synaptic transmission
+      network.ToggleLearning(true); // Enable synaptic learning
+    } else {
+      network.ToggleTransmission(true); // Enable synaptic transmission
+      network.ToggleLearning(false); // Disable synaptic learning
     }
   }
 
