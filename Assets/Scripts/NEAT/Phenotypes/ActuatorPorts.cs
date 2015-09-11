@@ -20,6 +20,8 @@ public class ActuatorPorts {
   public PopulationPort targetDirection;
   public PopulationPort shoulderMotorCommand;
   public PopulationPort elbowMotorCommand;
+  public PopulationPort shoulderAngularVelocity;
+  public PopulationPort elbowAngularVelocity;
 
   Neural.Network network;
   int neuronCount, synapseCount;
@@ -52,6 +54,10 @@ public class ActuatorPorts {
     // to one of the world axes.
     var L_input_3 = CreateLayer(layerSize);
 
+    // Velocity
+    var L_input_4 = CreateLayer(layerSize);
+    var L_input_5 = CreateLayer(layerSize);
+
     // Firing pattern of each output layer representing the motor command that
     // is provided to a single joint.
     var L_output_1 = CreateLayer(layerSize);
@@ -78,6 +84,19 @@ public class ActuatorPorts {
     Connect(L_input_3, L_output_2, w_min, 0);
     Connect(L_input_3, L_output_2, 0, w_max);
 
+    // Velocity
+    Connect(L_input_4, L_output_1, w_min, 0);
+    Connect(L_input_4, L_output_1, 0, w_max);
+
+    Connect(L_input_4, L_output_2, w_min, 0);
+    Connect(L_input_4, L_output_2, 0, w_max);
+
+    Connect(L_input_5, L_output_1, w_min, 0);
+    Connect(L_input_5, L_output_1, 0, w_max);
+
+    Connect(L_input_5, L_output_2, w_min, 0);
+    Connect(L_input_5, L_output_2, 0, w_max);
+
     neuronCount = (int)network.NeuronCount;
     synapseCount = (int)network.SynapseCount;
 
@@ -90,23 +109,31 @@ public class ActuatorPorts {
     this.weights = new float[synapseCount];
 
     shoulderProprioception = new PopulationPort(input, rate,
-      0, layerSize, neuronCount,
+      layerSize * 0, layerSize, neuronCount,
       sigma, F_max, spikeV, -180, 180);
 
     elbowProprioception = new PopulationPort(input, rate,
-      layerSize, layerSize, neuronCount,
+      layerSize * 1, layerSize, neuronCount,
       sigma, F_max, spikeV, -180, 180);
 
     targetDirection = new PopulationPort(input, rate,
       layerSize * 2, layerSize, neuronCount,
       sigma, F_max, spikeV, -180, 180);
 
-    shoulderMotorCommand = new PopulationPort(input, rate,
+    shoulderAngularVelocity = new PopulationPort(input, rate,
       layerSize * 3, layerSize, neuronCount,
       sigma, F_max, spikeV, -5, 5);
 
+    elbowAngularVelocity = new PopulationPort(input, rate,
+      layerSize * 4, layerSize, neuronCount,
+      sigma, F_max, spikeV, -5, 5);
+
+    shoulderMotorCommand = new PopulationPort(input, rate,
+      layerSize * 5, layerSize, neuronCount,
+      sigma, F_max, spikeV, -5, 5);
+
     elbowMotorCommand = new PopulationPort(input, rate,
-      layerSize * 3 + layerSize, layerSize, neuronCount,
+      layerSize * 6, layerSize, neuronCount,
       sigma, F_max, spikeV, -5, 5);
   }
 

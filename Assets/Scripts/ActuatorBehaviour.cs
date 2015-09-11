@@ -43,11 +43,18 @@ public class ActuatorBehaviour : MonoBehaviour {
 	float target_targetDirection = 0.0f;
 	float target_shoulderMotorCommand = 0.0f;
 	float target_elbowMotorCommand = 0.0f;
+	float target_shoulderAngularVelocity = 0.0f;
+	float target_elbowAngularVelocity = 0.0f;
+
+	float prev_shoulderProprioception = 0.0f;
+	float prev_elbowProprioception = 0.0f;
 
   #pragma warning restore 0414
 	float actual_shoulderProprioception = 0.0f;
 	float actual_elbowProprioception = 0.0f;
 	float actual_targetDirection = 0.0f;
+	float actual_shoulderAngularVelocity = 0.0f;
+	float actual_elbowAngularVelocity = 0.0f;
   #pragma warning disable 0414
 
 	float actual_shoulderMotorCommand = 0.0f;
@@ -131,6 +138,8 @@ public class ActuatorBehaviour : MonoBehaviour {
 			  network.targetDirection.Set(target_targetDirection);
 				network.shoulderMotorCommand.Set(target_shoulderMotorCommand);
 				network.elbowMotorCommand.Set(target_elbowMotorCommand);
+				network.shoulderAngularVelocity.Set(target_shoulderAngularVelocity);
+				network.elbowAngularVelocity.Set(target_elbowAngularVelocity);
 
 				intervalTime += Time.deltaTime;
 			} else {
@@ -158,6 +167,9 @@ public class ActuatorBehaviour : MonoBehaviour {
 				target_shoulderMotorCommand = UnityEngine.Random.Range(-5.0f, 5.0f);
 				target_elbowMotorCommand = UnityEngine.Random.Range(-5.0f, 5.0f);
 
+				prev_shoulderProprioception = AngleHelper.GetAngle(shoulderJoint.localRotation.eulerAngles.z);
+				prev_elbowProprioception = AngleHelper.GetAngle(elbowJoint.localRotation.eulerAngles.z);
+
 				// Move joints randomly
 				shoulderJoint.Rotate(0, 0, target_shoulderMotorCommand);
 				elbowJoint.Rotate(0, 0, target_elbowMotorCommand);
@@ -165,6 +177,8 @@ public class ActuatorBehaviour : MonoBehaviour {
 				target_shoulderProprioception = AngleHelper.GetAngle(shoulderJoint.localRotation.eulerAngles.z);
 				target_elbowProprioception = AngleHelper.GetAngle(elbowJoint.localRotation.eulerAngles.z);
 				target_targetDirection = GetTargetDirection((endEffector.position - previousEndEffectorPosition).normalized);
+				target_shoulderAngularVelocity = Mathf.Abs(target_shoulderProprioception - prev_shoulderProprioception);
+				target_elbowAngularVelocity = Mathf.Abs(target_elbowProprioception - prev_elbowProprioception);
 			} else {
 				intervalTime += Time.deltaTime;
 			}
@@ -179,19 +193,28 @@ public class ActuatorBehaviour : MonoBehaviour {
 		  network.targetDirection.TryGet(out actual_targetDirection);
 			network.shoulderMotorCommand.TryGet(out actual_shoulderMotorCommand);
 			network.elbowMotorCommand.TryGet(out actual_elbowMotorCommand);
+			network.shoulderAngularVelocity.TryGet(out actual_shoulderAngularVelocity);
+			network.elbowAngularVelocity.TryGet(out actual_elbowAngularVelocity);
 		}
 
 		LogOutput();
 	}
 
 	void Perform() {
+		prev_shoulderProprioception = target_shoulderProprioception;
+		prev_elbowProprioception = target_elbowProprioception;
+
 		target_shoulderProprioception = AngleHelper.GetAngle(shoulderJoint.localRotation.eulerAngles.z);
 		target_elbowProprioception = AngleHelper.GetAngle(elbowJoint.localRotation.eulerAngles.z);
 		target_targetDirection = GetTargetDirection((target.position - endEffector.position).normalized);
+		target_shoulderAngularVelocity = Mathf.Abs(target_shoulderProprioception - prev_shoulderProprioception);
+		target_elbowAngularVelocity = Mathf.Abs(target_elbowProprioception - prev_elbowProprioception);
 
 	  network.shoulderProprioception.Set(target_shoulderProprioception);
 	  network.elbowProprioception.Set(target_elbowProprioception);
 	  network.targetDirection.Set(target_targetDirection);
+		network.shoulderAngularVelocity.Set(target_shoulderAngularVelocity);
+		network.elbowAngularVelocity.Set(target_elbowAngularVelocity);
 
 		LogInput();
 
@@ -200,6 +223,8 @@ public class ActuatorBehaviour : MonoBehaviour {
 	  network.shoulderProprioception.TryGet(out actual_shoulderProprioception);
 	  network.elbowProprioception.TryGet(out actual_elbowProprioception);
 	  network.targetDirection.TryGet(out actual_targetDirection);
+		network.shoulderAngularVelocity.TryGet(out actual_shoulderAngularVelocity);
+		network.elbowAngularVelocity.TryGet(out actual_elbowAngularVelocity);
 
 		if (network.shoulderMotorCommand.TryGet(out actual_shoulderMotorCommand)) {
 			shoulderJoint.Rotate(0, 0, actual_shoulderMotorCommand);
@@ -210,6 +235,10 @@ public class ActuatorBehaviour : MonoBehaviour {
 		}
 
 		LogOutput();
+	}
+
+	public void ToggleTraining() {
+		isTraining = !isTraining;
 	}
 
 	void FixedUpdate() {
